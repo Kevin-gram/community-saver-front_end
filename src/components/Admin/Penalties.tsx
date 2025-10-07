@@ -93,48 +93,52 @@ const Penalties: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {penalties.map((c) => {
-                  const isPenalty = c.createdAt;
-                  const penaltyId = c.id || c._id;
-                  return (
-                    <tr key={penaltyId}>
-                      <td className="py-2 px-4">{c.member.firstName}</td>
-                      <td className="py-2 px-4">
-                        {c.assignedDate
-                          ? new Date(c.assignedDate).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      <td
-                        className={`py-2 px-4 font-bold ${
-                          isPenalty ? "text-red-600" : "text-green-600"
-                        }`}
-                      >
-                        {isPenalty ? "$25" : "No Penalty"}
-                      </td>
-                      <td className="py-2 px-4">
-                        {isPenalty ? (
-                          c.status === "paid" || paidPenalties.includes(penaltyId) ? (
-                            <span className="text-green-600 font-semibold">
-                              Repaid
-                            </span>
+                {penalties
+                  .filter((c) => c.member !== null && c.member !== undefined)
+                  .map((c) => {
+                    const isPenalty = c.createdAt;
+                    const penaltyId = c.id || c._id;
+                    const memberName = `${c.member.firstName} ${c.member.lastName || ''}`.trim();
+                    
+                    return (
+                      <tr key={penaltyId}>
+                        <td className="py-2 px-4">{memberName}</td>
+                        <td className="py-2 px-4">
+                          {c.assignedDate
+                            ? new Date(c.assignedDate).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td
+                          className={`py-2 px-4 font-bold ${
+                            isPenalty ? "text-red-600" : "text-green-600"
+                          }`}
+                        >
+                          {isPenalty ? "$25" : "No Penalty"}
+                        </td>
+                        <td className="py-2 px-4">
+                          {isPenalty ? (
+                            c.status === "paid" || paidPenalties.includes(penaltyId) ? (
+                              <span className="text-green-600 font-semibold">
+                                Repaid
+                              </span>
+                            ) : (
+                              <button
+                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50"
+                                onClick={() => handlePayPenalty(penaltyId)}
+                                disabled={
+                                  c.status === "paid" || paidPenalties.includes(penaltyId)
+                                }
+                              >
+                                Pay Penalty
+                              </button>
+                            )
                           ) : (
-                            <button
-                              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50"
-                              onClick={() => handlePayPenalty(penaltyId)}
-                              disabled={
-                                c.status === "paid" || paidPenalties.includes(penaltyId)
-                              }
-                            >
-                              Pay Penalty
-                            </button>
-                          )
-                        ) : (
-                          <span className="text-xs text-gray-500">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                            <span className="text-xs text-gray-500">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           )}

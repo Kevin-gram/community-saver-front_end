@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Users,
   DollarSign,
@@ -20,6 +20,8 @@ import { approveOrReject, updateUser, fetchMemberShares } from "../../utils/api"
 import { Loan, User } from "../../types";
 import { Bars } from "react-loader-spinner";
 
+const POLLING_INTERVAL = 5000; // 5 seconds
+
 const BranchLeadDashboard: React.FC = () => {
   const { state, dispatch } = useApp();
   const { currentUser: rawCurrentUser, users, loans, groupRules } = state;
@@ -31,26 +33,46 @@ const BranchLeadDashboard: React.FC = () => {
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [memberShares, setMemberShares] = useState<any>(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [allShares, setAllShares] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Get current user from users array (similar to Member Dashboard)
+  // Get current user from users array
   const currentUser =
     users.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
 
   if (!currentUser || currentUser.role !== "branch_lead") return null;
 
-  // Filter members in the same branch
+  // Filter members AND admins in the same branch
   const branchMembers = users.filter(
-    (user) => user.role === "member" && user.branch === currentUser.branch
+    (user) => 
+      (user.role === "member" || user.role === "admin") && 
+      user.branch === currentUser.branch
   );
 
   // Get loans for branch members (excluding branch lead's own loans)
   const branchLoans = loans.filter((loan) => {
-    const loanMemberId = typeof loan.member === "object" ? loan.member._id : loan.member;
-    const isCurrentUser = loanMemberId === currentUser._id || loanMemberId === currentUser.id;
-    return !isCurrentUser && branchMembers.some((member) => 
-      (member.id === loan.memberId || member._id === loan.memberId)
-    );
+    // Safely get member ID from loan
+    let loanMemberId: string | null = null;
+    
+    if (typeof loan.member === "object" && loan.member !== null) {
+      loanMemberId = loan.member._id || loan.member.id;
+    } else if (typeof loan.member === "string") {
+      loanMemberId = loan.member;
+    }
+    
+    if (!loanMemberId) return false;
+    
+    // Check if it's not the current user
+    const currentUserId = currentUser._id || currentUser.id;
+    const isCurrentUser = loanMemberId === currentUserId;
+    
+    if (isCurrentUser) return false;
+    
+    // Check if the loan belongs to a branch member
+    return branchMembers.some((member) => {
+      const memberId = member.id || member._id;
+      return memberId === loanMemberId || memberId === loan.memberId;
+    });
   });
 
   const pendingLoans = branchLoans.filter(
@@ -60,18 +82,12 @@ const BranchLeadDashboard: React.FC = () => {
     (loan) => loan.status === "active"
   ).length;
   
-  // Total branch savings
-  const totalBranchSavings = branchMembers.reduce(
-    (sum, member) =>
-      sum +
-      (typeof member.totalContributions === "number"
-        ? member.totalContributions
-        : 0) +
-      (typeof member.penalties === "number" ? member.penalties : 0),
-    0
-  );
+  // Total branch savings from shares data
+  const totalBranchSavings = allShares
+    .filter((share) => share.branch === currentUser.branch)
+    .reduce((sum, share) => sum + (share.totalContribution || 0), 0);
 
-  // Loan eligibility for branch lead (same as Member Dashboard)
+  // Loan eligibility for branch lead
   const groupKey = currentUser.branch?.toLowerCase();
   const rules = groupRules[groupKey];
   const maxLoanAmount = rules
@@ -87,14 +103,13 @@ const BranchLeadDashboard: React.FC = () => {
     0
   );
   const userSavings = currentUser.totalContributions || 0;
-  const interestReceived = currentUser.interestReceived || 0;
 
-  // Get branch lead's own loans (same filtering as Member Dashboard)
+  // Get branch lead's own loans
   const userLoans = state.loans.filter((loan) => {
-    if (typeof loan.member === "object") {
-      return loan.member._id === currentUser._id;
+    if (typeof loan.member === "object" && loan.member !== null) {
+      return loan.member._id === currentUser._id || loan.member._id === currentUser.id;
     }
-    return loan.member === currentUser._id;
+    return loan.member === currentUser._id || loan.member === currentUser.id;
   });
 
   const latestLoan = userLoans[0];
@@ -138,7 +153,7 @@ const BranchLeadDashboard: React.FC = () => {
   const personalStats = [
     {
       title: "Total Savings",
-      value: `€${userSavings.toLocaleString()}`,
+      value: `€${(displayData?.totalContribution || userSavings).toLocaleString()}`,
       icon: DollarSign,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
@@ -203,36 +218,53 @@ const BranchLeadDashboard: React.FC = () => {
     setActionType(null);
   };
 
-  // Handler for loan request submission (same as MemberDashboard)
+  // Handler for loan request submission
   const handleLoanRequestSubmit = async (loanData: any) => {
-    // You may need to import and use the same API function as MemberDashboard
-    // For example: import { requestLoan } from "../../utils/api";
-    // await requestLoan(loanData);
-    // After successful request, close the form and refresh loans if needed
     setShowLoanForm(false);
-    // Optionally, refresh loans or show a success message
+    // Trigger immediate refresh after loan request
+    fetchSharesData();
   };
 
-  // Add useEffect to fetch shares data
+  // Fetch shares data
+  const fetchSharesData = useCallback(async () => {
+    try {
+      const data = await fetchMemberShares();
+      const sharesArray = Array.isArray(data) ? data : [];
+      
+      // Store all shares for branch calculations
+      setAllShares(sharesArray);
+      
+      // Find current user's share
+      const currentShare = sharesArray.find(
+        (share: any) =>
+          String(share.id || share._id) === String(currentUser._id || currentUser.id)
+      );
+      
+      console.log("Branch Lead's share:", currentShare);
+      setMemberShares(currentShare);
+    } catch (error) {
+      console.error("Failed to fetch member shares", error);
+    }
+  }, [currentUser._id, currentUser.id]);
+
+  // Initial fetch
   useEffect(() => {
-    const getShares = async () => {
+    const initialize = async () => {
       setLoading(true);
-      try {
-        const data = await fetchMemberShares();
-        const sharesArray = Array.isArray(data) ? data : [];
-        const currentShare = sharesArray.find(
-          (share: any) =>
-            String(share.id || share._id) === String(currentUser._id || currentUser.id)
-        );
-        console.log("Branch Lead's share:", currentShare);
-        setMemberShares(currentShare);
-      } catch (error) {
-        console.error("Failed to fetch member shares", error);
-      }
+      await fetchSharesData();
       setLoading(false);
     };
-    getShares();
-  }, [currentUser._id, currentUser.id]);
+    initialize();
+  }, [fetchSharesData]);
+
+  // Polling effect
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchSharesData();
+    }, POLLING_INTERVAL);
+
+    return () => clearInterval(intervalId);
+  }, [fetchSharesData]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -367,6 +399,12 @@ const BranchLeadDashboard: React.FC = () => {
                 {branchMembers.map((member) => {
                   const memberTheme = getGroupTheme("green-200");
                   const canEdit = currentUser.branch === member.branch;
+                  
+                  // Get member's contribution from shares data
+                  const memberShare = allShares.find(
+                    (share) => String(share.id || share._id) === String(member.id || member._id)
+                  );
+                  const memberContribution = memberShare?.totalContribution || member.totalContributions || 0;
 
                   return (
                     <div
@@ -381,14 +419,11 @@ const BranchLeadDashboard: React.FC = () => {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">
-                            {member.firstName}
+                            {member.firstName} {member.role === "admin" && "(Admin)"}
                           </p>
                           <div className="flex items-center space-x-2 text-sm text-gray-500">
                             <span>
-                              €
-                              {typeof member.totalContributions === "number"
-                                ? member.totalContributions.toLocaleString()
-                                : 0}
+                              €{memberContribution.toLocaleString()}
                             </span>
                             <span className="flex items-center">
                               <div
@@ -532,7 +567,7 @@ const BranchLeadDashboard: React.FC = () => {
               interestRate={rules?.interestRate}
               availableBalance={availableBalance}
               userSavings={userSavings}
-              onSubmit={handleLoanRequestSubmit} // Pass the submit handler
+              onSubmit={handleLoanRequestSubmit}
             />
           )}
 
