@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Users,
   DollarSign,
   TrendingUp,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   Edit,
   Plus,
   History,
@@ -22,19 +23,62 @@ import { Bars } from "react-loader-spinner";
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
+// Update skeleton components to use emerald-200
+const MemberCardSkeleton = () => (
+  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg animate-pulse">
+    <div className="flex items-center space-x-3">
+      <div className="w-8 h-8 rounded-full bg-emerald-200"></div>
+      <div>
+        <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
+        <div className="h-3 bg-emerald-200 rounded w-32"></div>
+      </div>
+    </div>
+    <div className="flex items-center space-x-2">
+      <div className="h-6 bg-emerald-200 rounded w-32"></div>
+      <div className="w-8 h-8 bg-emerald-200 rounded"></div>
+    </div>
+  </div>
+);
+
+const LoanCardSkeleton = () => (
+  <div className="p-4 bg-gray-50 rounded-lg animate-pulse">
+    <div className="flex items-start justify-between mb-3">
+      <div className="flex items-center space-x-3">
+        <div className="w-8 h-8 rounded-full bg-emerald-200"></div>
+        <div>
+          <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
+          <div className="h-3 bg-emerald-200 rounded w-32"></div>
+        </div>
+      </div>
+      <div className="h-6 bg-emerald-200 rounded w-16"></div>
+    </div>
+    <div className="grid grid-cols-2 gap-4 mb-3">
+      <div className="h-4 bg-emerald-200 rounded"></div>
+      <div className="h-4 bg-emerald-200 rounded"></div>
+    </div>
+    <div className="flex space-x-2">
+      <div className="flex-1 h-8 bg-emerald-200 rounded"></div>
+      <div className="flex-1 h-8 bg-emerald-200 rounded"></div>
+    </div>
+  </div>
+);
+
 const BranchLeadDashboard: React.FC = () => {
   const { state, dispatch } = useApp();
   const { currentUser: rawCurrentUser, users, loans, groupRules } = state;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
-  const [actionType, setActionType] = useState<"approve" | "reject" | null>(
-    null
-  );
+  const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [memberShares, setMemberShares] = useState<any>(null);
   const [allShares, setAllShares] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [sectionsLoading, setSectionsLoading] = useState(true);
+  const isMountedRef = useRef(true);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get current user from users array
   const currentUser =
@@ -51,7 +95,6 @@ const BranchLeadDashboard: React.FC = () => {
 
   // Get loans for branch members (excluding branch lead's own loans)
   const branchLoans = loans.filter((loan) => {
-    // Safely get member ID from loan
     let loanMemberId: string | null = null;
     
     if (typeof loan.member === "object" && loan.member !== null) {
@@ -62,13 +105,11 @@ const BranchLeadDashboard: React.FC = () => {
     
     if (!loanMemberId) return false;
     
-    // Check if it's not the current user
     const currentUserId = currentUser._id || currentUser.id;
     const isCurrentUser = loanMemberId === currentUserId;
     
     if (isCurrentUser) return false;
     
-    // Check if the loan belongs to a branch member
     return branchMembers.some((member) => {
       const memberId = member.id || member._id;
       return memberId === loanMemberId || memberId === loan.memberId;
@@ -152,6 +193,7 @@ const BranchLeadDashboard: React.FC = () => {
   const displayData = memberShares || currentUser;
   const personalStats = [
     {
+      id: 'total-savings',
       title: "Total Savings",
       value: `€${(displayData?.totalContribution || userSavings).toLocaleString()}`,
       icon: DollarSign,
@@ -159,6 +201,7 @@ const BranchLeadDashboard: React.FC = () => {
       bg: "bg-emerald-100",
     },
     {
+      id: 'interest-received',
       title: "Interest Received",
       value: `€${(
         displayData?.interestEarned ??
@@ -172,7 +215,21 @@ const BranchLeadDashboard: React.FC = () => {
       color: "text-blue-600",
       bg: "bg-blue-100",
     },
+    // Only show penalties if not paid and pending > 0
+    ...(typeof currentUser.penalties === "object" &&
+      !currentUser.penalties.isPaid &&
+      currentUser.penalties.pending > 0
+      ? [{
+          id: 'penalties',
+          title: "Penalties",
+          value: `€${(currentUser.penalties.pending ?? 0).toLocaleString()}`,
+          icon: AlertTriangle,
+          color: "text-red-600",
+          bg: "bg-red-100",
+        }]
+      : []),
     {
+      id: 'max-loanable',
       title: "Max Loanable",
       value: `€${maxLoanAmount.toLocaleString()}`,
       icon: Calculator,
@@ -221,55 +278,86 @@ const BranchLeadDashboard: React.FC = () => {
   // Handler for loan request submission
   const handleLoanRequestSubmit = async (loanData: any) => {
     setShowLoanForm(false);
-    // Trigger immediate refresh after loan request
-    fetchSharesData();
+    fetchSharesData(false);
   };
 
   // Fetch shares data
-  const fetchSharesData = useCallback(async () => {
+  const fetchSharesData = useCallback(async (showLoader = false) => {
     try {
       const data = await fetchMemberShares();
       const sharesArray = Array.isArray(data) ? data : [];
       
-      // Store all shares for branch calculations
-      setAllShares(sharesArray);
-      
-      // Find current user's share
-      const currentShare = sharesArray.find(
-        (share: any) =>
-          String(share.id || share._id) === String(currentUser._id || currentUser.id)
-      );
-      
-      console.log("Branch Lead's share:", currentShare);
-      setMemberShares(currentShare);
+      if (isMountedRef.current) {
+        setAllShares(sharesArray);
+        const currentShare = sharesArray.find(
+          (share: any) =>
+            String(share.id || share._id) === String(currentUser._id || currentUser.id)
+        );
+        setMemberShares(currentShare);
+        setInitialLoading(false);
+        
+        // Only stop loading when we have valid data
+        if (sharesArray.length > 0 && currentShare) {
+          // Add longer delay for skeleton loading
+          setTimeout(() => {
+            if (isMountedRef.current) {
+              setSectionsLoading(false);
+              setDataLoaded(true);
+              if (showLoader) setLoading(false);
+            }
+          }, 2000); // Increased delay to ensure data is processed
+        }
+      }
     } catch (error) {
       console.error("Failed to fetch member shares", error);
+      if (isMountedRef.current) {
+        setInitialLoading(false);
+      }
     }
   }, [currentUser._id, currentUser.id]);
 
-  // Initial fetch
+  // Setup polling effect
   useEffect(() => {
-    const initialize = async () => {
-      setLoading(true);
-      await fetchSharesData();
-      setLoading(false);
+    isMountedRef.current = true;
+
+    // Initial fetch with loading spinner
+    fetchSharesData(true);
+
+    // Setup polling interval for background updates - only if tab is visible
+    const handleVisibilityChange = () => {
+      if (document.hidden && pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      } else if (!document.hidden && !pollingIntervalRef.current) {
+        pollingIntervalRef.current = setInterval(() => {
+          fetchSharesData(false);
+        }, POLLING_INTERVAL);
+      }
     };
-    initialize();
-  }, [fetchSharesData]);
 
-  // Polling effect
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchSharesData();
-    }, POLLING_INTERVAL);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    if (!document.hidden) {
+      pollingIntervalRef.current = setInterval(() => {
+        fetchSharesData(false);
+      }, POLLING_INTERVAL);
+    }
 
-    return () => clearInterval(intervalId);
+    // Cleanup
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      isMountedRef.current = false;
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
   }, [fetchSharesData]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {loading && (
-        <div className="fixed inset-0 flex justify-center items-center bg-white bg-opacity-70 z-50">
+      {initialLoading ? (
+        <div className="fixed inset-0 flex justify-center items-center bg-white z-50">
           <Bars
             height={50}
             width={50}
@@ -280,9 +368,9 @@ const BranchLeadDashboard: React.FC = () => {
             visible={true}
           />
         </div>
-      )}
-      {!loading && (
+      ) : (
         <>
+          {/* Static sections */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Branch Lead Dashboard
@@ -321,10 +409,10 @@ const BranchLeadDashboard: React.FC = () => {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Your Personal Finance
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {personalStats.map((stat, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {personalStats.map((stat) => (
                 <div
-                  key={index}
+                  key={stat.id}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
                 >
                   <div className="flex items-center justify-between">
@@ -345,50 +433,66 @@ const BranchLeadDashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* Dynamic sections with skeletons */}
           {/* Loan Status Section */}
-          {latestLoan && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full">
+          {sectionsLoading ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full animate-pulse">
               <div className="flex items-center">
-                <Clock className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <h3 className="font-medium text-blue-800">Your Loan Status</h3>
-                  <p className="text-sm text-gray-700 mt-1">
-                    Status:{" "}
-                    <span className="font-semibold">{latestLoan.status}</span>
-                    <br />
-                    Amount: €{latestLoan.amount.toLocaleString()}
-                    <br />
-                    Due Date: {new Date(latestLoan.dueDate).toLocaleDateString()}
-                  </p>
+                <div className="w-5 h-5 bg-emerald-200 rounded-full mr-3"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
+                  <div className="h-3 bg-emerald-200 rounded w-32"></div>
                 </div>
               </div>
             </div>
+          ) : (
+            latestLoan && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full">
+                <div className="flex items-center">
+                  <Clock className="w-5 h-5 text-blue-600 mr-3" />
+                  <div>
+                    <h3 className="font-medium text-blue-800">Your Loan Status</h3>
+                    <p className="text-sm text-gray-700 mt-1">
+                      Status:{" "}
+                      <span className="font-semibold">{latestLoan.status}</span>
+                      <br />
+                      Amount: €{latestLoan.amount.toLocaleString()}
+                      <br />
+                      Due Date: {new Date(latestLoan.dueDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-4 mb-8">
-            <button
-              onClick={() => setShowLoanForm(true)}
-              disabled={!eligible}
-              className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
-                eligible
-                  ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Request Loan
-            </button>
+          {/* Action Buttons - Only show when sections are loaded */}
+          {!sectionsLoading && (
+            <div className="flex flex-wrap gap-4 mb-8">
+              <button
+                onClick={() => setShowLoanForm(true)}
+                disabled={!eligible}
+                className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
+                  eligible
+                    ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Request Loan
+              </button>
 
-            <button
-              onClick={() => setShowHistory(true)}
-              className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <History className="w-5 h-5 mr-2" />
-              View History
-            </button>
-          </div>
+              <button
+                onClick={() => setShowHistory(true)}
+                className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <History className="w-5 h-5 mr-2" />
+                View History
+              </button>
+            </div>
+          )}
 
+          {/* Grid sections */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Branch Members */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -396,74 +500,81 @@ const BranchLeadDashboard: React.FC = () => {
                 Branch Members
               </h3>
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {branchMembers.map((member) => {
-                  const memberTheme = getGroupTheme("green-200");
-                  const canEdit = currentUser.branch === member.branch;
-                  
-                  // Get member's contribution from shares data
-                  const memberShare = allShares.find(
-                    (share) => String(share.id || share._id) === String(member.id || member._id)
-                  );
-                  const memberContribution = memberShare?.totalContribution || member.totalContributions || 0;
+                {sectionsLoading ? (
+                  <>
+                    <MemberCardSkeleton />
+                    <MemberCardSkeleton />
+                    <MemberCardSkeleton />
+                  </>
+                ) : (
+                  branchMembers.map((member) => {
+                    const memberTheme = getGroupTheme("green-200");
+                    const canEdit = currentUser.branch === member.branch;
+                    
+                    const memberShare = allShares.find(
+                      (share) => String(share.id || share._id) === String(member.id || member._id)
+                    );
+                    const memberContribution = memberShare?.totalContribution || member.totalContributions || 0;
 
-                  return (
-                    <div
-                      key={member.id || member._id || `member-${member.email}`}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className={`w-8 h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-200`}
-                        >
-                          <Users className="w-4 h-4 text-emerald-700 " />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {member.firstName} {member.role === "admin" && "(Admin)"}
-                          </p>
-                          <div className="flex items-center space-x-2 text-sm text-gray-500">
-                            <span>
-                              €{memberContribution.toLocaleString()}
-                            </span>
-                            <span className="flex items-center">
-                              <div
-                                className={`w-2 h-2 rounded-full mr-1 ${memberTheme.primary}`}
-                              />
-                              {member.branch}
-                            </span>
+                    return (
+                      <div
+                        key={member.id || member._id || `member-${member.email}`}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className={`w-8 h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-200`}
+                          >
+                            <Users className="w-4 h-4 text-emerald-700 " />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {member.firstName} {member.role === "admin" && "(Admin)"}
+                            </p>
+                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                              <span>
+                                €{memberContribution.toLocaleString()}
+                              </span>
+                              <span className="flex items-center">
+                                <div
+                                  className={`w-2 h-2 rounded-full mr-1 ${memberTheme.primary}`}
+                                />
+                                {member.branch}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center space-x-2">
-                        {canEdit && (
-                          <>
-                            <span className="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-800">
-                              Add Member Contribution
-                            </span>
-                            <button
-                              onClick={() => {
-                                const memberId = member.id || member._id;
-                                if (memberId) {
-                                  setSelectedMember(memberId);
-                                } else {
-                                  console.error(
-                                    "No valid member ID found:",
-                                    member
-                                  );
-                                }
-                              }}
-                              className="p-1 rounded text-emerald-600 hover:bg-blue-100 cursor-pointer"
-                              disabled={!member.id && !member._id}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
+                        <div className="flex items-center space-x-2">
+                          {canEdit && (
+                            <>
+                              <span className="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-800">
+                                Add Member Contribution
+                              </span>
+                              <button
+                                onClick={() => {
+                                  const memberId = member.id || member._id;
+                                  if (memberId) {
+                                    setSelectedMember(memberId);
+                                  } else {
+                                    console.error(
+                                      "No valid member ID found:",
+                                      member
+                                    );
+                                  }
+                                }}
+                                className="p-1 rounded text-emerald-600 hover:bg-blue-100 cursor-pointer"
+                                disabled={!member.id && !member._id}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -473,79 +584,88 @@ const BranchLeadDashboard: React.FC = () => {
                 Pending Loan Requests
               </h3>
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {branchLoans
-                  .filter((loan) => loan.status === "pending")
-                  .map((loan) => {
-                    const member = branchMembers.find(
-                      (m) => (m.id === loan.memberId || m._id === loan.memberId)
-                    );
-                    if (!member) return null;
+                {sectionsLoading ? (
+                  <>
+                    <LoanCardSkeleton />
+                    <LoanCardSkeleton />
+                  </>
+                ) : (
+                  <>
+                    {branchLoans
+                      .filter((loan) => loan.status === "pending")
+                      .map((loan) => {
+                        const member = branchMembers.find(
+                          (m) => (m.id === loan.memberId || m._id === loan.memberId)
+                        );
+                        if (!member) return null;
 
-                    const memberTheme = getGroupTheme(member.branch);
+                        const memberTheme = getGroupTheme(member.branch);
 
-                    return (
-                      <div
-                        key={
-                          loan.id ||
-                          loan._id ||
-                          `loan-${loan.memberId}-${loan.amount}`
-                        }
-                        className="p-4 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center space-x-3">
-                            <div
-                              className={`w-8 h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-100`}
-                            >
-                              <DollarSign className="w-4 h-4 text-emerald-700 " />
+                        return (
+                          <div
+                            key={
+                              loan.id ||
+                              loan._id ||
+                              `loan-${loan.memberId}-${loan.amount}`
+                            }
+                            className="p-4 bg-gray-50 rounded-lg"
+                          >
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center space-x-3">
+                                <div
+                                  className={`w-8 h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-100`}
+                                >
+                                  <DollarSign className="w-4 h-4 text-emerald-700 " />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-gray-900">
+                                    {member.firstName}
+                                  </p>
+                                  <p className="text-sm text-gray-500">
+                                    €{loan.amount.toLocaleString()} requested
+                                  </p>
+                                </div>
+                              </div>
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                Pending
+                              </span>
                             </div>
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {member.firstName}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                €{loan.amount.toLocaleString()} requested
-                              </p>
+
+                            <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
+                              <div>
+                                <span className="text-gray-600">Due:</span>
+                                <span className="ml-1 font-medium">
+                                  {new Date(loan.dueDate).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleLoanAction(loan, "reject")}
+                                className="flex-1 px-3 py-1 border border-red-300 text-red-700 rounded text-sm hover:bg-red-50 transition-colors"
+                              >
+                                Reject
+                              </button>
+                              <button
+                                onClick={() => handleLoanAction(loan, "approve")}
+                                className="flex-1 px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700 transition-colors"
+                              >
+                                Approve
+                              </button>
                             </div>
                           </div>
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                            Pending
-                          </span>
-                        </div>
+                        );
+                      })}
 
-                        <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
-                          <div>
-                            <span className="text-gray-600">Due:</span>
-                            <span className="ml-1 font-medium">
-                              {new Date(loan.dueDate).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleLoanAction(loan, "reject")}
-                            className="flex-1 px-3 py-1 border border-red-300 text-red-700 rounded text-sm hover:bg-red-50 transition-colors"
-                          >
-                            Reject
-                          </button>
-                          <button
-                            onClick={() => handleLoanAction(loan, "approve")}
-                            className="flex-1 px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700 transition-colors"
-                          >
-                            Approve
-                          </button>
-                        </div>
+                    {branchLoans.filter((loan) => loan.status === "pending").length ===
+                      0 && (
+                      <div className="text-center py-4 text-gray-500">
+                        <CheckCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm">No pending loan requests</p>
                       </div>
-                    );
-                  })}
-
-                {branchLoans.filter((loan) => loan.status === "pending").length ===
-                  0 && (
-                  <div className="text-center py-4 text-gray-500">
-                    <CheckCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm">No pending loan requests</p>
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
