@@ -38,13 +38,15 @@ const Penalties: React.FC = () => {
   const { paidPenalties = [] } = state;
   const [penalties, setPenalties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPaid, setShowPaid] = useState(false);
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadPenalties = async () => {
       setLoading(true);
       try {
         const data = await fetchPenalties();
-        setPenalties(data);
+        setPenalties(data); // Store all penalties
       } catch (error) {
         console.error("Failed to fetch penalties", error);
       } finally {
@@ -54,34 +56,65 @@ const Penalties: React.FC = () => {
     loadPenalties();
   }, []);
 
-  // Handle paying penalty: update penalty status in backend and deduct 25 from member
-  const handlePayPenalty = async (penaltyId: string) => {
+  // Filter penalties based on showPaid state
+  const filteredPenalties = penalties.filter((penalty) => {
+    if (!penalty.member) return false;
+    return showPaid ? penalty.status === "paid" : penalty.status !== "paid";
+  });
+
+  // Modified to ensure database sync
+  const handlePayPenalty = async (penaltyId: string, memberId: string) => {
+    setProcessingIds((prev) => new Set([...prev, penaltyId]));
     try {
-      // 1. Update penalty status in backend (backend should also create a penalty contribution of -25)
-      await updatePenalty(penaltyId, { status: "paid" });
+      // Update penalty status in database
+      await updatePenalty(penaltyId, {
+        status: "paid",
+        paidDate: new Date().toISOString(),
+        memberId,
+      });
 
-      // 2. Refresh penalties from backend
-      const updatedPenalties = await fetchPenalties();
-      setPenalties(updatedPenalties);
+      // Remove paid penalty from the list
+      setPenalties((prevPenalties) =>
+        prevPenalties.filter((p) => (p.id || p._id) !== penaltyId)
+      );
 
-      // 3. Optionally, refresh users from backend to update totalContributions everywhere
-      // If you have a loadUsers() function in context, call it here:
-      // await loadUsers();
-
-      // 4. Optionally, update paidPenalties in your state
+      // Update local state
       dispatch({ type: "ADD_PAID_PENALTY", payload: penaltyId });
     } catch (error) {
       console.error("Failed to pay penalty", error);
+      alert("Failed to process penalty payment. Please try again.");
+    } finally {
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(penaltyId);
+        return next;
+      });
     }
   };
 
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold mb-6 text-red-700">Penalties</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-red-700">Penalties</h2>
+          <button
+            onClick={() => setShowPaid(!showPaid)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              showPaid
+                ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-emerald-600 text-white hover:bg-emerald-700"
+            }`}
+          >
+            {showPaid ? "Show Unpaid" : "Show Paid"}
+          </button>
+        </div>
         <div className="overflow-x-auto">
           {loading ? (
             <PenaltiesTableSkeleton />
+          ) : filteredPenalties.length === 0 ? (
+            <p className="text-center text-gray-500 py-4">
+              No {showPaid ? "paid" : "unpaid"} penalties found.
+            </p>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
@@ -89,56 +122,46 @@ const Penalties: React.FC = () => {
                   <th className="py-2 px-4 text-left">Member</th>
                   <th className="py-2 px-4 text-left">Contribution Date</th>
                   <th className="py-2 px-4 text-left">Penalty</th>
-                  <th className="py-2 px-4 text-left">Action</th>
+                  <th className="py-2 px-4 text-left">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {penalties
-                  .filter((c) => c.member !== null && c.member !== undefined)
-                  .map((c) => {
-                    const isPenalty = c.createdAt;
-                    const penaltyId = c.id || c._id;
-                    const memberName = `${c.member.firstName} ${c.member.lastName || ''}`.trim();
-                    
-                    return (
-                      <tr key={penaltyId}>
-                        <td className="py-2 px-4">{memberName}</td>
-                        <td className="py-2 px-4">
-                          {c.assignedDate
-                            ? new Date(c.assignedDate).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td
-                          className={`py-2 px-4 font-bold ${
-                            isPenalty ? "text-red-600" : "text-green-600"
-                          }`}
-                        >
-                          {isPenalty ? "$25" : "No Penalty"}
-                        </td>
-                        <td className="py-2 px-4">
-                          {isPenalty ? (
-                            c.status === "paid" || paidPenalties.includes(penaltyId) ? (
-                              <span className="text-green-600 font-semibold">
-                                Repaid
-                              </span>
-                            ) : (
-                              <button
-                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50"
-                                onClick={() => handlePayPenalty(penaltyId)}
-                                disabled={
-                                  c.status === "paid" || paidPenalties.includes(penaltyId)
-                                }
-                              >
-                                Pay Penalty
-                              </button>
-                            )
-                          ) : (
-                            <span className="text-xs text-gray-500">-</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                {filteredPenalties.map((penalty) => {
+                  const penaltyId = penalty.id || penalty._id;
+                  const memberId = penalty.member.id || penalty.member._id;
+                  const memberName = `${penalty.member.firstName} ${
+                    penalty.member.lastName || ""
+                  }`.trim();
+
+                  return (
+                    <tr key={penaltyId} className="hover:bg-gray-50">
+                      <td className="py-2 px-4">{memberName}</td>
+                      <td className="py-2 px-4">
+                        {penalty.assignedDate
+                          ? new Date(penalty.assignedDate).toLocaleDateString()
+                          : "-"}
+                      </td>
+                      <td className="py-2 px-4 font-bold text-red-600">
+                        €25
+                      </td>
+                      <td className="py-2 px-4">
+                        {penalty.status === "paid" ? (
+                          <span className="text-green-600 font-semibold">
+                            Paid
+                          </span>
+                        ) : (
+                          <button
+                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 min-w-[100px]"
+                            onClick={() => handlePayPenalty(penaltyId, memberId)}
+                            disabled={processingIds.has(penaltyId)}
+                          >
+                            {processingIds.has(penaltyId) ? "Processing..." : "Pay Penalty"}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
