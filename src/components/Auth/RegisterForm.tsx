@@ -153,7 +153,8 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-emerald-500 via-white to-purple-50">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-4xl w-full space-y-8 bg-white p-8 rounded-xl shadow-[rgba(0,_0,_0,_0.25)_0px_25px_50px_-12px]">
+        {/* Header */}
         <div className="text-center">
           <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
             <LogIn className="w-8 h-8 text-white" />
@@ -164,189 +165,179 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
           </p>
         </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium text-gray-700">
-            First Name
-          </label>
-          <input
-            type="text"
-            required
-            placeholder="First Name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
-          />
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]"
+                />
+              </div>
 
-          <label className="block text-sm font-medium text-gray-700">
-            Last Name
-          </label>
-          <input
-            type="text"
-            required
-            placeholder="Last Name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
-          />
-          <label className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            type="email"
-            required
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
-          />
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]"
+                />
+              </div>
 
-          <label className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              required
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
-              onClick={() => setShowPassword((v) => !v)}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-              ) : (
-                <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-              )}
-            </button>
-          </div>
-          {passwordStrengthError && (
-            <div className="text-xs text-green-800 mt-1">{passwordStrengthError}</div>
-          )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]"
+                />
+              </div>
 
-          <label className="block text-sm font-medium text-gray-700">
-            Confirm Password
-          </label>
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              required
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
-              onClick={() => setShowConfirmPassword((v) => !v)}
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-              ) : (
-                <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-              )}
-            </button>
-          </div>
-          {passwordMatchError && (
-            <div className="text-red-600">{passwordMatchError}</div>
-          )}
-
-          {/* Custom Role Dropdown */}
-          <label className="block text-sm font-medium text-gray-700">
-            Role
-          </label>
-          <div className="relative" ref={roleRef}>
-            <button
-              type="button"
-              onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-              className="w-full px-3 py-2 border rounded-lg flex justify-between items-center focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
-            >
-              {role}
-              <ChevronDown className="w-4 h-4 ml-2 text-gray-500" />
-            </button>
-            {roleDropdownOpen && (
-              <ul className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-md">
-                {roleOptions.map((option) => (
-                  <li
-                    key={option}
-                    onClick={() => {
-                      setRole(option);
-                      setRoleDropdownOpen(false);
-                    }}
-                    className="px-4 py-2 cursor-pointer hover:bg-emerald-700 hover:text-white"
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <div className="relative mt-1">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-shadow"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
+                    onClick={() => setShowPassword((v) => !v)}
                   >
-                    {option}
-                  </li>
-                ))}
-              </ul>
-            )}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
+                </div>
+                {passwordStrengthError && (
+                  <div className="text-xs text-emerald-800 mt-1">{passwordStrengthError}</div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="flex flex-col justify-between space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                  <div className="relative mt-1">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      placeholder="Confirm Password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-shadow"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                  {passwordMatchError && (
+                    <div className="text-xs text-red-600 mt-1">{passwordMatchError}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Role</label>
+                  <div className="mt-1 px-3 py-2 border rounded-lg bg-white text-gray-700 font-medium shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]">
+                    Member
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Branch</label>
+                  <div className="relative" ref={groupRef}>
+                    <button
+                      type="button"
+                      onClick={() => setGroupDropdownOpen(!groupDropdownOpen)}
+                      className="mt-1 w-full px-3 py-2 border rounded-lg flex justify-between items-center focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]"
+                    >
+                      <span className="capitalize">{group} Branch</span>
+                      <ChevronDown className="w-4 h-4 ml-2 text-gray-500" />
+                    </button>
+                    {groupDropdownOpen && (
+                      <ul className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-md">
+                        {groupOptions.map((option) => (
+                          <li
+                            key={option}
+                            onClick={() => {
+                              setGroup(option);
+                              setGroupDropdownOpen(false);
+                            }}
+                            className="px-4 py-2 cursor-pointer hover:bg-emerald-700 hover:text-white capitalize"
+                          >
+                            {option} Branch
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isRegistering}
+                className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 disabled:opacity-50 flex items-center justify-center shadow-[0_4px_12px_rgb(0,0,0,0.1)] hover:shadow-[0_4px_16px_rgb(0,0,0,0.15)] transition-all"
+              >
+                {isRegistering ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Registering...
+                  </>
+                ) : (
+                  "Register"
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Custom Group Dropdown */}
-          <label className="block text-sm font-medium text-gray-700">
-            Branch
-          </label>
-          <div className="relative" ref={groupRef}>
+          {/* Error/Success Messages */}
+          <div className="text-center">
+            {error && <div className="text-red-600 mb-2">{error}</div>}
+            {success && <div className="text-emerald-700 mb-2">{success}</div>}
+            
             <button
               type="button"
-              onClick={() => setGroupDropdownOpen(!groupDropdownOpen)}
-              className="w-full px-3 py-2 border rounded-lg flex justify-between items-center focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+              onClick={onSwitchToLogin}
+              className="text-emerald-700 underline"
             >
-              {group}
-              <ChevronDown className="w-4 h-4 ml-2 text-gray-500" />
+              Already have an account? Login
             </button>
-            {groupDropdownOpen && (
-              <ul className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-md">
-                {groupOptions.map((option) => (
-                  <li
-                    key={option}
-                    onClick={() => {
-                      setGroup(option);
-                      setGroupDropdownOpen(false);
-                    }}
-                    className="px-4 py-2 cursor-pointer hover:bg-emerald-700 hover:text-white"
-                  >
-                    {option}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
-
-          {/* Error/Success */}
-          {error && <div className="text-red-600">{error}</div>}
-          {success && <div className="text-emerald-700">{success}</div>}
-
-          <button
-            type="submit"
-            disabled={isRegistering}
-            className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 disabled:opacity-50 flex items-center justify-center"
-          >
-            {isRegistering ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Registering...
-              </>
-            ) : (
-              "Register"
-            )}
-          </button>
         </form>
-
-        <button
-          onClick={onSwitchToLogin}
-          className="w-full mt-2 text-emerald-700 underline"
-        >
-          Already have an account? Login
-        </button>
       </div>
     </div>
   );
 };
 
 export default RegisterForm;
+

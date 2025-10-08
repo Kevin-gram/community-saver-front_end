@@ -45,9 +45,9 @@ const LoginForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-white to-purple-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-[rgba(0,_0,_0,_0.25)_0px_25px_50px_-12px]">
         <div className="text-center">
-          <div className="bg-emerald-800 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
+          <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
             <LogIn className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-700">Welcome Back</h2>
@@ -57,10 +57,7 @@ const LoginForm: React.FC = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email Address
               </label>
               <input
@@ -71,19 +68,16 @@ const LoginForm: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm transition-colors"
+                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-shadow"
                 placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="mt-1 relative">
+              <div className="relative mt-1">
                 <input
                   id="password"
                   name="password"
@@ -92,7 +86,7 @@ const LoginForm: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm transition-colors"
+                  className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-shadow"
                   placeholder="Enter your password"
                 />
                 <button
@@ -116,20 +110,16 @@ const LoginForm: React.FC = () => {
             </div>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-700 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 disabled:opacity-50 flex items-center justify-center shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-all"
+          >
+            {isLoading ? "Signing in..." : "Sign in"}
+          </button>
         </form>
 
-        <div className="mt-8"></div>
-
-        <div className="mt-6 text-center">
+        <div className="text-center">
           <button
             type="button"
             className="text-emerald-700 underline"
