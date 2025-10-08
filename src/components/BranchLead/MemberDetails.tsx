@@ -27,27 +27,45 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   const { users, contributions } = state;
   const member = users.find((u) => u.id === memberId || u._id === memberId);
 
+  // Calculate total savings including recent contributions
+  const totalSavings = contributions
+    .filter(c => {
+      const cMemberId = typeof c.memberId === "object" ? c.memberId._id : c.memberId;
+      return cMemberId === (member?._id || member?.id);
+    })
+    .reduce((total, contribution) => {
+      if (contribution.amount > 0 && 
+          (contribution.type === "regular" || 
+           contribution.type === "adjustment")) {
+        return total + contribution.amount;
+      }
+      return total;
+    }, member?.totalContributions || 0);
+
   const [isEditing, setIsEditing] = useState(false);
+  const [addMoneyModalOpen, setAddMoneyModalOpen] = useState(false);
   const [editData, setEditData] = useState({
-    totalSavings: member?.totalContributions || 0,
+    totalSavings,
     penalties: member?.penalties || 0,
     interestReceived: member?.interestReceived || 0,
   });
 
-  const [showAddMoney, setShowAddMoney] = useState(false);
   const [addAmount, setAddAmount] = useState(200);
   const [addDate, setAddDate] = useState(new Date().toISOString().slice(0, 10));
   const [addError, setAddError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!member) return null;
 
   const theme = getGroupTheme(member.branch);
 
+  // Get the correct member ID (prioritize _id from backend)
+  const actualMemberId = member._id || member.id;
+
   const memberContributions = contributions.filter(
     (c) =>
       (typeof c.memberId === "object" ? c.memberId._id : c.memberId) ===
-      memberId
+      actualMemberId
   );
 
   const getMonthName = (dateStr: string) => {
@@ -70,8 +88,8 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         type: "adjustment" | "regular" | "penalty" | "interest";
       } = {
         id: `adj-${Date.now()}`,
-        userId: member.id,
-        memberId: member.id,
+        userId: actualMemberId,
+        memberId: actualMemberId,
         amount: adjustmentAmount,
         contributionDate: new Date().toISOString(),
         month: getMonthName(new Date().toISOString()),
@@ -120,8 +138,8 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
 
       const newContribution = {
         id: `contrib-${Date.now()}`,
-        userId: member.id,
-        memberId: member.id,
+        userId: actualMemberId,
+        memberId: actualMemberId,
         amount: addAmount,
         contributionDate: dateObj.toISOString(),
         month: getMonthName(addDate),
@@ -149,13 +167,13 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         });
 
         // Close modal and reset form
-        setShowAddMoney(false);
+        setAddMoneyModalOpen(false);
         setAddAmount(200);
         setAddDate(new Date().toISOString().slice(0, 10));
       }
     } catch (error) {
       console.error("Failed to add contribution:", error);
-      // Rollback optimistic update if needed
+      setAddError("Failed to add contribution. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -247,7 +265,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
               )}
               {canEdit && !isEditing && (
                 <button
-                  onClick={() => setShowAddMoney(true)}
+                  onClick={() => setAddMoneyModalOpen(true)}
                   className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg ml-2 hover:bg-emerald-200 hover:text-emerald-700 transition-colors"
                 >
                   <DollarSign className="w-4 h-4 mr-1" />
@@ -272,7 +290,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                 </div>
               )}
               {/* Add Money Modal Overlay */}
-              {showAddMoney && (
+              {addMoneyModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                   <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -301,7 +319,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                       className="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     {addError && (
-                      <span className="text-red-600 text-xs">{addError}</span>
+                      <span className="text-red-600 text-xs block mb-2">{addError}</span>
                     )}
                     {addDate && new Date(addDate).getDate() > 10 && (
                       <span className="text-yellow-700 text-xs block mb-2">
@@ -310,7 +328,10 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     )}
                     <div className="flex space-x-2 mt-2">
                       <button
-                        onClick={() => setShowAddMoney(false)}
+                        onClick={() => {
+                          setAddMoneyModalOpen(false);
+                          setAddError("");
+                        }}
                         className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors w-1/2"
                       >
                         Cancel
@@ -365,75 +386,10 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                   </div>
                 ) : (
                   <p className="text-lg font-semibold text-gray-900">
-                    €
-                    {typeof member.totalContributions === "number"
-                      ? member.totalContributions.toLocaleString()
-                      : "0"}
+                    €{totalSavings.toLocaleString()}
                   </p>
                 )}
               </div>
-
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Penalties
-                </label>
-                {isEditing ? (
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      $
-                    </span>
-                    <input
-                      type="number"
-                      value={editData.penalties}
-                      onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          penalties: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                ) : (
-                  <p className="text-lg font-semibold text-red-600">
-                    $
-                    {typeof member.penalties === "number"
-                      ? member.penalties.toLocaleString()
-                      : "0"}{" "}
-                  </p>
-                )}
-              </div> */}
-{/* 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Interest Received
-                </label>
-                {isEditing ? (
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      $
-                    </span>
-                    <input
-                      type="number"
-                      value={editData.interestReceived}
-                      onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          interestReceived: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                ) : (
-                  <p className="text-lg font-semibold text-emerald-600">
-                    $
-                    {typeof member.interestReceived === "number"
-                      ? member.interestReceived.toLocaleString()
-                      : "0"}
-                  </p>
-                )}
-              </div> */}
             </div>
           </div>
 

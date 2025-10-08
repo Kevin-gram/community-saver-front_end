@@ -73,8 +73,6 @@ const BranchLeadDashboard: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [memberShares, setMemberShares] = useState<any>(null);
   const [allShares, setAllShares] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [sectionsLoading, setSectionsLoading] = useState(true);
   const isMountedRef = useRef(true);
@@ -282,7 +280,7 @@ const BranchLeadDashboard: React.FC = () => {
   };
 
   // Fetch shares data
-  const fetchSharesData = useCallback(async (showLoader = false) => {
+  const fetchSharesData = useCallback(async (isInitialLoad = false) => {
     try {
       const data = await fetchMemberShares();
       const sharesArray = Array.isArray(data) ? data : [];
@@ -294,24 +292,23 @@ const BranchLeadDashboard: React.FC = () => {
             String(share.id || share._id) === String(currentUser._id || currentUser.id)
         );
         setMemberShares(currentShare);
-        setInitialLoading(false);
         
-        // Only stop loading when we have valid data
-        if (sharesArray.length > 0 && currentShare) {
-          // Add longer delay for skeleton loading
+        // Only update loading states on initial load and when we have valid data
+        if (isInitialLoad && sharesArray.length > 0) {
+          // Small delay to ensure smooth transition
           setTimeout(() => {
             if (isMountedRef.current) {
+              setInitialLoading(false);
               setSectionsLoading(false);
-              setDataLoaded(true);
-              if (showLoader) setLoading(false);
             }
-          }, 2000); // Increased delay to ensure data is processed
+          }, 500);
         }
       }
     } catch (error) {
       console.error("Failed to fetch member shares", error);
-      if (isMountedRef.current) {
+      if (isMountedRef.current && isInitialLoad) {
         setInitialLoading(false);
+        setSectionsLoading(false);
       }
     }
   }, [currentUser._id, currentUser.id]);
@@ -320,7 +317,7 @@ const BranchLeadDashboard: React.FC = () => {
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Initial fetch with loading spinner
+    // Initial fetch with loading states
     fetchSharesData(true);
 
     // Setup polling interval for background updates - only if tab is visible
@@ -466,8 +463,13 @@ const BranchLeadDashboard: React.FC = () => {
             )
           )}
 
-          {/* Action Buttons - Only show when sections are loaded */}
-          {!sectionsLoading && (
+          {/* Action Buttons */}
+          {sectionsLoading ? (
+            <div className="flex flex-wrap gap-4 mb-8">
+              <div className="h-12 w-40 bg-emerald-200 rounded-lg animate-pulse"></div>
+              <div className="h-12 w-40 bg-emerald-200 rounded-lg animate-pulse"></div>
+            </div>
+          ) : (
             <div className="flex flex-wrap gap-4 mb-8">
               <button
                 onClick={() => setShowLoanForm(true)}
@@ -506,7 +508,7 @@ const BranchLeadDashboard: React.FC = () => {
                     <MemberCardSkeleton />
                     <MemberCardSkeleton />
                   </>
-                ) : (
+                ) : branchMembers.length > 0 ? (
                   branchMembers.map((member) => {
                     const memberTheme = getGroupTheme("green-200");
                     const canEdit = currentUser.branch === member.branch;
@@ -574,6 +576,11 @@ const BranchLeadDashboard: React.FC = () => {
                       </div>
                     );
                   })
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm">No branch members</p>
+                  </div>
                 )}
               </div>
             </div>
