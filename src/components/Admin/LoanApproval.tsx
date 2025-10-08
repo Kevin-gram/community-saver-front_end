@@ -6,6 +6,7 @@ import {
   DollarSign,
   User as UserIcon,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { Loan, User, NormalizedLoan } from "../../types";
@@ -29,11 +30,17 @@ const LoanApproval: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [showRepayModal, setShowRepayModal] = useState(false);
   const [repayAmount, setRepayAmount] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingLoanId, setProcessingLoanId] = useState<string | null>(
+    null
+  );
+  const [isRepaying, setIsRepaying] = useState(false);
 
   const filteredLoans = loans.filter((loan) => {
     return !filterStatus || loan.status === filterStatus;
   });
 
+  // Modify the handleLoanAction to not set processingLoanId immediately
   const handleLoanAction = (loan: Loan, action: "approve" | "reject") => {
     setSelectedLoan(loan);
     setActionType(action);
@@ -42,11 +49,11 @@ const LoanApproval: React.FC = () => {
   const confirmAction = async () => {
     if (!selectedLoan || !actionType || !currentUser) return;
 
+    setIsProcessing(true);
     try {
       const backendLoan = await approveOrReject(
         selectedLoan.id || (selectedLoan._id as string),
         actionType === "approve" ? "approved" : "rejected"
-        // actionType === "reject" ? "Rejected by admin" : undefined
       );
       dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
 
@@ -63,10 +70,12 @@ const LoanApproval: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to update loan/user in backend", error);
+    } finally {
+      setIsProcessing(false);
+      setProcessingLoanId(null);
+      setSelectedLoan(null);
+      setActionType(null);
     }
-
-    setSelectedLoan(null);
-    setActionType(null);
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -119,7 +128,8 @@ const LoanApproval: React.FC = () => {
       selectedLoan.repaymentAmount ?? selectedLoan.totalAmount ?? 0;
     const newPaid = paidSoFar + repayAmount;
     const isFullyPaid = newPaid >= repaymentTotal;
-   
+
+    setIsRepaying(true); // Set loading state
     try {
       const backendLoan = await repayLoan(loanId, repayAmount);
       dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
@@ -132,12 +142,14 @@ const LoanApproval: React.FC = () => {
           dispatch({ type: "UPDATE_USER", payload: backendUser });
         }
       }
+      setShowRepayModal(false);
+      setSelectedLoan(null);
+      setRepayAmount(0);
     } catch (error) {
       console.error("Failed to update loan/user in backend", error);
+    } finally {
+      setIsRepaying(false); // Reset loading state
     }
-    setShowRepayModal(false);
-    setSelectedLoan(null);
-    setRepayAmount(0);
   };
 
   useEffect(() => {
@@ -347,16 +359,44 @@ const LoanApproval: React.FC = () => {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleLoanAction(loan, "reject")}
-                          className="inline-flex items-center px-3 py-1 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors"
+                          disabled={
+                            isProcessing && processingLoanId ===
+                            (loan.id || loan._id)
+                          }
+                          className={`inline-flex items-center px-3 py-1 border border-red-300 text-red-700 rounded-lg transition-colors ${
+                            isProcessing && processingLoanId ===
+                            (loan.id || loan._id)
+                              ? "opacity-50 cursor-not-allowed"
+                              : "hover:bg-red-50"
+                          }`}
                         >
-                          <X className="w-4 h-4 mr-1" />
+                          {isProcessing && processingLoanId ===
+                          (loan.id || loan._id) ? (
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          ) : (
+                            <X className="w-4 h-4 mr-1" />
+                          )}
                           Reject
                         </button>
                         <button
                           onClick={() => handleLoanAction(loan, "approve")}
-                          className="inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                          disabled={
+                            isProcessing && processingLoanId ===
+                            (loan.id || loan._id)
+                          }
+                          className={`inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg transition-colors ${
+                            isProcessing && processingLoanId ===
+                            (loan.id || loan._id)
+                              ? "opacity-50 cursor-not-allowed"
+                              : "hover:bg-emerald-700"
+                          }`}
                         >
-                          <Check className="w-4 h-4 mr-1" />
+                          {isProcessing && processingLoanId ===
+                          (loan.id || loan._id) ? (
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          ) : (
+                            <Check className="w-4 h-4 mr-1" />
+                          )}
                           Approve
                         </button>
                       </div>
@@ -390,18 +430,28 @@ const LoanApproval: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation Dialog */}
+      {/* Confirmation Dialog - Updated with loading state */}
       {selectedLoan && actionType && (
         <ConfirmDialog
           title={`${actionType === "approve" ? "Approve" : "Reject"} Loan`}
           message={getActionMessage()}
-          confirmText={actionType === "approve" ? "Approve" : "Reject"}
+          confirmText={
+            isProcessing ? (
+              <div className="flex items-center">
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {actionType === "approve" ? "Approving..." : "Rejecting..."}
+              </div>
+            ) : (
+              actionType === "approve" ? "Approve" : "Reject"
+            )
+          }
           confirmVariant={actionType === "approve" ? "primary" : "danger"}
           onConfirm={confirmAction}
           onCancel={() => {
             setSelectedLoan(null);
             setActionType(null);
           }}
+          isDisabled={isProcessing}
         />
       )}
 
@@ -460,30 +510,31 @@ const LoanApproval: React.FC = () => {
             />
             <div className="flex space-x-2 mt-2">
               <button
-                onClick={() =>
-                  setRepayAmount(
-                    (selectedLoan.repaymentAmount ??
-                      selectedLoan.totalAmount ??
-                      0) - (selectedLoan.paidAmount || 0)
-                  )
-                }
-                className="px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors w-1/2"
+                onClick={() => setShowRepayModal(false)}
+                disabled={isRepaying}
+                className={`px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg w-1/2 
+            ${isRepaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'} 
+            transition-colors`}
               >
-                Pay All
+                Cancel
               </button>
               <button
                 onClick={handleRepaySubmit}
-                className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors w-1/2"
+                disabled={isRepaying}
+                className={`inline-flex items-center justify-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg w-1/2
+            ${isRepaying ? 'opacity-75 cursor-not-allowed' : 'hover:bg-emerald-700'} 
+            transition-colors`}
               >
-                Confirm
+                {isRepaying ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Confirm"
+                )}
               </button>
             </div>
-            <button
-              onClick={() => setShowRepayModal(false)}
-              className="mt-4 px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors w-full"
-            >
-              Cancel
-            </button>
           </div>
         </div>
       )}
