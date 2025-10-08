@@ -20,6 +20,8 @@ import {
   repayLoan,
 } from "../../utils/api";
 
+const ITEMS_PER_PAGE = 2; // Changed from 5 to 2
+
 const LoanApproval: React.FC = () => {
   const { state, dispatch } = useApp();
   const { loans, users, currentUser } = state;
@@ -35,10 +37,21 @@ const LoanApproval: React.FC = () => {
     null
   );
   const [isRepaying, setIsRepaying] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredLoans = loans.filter((loan) => {
     return !filterStatus || loan.status === filterStatus;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredLoans.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedLoans = filteredLoans.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus]);
 
   // Modify the handleLoanAction to not set processingLoanId immediately
   const handleLoanAction = (loan: Loan, action: "approve" | "reject") => {
@@ -193,7 +206,7 @@ const LoanApproval: React.FC = () => {
 
       {/* Loans List */}
       <div className="space-y-4">
-        {filteredLoans.map((loan) => {
+        {paginatedLoans.map((loan) => {
           const member =
             typeof loan.member === "object"
               ? loan.member
@@ -418,6 +431,63 @@ const LoanApproval: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Pagination Controls */}
+      {filteredLoans.length > 0 && (
+        <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
+          <div className="flex flex-1 justify-between sm:hidden">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md
+                text-emerald-700 bg-white border border-emerald-300
+                disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium rounded-md
+                bg-emerald-700 text-white hover:bg-emerald-800
+                disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                <span className="font-medium">
+                  {Math.min(startIndex + ITEMS_PER_PAGE, filteredLoans.length)}
+                </span>{' '}
+                of <span className="font-medium">{filteredLoans.length}</span> results
+              </p>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md
+                  text-emerald-700 bg-white border border-emerald-300
+                  disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md
+                  bg-emerald-700 text-white hover:bg-emerald-800
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {filteredLoans.length === 0 && (
         <div className="text-center py-8">

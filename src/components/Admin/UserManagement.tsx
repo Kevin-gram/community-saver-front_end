@@ -9,6 +9,8 @@ import MemberDetails from "../BranchLead/MemberDetails";
 import { deleteUser, fetchUsers } from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 
+const ITEMS_PER_PAGE = 5; // Added constant for pagination
+
 const UserManagement: React.FC = () => {
   const { state, dispatch } = useApp();
   const users = state.users.filter((user) => user.role !== "admin");
@@ -22,6 +24,7 @@ const UserManagement: React.FC = () => {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -61,6 +64,11 @@ const UserManagement: React.FC = () => {
 
     return matchesSearch && matchesRole && matchesGroup;
   });
+
+  // Pagination calculation
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
@@ -137,6 +145,11 @@ const UserManagement: React.FC = () => {
   const getUserUniqueId = (user: User): string => {
     return user.id || user._id || `user-${user.email}`;
   };
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterRole, filterGroup]);
 
   return (
     <div className="space-y-6">
@@ -224,7 +237,7 @@ const UserManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => {
+              {paginatedUsers.map((user) => {
                 const theme = getGroupTheme(
                   (user.branch || "blue").toLowerCase()
                 );
@@ -322,6 +335,41 @@ const UserManagement: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {filteredUsers.length > 0 && (
+          <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                  <span className="font-medium">{Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)}</span>{' '}
+                  of <span className="font-medium">{filteredUsers.length}</span> results
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md
+                    text-emerald-700 bg-white border border-emerald-300
+                    disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md
+                    bg-emerald-700 text-white hover:bg-emerald-800
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {filteredUsers.length === 0 && (
           <div className="text-center py-8">
