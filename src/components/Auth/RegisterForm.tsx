@@ -210,18 +210,17 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              tabIndex={-1}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
               onClick={() => setShowPassword((v) => !v)}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-400" />
+                <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
               ) : (
-                <Eye className="h-4 w-4 text-gray-400" />
+                <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
               )}
             </button>
           </div>
@@ -239,18 +238,17 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              tabIndex={-1}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
               onClick={() => setShowConfirmPassword((v) => !v)}
             >
               {showConfirmPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-400" />
+                <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
               ) : (
-                <Eye className="h-4 w-4 text-gray-400" />
+                <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
               )}
             </button>
           </div>

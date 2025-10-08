@@ -97,13 +97,13 @@ const LoginForm: React.FC = () => {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
+                    <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
+                    <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                   )}
                 </button>
               </div>
