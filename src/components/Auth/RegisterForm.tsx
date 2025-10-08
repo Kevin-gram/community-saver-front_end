@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { LogIn, ChevronDown, Eye, EyeOff } from "lucide-react";
+import { LogIn, ChevronDown, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { registerUser } from "../../utils/api";
 
@@ -23,6 +23,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
   const [success, setSuccess] = useState("");
   const [passwordMatchError, setPasswordMatchError] = useState("");
   const [passwordStrengthError, setPasswordStrengthError] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [groupDropdownOpen, setGroupDropdownOpen] = useState(false);
@@ -92,14 +93,17 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
     e.preventDefault();
     setError("");
     setSuccess("");
+    setIsRegistering(true);
 
     if (state.users.some((u) => u.email === email)) {
       setError("Email already registered");
+      setIsRegistering(false);
       return;
     }
 
     if (passwordMatchError) {
       setError(passwordMatchError);
+      setIsRegistering(false);
       return;
     }
 
@@ -107,6 +111,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
       setError(
         "Password must be at least 9 characters, include one uppercase letter and one special character."
       );
+      setIsRegistering(false);
       return;
     }
 
@@ -123,11 +128,15 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
       const createdUser = await registerUser(userData);
       dispatch({ type: "ADD_USER", payload: createdUser });
       setSuccess("Registration successful! You can now log in.");
+      
+      // Reset form
       setFirstName("");
       setLastName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
+      
+      // Redirect after a delay
       setTimeout(() => {
         onSwitchToLogin();
       }, 1000);
@@ -137,6 +146,8 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
       } else {
         setError("Registration failed. Please try again.");
       }
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -315,9 +326,17 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
 
           <button
             type="submit"
-            className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800"
+            disabled={isRegistering}
+            className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 disabled:opacity-50 flex items-center justify-center"
           >
-            Register
+            {isRegistering ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Registering...
+              </>
+            ) : (
+              "Register"
+            )}
           </button>
         </form>
 
