@@ -44,7 +44,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-white to-purple-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-800 from-50% via-white via-80% to-purple-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-[rgba(0,_0,_0,_0.25)_0px_25px_50px_-12px]">
         <div className="text-center">
           <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
