@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
+<<<<<<< HEAD
 import { LogIn, ChevronDown, Eye, EyeOff } from "lucide-react";
+=======
+import { LogIn, ChevronDown, Eye, EyeOff, Loader2 } from "lucide-react";
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
 import { useApp } from "../../context/AppContext";
 import { registerUser } from "../../utils/api";
 
@@ -23,6 +27,10 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
   const [success, setSuccess] = useState("");
   const [passwordMatchError, setPasswordMatchError] = useState("");
   const [passwordStrengthError, setPasswordStrengthError] = useState("");
+<<<<<<< HEAD
+=======
+  const [isRegistering, setIsRegistering] = useState(false);
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
 
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [groupDropdownOpen, setGroupDropdownOpen] = useState(false);
@@ -92,14 +100,26 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
     e.preventDefault();
     setError("");
     setSuccess("");
+<<<<<<< HEAD
 
     if (state.users.some((u) => u.email === email)) {
       setError("Email already registered");
+=======
+    setIsRegistering(true);
+
+    if (state.users.some((u) => u.email === email)) {
+      setError("Email already registered");
+      setIsRegistering(false);
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
       return;
     }
 
     if (passwordMatchError) {
       setError(passwordMatchError);
+<<<<<<< HEAD
+=======
+      setIsRegistering(false);
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
       return;
     }
 
@@ -107,6 +127,10 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
       setError(
         "Password must be at least 9 characters, include one uppercase letter and one special character."
       );
+<<<<<<< HEAD
+=======
+      setIsRegistering(false);
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
       return;
     }
 
@@ -123,11 +147,21 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
       const createdUser = await registerUser(userData);
       dispatch({ type: "ADD_USER", payload: createdUser });
       setSuccess("Registration successful! You can now log in.");
+<<<<<<< HEAD
+=======
+      
+      // Reset form
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
       setFirstName("");
       setLastName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
+<<<<<<< HEAD
+=======
+      
+      // Redirect after a delay
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
       setTimeout(() => {
         onSwitchToLogin();
       }, 1000);
@@ -137,12 +171,23 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
       } else {
         setError("Registration failed. Please try again.");
       }
+<<<<<<< HEAD
+=======
+    } finally {
+      setIsRegistering(false);
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
     }
   };
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-emerald-500 via-white to-purple-50">
       <div className="max-w-md w-full space-y-8">
+=======
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-emerald-800 from-50% via-white via-80% to-purple-50">
+      <div className="max-w-4xl w-full space-y-8 bg-white p-8 rounded-xl shadow-[rgba(0,_0,_0,_0.25)_0px_25px_50px_-12px]">
+        {/* Header */}
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
         <div className="text-center">
           <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
             <LogIn className="w-8 h-8 text-white" />
@@ -153,6 +198,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
           </p>
         </div>
 
+<<<<<<< HEAD
         <form className="space-y-4" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-gray-700">
             First Name
@@ -327,9 +373,184 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
         >
           Already have an account? Login
         </button>
+=======
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <div className="relative mt-1">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-shadow"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
+                    onClick={() => setShowPassword((v) => !v)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
+                </div>
+                {passwordStrengthError && (
+                  <div className="text-xs text-emerald-800 mt-1">{passwordStrengthError}</div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="flex flex-col justify-between space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                  <div className="relative mt-1">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      placeholder="Confirm Password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-shadow"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                  {passwordMatchError && (
+                    <div className="text-xs text-red-600 mt-1">{passwordMatchError}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Role</label>
+                  <div className="mt-1 px-3 py-2 border rounded-lg bg-white text-gray-700 font-medium shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]">
+                    Member
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Branch</label>
+                  <div className="relative" ref={groupRef}>
+                    <button
+                      type="button"
+                      onClick={() => setGroupDropdownOpen(!groupDropdownOpen)}
+                      className="mt-1 w-full px-3 py-2 border rounded-lg flex justify-between items-center focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px]"
+                    >
+                      <span className="capitalize">{group} Branch</span>
+                      <ChevronDown className="w-4 h-4 ml-2 text-gray-500" />
+                    </button>
+                    {groupDropdownOpen && (
+                      <ul className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-md">
+                        {groupOptions.map((option) => (
+                          <li
+                            key={option}
+                            onClick={() => {
+                              setGroup(option);
+                              setGroupDropdownOpen(false);
+                            }}
+                            className="px-4 py-2 cursor-pointer hover:bg-emerald-700 hover:text-white capitalize"
+                          >
+                            {option} Branch
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isRegistering}
+                className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 disabled:opacity-50 flex items-center justify-center shadow-[0_4px_12px_rgb(0,0,0,0.1)] hover:shadow-[0_4px_16px_rgb(0,0,0,0.15)] transition-all"
+              >
+                {isRegistering ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Registering...
+                  </>
+                ) : (
+                  "Register"
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Error/Success Messages */}
+          <div className="text-center">
+            {error && <div className="text-red-600 mb-2">{error}</div>}
+            {success && <div className="text-emerald-700 mb-2">{success}</div>}
+            
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="text-emerald-700 underline"
+            >
+              Already have an account? Login
+            </button>
+          </div>
+        </form>
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
       </div>
     </div>
   );
 };
 
 export default RegisterForm;
+<<<<<<< HEAD
+=======
+
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4

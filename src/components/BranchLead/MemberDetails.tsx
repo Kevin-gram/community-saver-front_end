@@ -54,6 +54,10 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   const [addDate, setAddDate] = useState(new Date().toISOString().slice(0, 10));
   const [addError, setAddError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+<<<<<<< HEAD
+=======
+  const [isSaving, setIsSaving] = useState(false);
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
 
   if (!member) return null;
 
@@ -74,6 +78,10 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   };
 
   const handleSave = async () => {
+<<<<<<< HEAD
+=======
+    setIsSaving(true);
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
     const adjustmentAmount =
       editData.totalSavings - (member.totalContributions || 0);
 
@@ -113,9 +121,18 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         setIsEditing(false);
       } catch (error) {
         console.error("Failed to add adjustment contribution", error);
+<<<<<<< HEAD
       }
     } else {
       setIsEditing(false);
+=======
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      setIsEditing(false);
+      setIsSaving(false);
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
     }
   };
 
@@ -276,16 +293,38 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                 <div className="flex space-x-2">
                   <button
                     onClick={handleCancel}
+<<<<<<< HEAD
                     className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+=======
+                    disabled={isSaving}
+                    className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
+<<<<<<< HEAD
                     className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                   >
                     <Save className="w-4 h-4 mr-1" />
                     Save
+=======
+                    disabled={isSaving}
+                    className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-1" />
+                        Save
+                      </>
+                    )}
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                   </button>
                 </div>
               )}
@@ -381,7 +420,12 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                           totalSavings: parseFloat(e.target.value) || 0,
                         })
                       }
+<<<<<<< HEAD
                       className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                      disabled={isSaving}
+                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+>>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                     />
                   </div>
                 ) : (
