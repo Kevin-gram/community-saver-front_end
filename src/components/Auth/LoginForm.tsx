@@ -44,17 +44,10 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-white to-purple-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="bg-emerald-800 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
-=======
-    <div className="min-h-screen bg-gradient-to-br from-emerald-800 from-50% via-white via-80% to-purple-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-[rgba(0,_0,_0,_0.25)_0px_25px_50px_-12px]">
-        <div className="text-center">
-          <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
             <LogIn className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-700">Welcome Back</h2>
@@ -64,14 +57,10 @@ const LoginForm: React.FC = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-<<<<<<< HEAD
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
-=======
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                 Email Address
               </label>
               <input
@@ -82,17 +71,12 @@ const LoginForm: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-<<<<<<< HEAD
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm transition-colors"
-=======
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-shadow"
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                 placeholder="Enter your email"
               />
             </div>
 
             <div>
-<<<<<<< HEAD
               <label
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700"
@@ -100,12 +84,6 @@ const LoginForm: React.FC = () => {
                 Password
               </label>
               <div className="mt-1 relative">
-=======
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative mt-1">
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                 <input
                   id="password"
                   name="password"
@@ -114,16 +92,11 @@ const LoginForm: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-<<<<<<< HEAD
                   className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm transition-colors"
-=======
-                  className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-medium text-gray-700 placeholder-gray-400 shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-shadow"
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
-<<<<<<< HEAD
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
                 >
@@ -131,15 +104,6 @@ const LoginForm: React.FC = () => {
                     <EyeOff className="h-4 w-4 text-gray-400" />
                   ) : (
                     <Eye className="h-4 w-4 text-gray-400" />
-=======
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                   )}
                 </button>
               </div>
@@ -152,7 +116,6 @@ const LoginForm: React.FC = () => {
             </div>
           )}
 
-<<<<<<< HEAD
           <div>
             <button
               type="submit"
@@ -167,18 +130,6 @@ const LoginForm: React.FC = () => {
         <div className="mt-8"></div>
 
         <div className="mt-6 text-center">
-=======
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 disabled:opacity-50 flex items-center justify-center shadow-[rgba(0,_0,_0,_0.15)_0px_2px_8px] hover:shadow-[rgba(0,_0,_0,_0.25)_0px_8px_15px_-5px] transition-all"
-          >
-            {isLoading ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
-
-        <div className="text-center">
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
           <button
             type="button"
             className="text-emerald-700 underline"

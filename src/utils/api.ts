@@ -1,4 +1,3 @@
-
 export const fetchBranches = async () => {
   const res = await api.get("/branches");
   return res.data.data;
@@ -172,4 +171,24 @@ export const loginUser = async (credentials: {
     localStorage.setItem("token", res.data.token);
   }
   return res.data;
-}
+};
+
+export const createPenalty = async (penaltyData: {
+  member: string; // Just the member ID
+  amount: number;
+  reason: string;
+  description: string;
+  assignedBy: string; // Just the assigner ID
+  status: string;
+  assignedDate: string;
+  branch: string;
+}) => {
+  try {
+    const res = await api.post('/penalties', penaltyData);
+    console.log('Penalty creation response:', res.data);
+    return res.data.data.penalty;
+  } catch (error) {
+    console.error('Penalty creation error:', error);
+    throw error;
+  }
+};

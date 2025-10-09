@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { getGroupTheme } from "../../utils/calculations";
-import { addContribution } from "../../utils/api";
+import { addContribution, createPenalty } from "../../utils/api";
 
 interface MemberDetailsProps {
   memberId: string;
@@ -29,18 +29,22 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
 
   // Calculate total savings including recent contributions
   const totalSavings = contributions
-    .filter(c => {
+    .filter((c) => {
       const cMemberId = typeof c.memberId === "object" ? c.memberId._id : c.memberId;
       return cMemberId === (member?._id || member?.id);
     })
-    .reduce((total, contribution) => {
-      if (contribution.amount > 0 && 
-          (contribution.type === "regular" || 
-           contribution.type === "adjustment")) {
-        return total + contribution.amount;
-      }
-      return total;
-    }, member?.totalContributions || 0);
+    .reduce(
+      (total, contribution) => {
+        if (
+          contribution.amount > 0 &&
+          (contribution.type === "regular" || contribution.type === "adjustment")
+        ) {
+          return total + contribution.amount;
+        }
+        return total;
+      },
+      member?.totalContributions || 0
+    );
 
   const [isEditing, setIsEditing] = useState(false);
   const [addMoneyModalOpen, setAddMoneyModalOpen] = useState(false);
@@ -51,13 +55,11 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   });
 
   const [addAmount, setAddAmount] = useState(200);
-  const [addDate, setAddDate] = useState(new Date().toISOString().slice(0, 10));
+  const [addDate, setAddDate] = useState(
+    new Date().toISOString().slice(0, 10)
+  );
   const [addError, setAddError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-<<<<<<< HEAD
-=======
-  const [isSaving, setIsSaving] = useState(false);
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
 
   if (!member) return null;
 
@@ -78,10 +80,6 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   };
 
   const handleSave = async () => {
-<<<<<<< HEAD
-=======
-    setIsSaving(true);
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
     const adjustmentAmount =
       editData.totalSavings - (member.totalContributions || 0);
 
@@ -121,18 +119,9 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         setIsEditing(false);
       } catch (error) {
         console.error("Failed to add adjustment contribution", error);
-<<<<<<< HEAD
       }
     } else {
       setIsEditing(false);
-=======
-      } finally {
-        setIsSaving(false);
-      }
-    } else {
-      setIsEditing(false);
-      setIsSaving(false);
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
     }
   };
 
@@ -147,50 +136,58 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
 
     try {
       const dateObj = new Date(addDate);
-      const penalty = dateObj.getDate() > 10 ? 25 : 0;
-      const type = (penalty ? "penalty" : "regular") as
-        | "penalty"
-        | "regular"
-        | "interest";
+      const isPenaltyApplicable = dateObj.getDate() > 5;
 
-      const newContribution = {
+      // Create contribution first
+      const contributionData = {
         id: `contrib-${Date.now()}`,
         userId: actualMemberId,
         memberId: actualMemberId,
         amount: addAmount,
         contributionDate: dateObj.toISOString(),
         month: getMonthName(addDate),
-        type,
+        type: "regular" as const,
       };
 
-      // Optimistic update
-      const optimisticContribution = {
-        ...newContribution,
-        _id: newContribution.id,
-      };
+      const backendContribution = await addContribution(contributionData);
 
-      dispatch({
-        type: "ADD_CONTRIBUTION",
-        payload: optimisticContribution,
-      });
+      // If late contribution, create penalty record
+      if (isPenaltyApplicable && state.currentUser) {
+        const penaltyData = {
+          member: actualMemberId, // Just send the member ID
+          amount: 25,
+          reason: "late_contribution",
+          description: `Late contribution for ${member.firstName} ${member.lastName} in ${getMonthName(
+            addDate
+          )}`,
+          assignedBy: state.currentUser._id || state.currentUser.id, // Send assigner ID
+          status: "pending",
+          assignedDate: dateObj.toISOString(),
+          branch: member.branch,
+        };
 
-      const backendContribution = await addContribution(newContribution);
+        try {
+          console.log("Creating penalty with data:", penaltyData);
+          await createPenalty(penaltyData);
+          console.log("Penalty created successfully");
+        } catch (penaltyError) {
+          console.error("Failed to create penalty:", penaltyError);
+        }
+      }
 
+      // Handle contribution success
       if (backendContribution?.contribution) {
-        // Update with actual backend data
         dispatch({
-          type: "UPDATE_CONTRIBUTION",
+          type: "ADD_CONTRIBUTION",
           payload: backendContribution.contribution,
         });
-
-        // Close modal and reset form
         setAddMoneyModalOpen(false);
         setAddAmount(200);
         setAddDate(new Date().toISOString().slice(0, 10));
       }
     } catch (error) {
-      console.error("Failed to add contribution:", error);
-      setAddError("Failed to add contribution. Please try again.");
+      console.error("Failed to process contribution:", error);
+      setAddError("Failed to process contribution. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -293,38 +290,16 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                 <div className="flex space-x-2">
                   <button
                     onClick={handleCancel}
-<<<<<<< HEAD
                     className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-=======
-                    disabled={isSaving}
-                    className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
-<<<<<<< HEAD
                     className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                   >
                     <Save className="w-4 h-4 mr-1" />
                     Save
-=======
-                    disabled={isSaving}
-                    className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-1" />
-                        Save
-                      </>
-                    )}
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                   </button>
                 </div>
               )}
@@ -358,7 +333,9 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                       className="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     {addError && (
-                      <span className="text-red-600 text-xs block mb-2">{addError}</span>
+                      <span className="text-red-600 text-xs block mb-2">
+                        {addError}
+                      </span>
                     )}
                     {addDate && new Date(addDate).getDate() > 10 && (
                       <span className="text-yellow-700 text-xs block mb-2">
@@ -420,12 +397,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                           totalSavings: parseFloat(e.target.value) || 0,
                         })
                       }
-<<<<<<< HEAD
                       className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-=======
-                      disabled={isSaving}
-                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
->>>>>>> b84e3c10cad8558e88ea7cc9459886eb053d1dd4
                     />
                   </div>
                 ) : (
