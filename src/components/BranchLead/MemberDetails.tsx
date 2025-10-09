@@ -138,7 +138,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
       const dateObj = new Date(addDate);
       const isPenaltyApplicable = dateObj.getDate() > 5;
 
-      // Create contribution first
+      // Create regular contribution without penalty
       const contributionData = {
         id: `contrib-${Date.now()}`,
         userId: actualMemberId,
@@ -146,36 +146,33 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         amount: addAmount,
         contributionDate: dateObj.toISOString(),
         month: getMonthName(addDate),
-        type: "regular" as const,
+        type: "regular" as const, // Always regular, penalty handled separately
       };
 
       const backendContribution = await addContribution(contributionData);
 
-      // If late contribution, create penalty record
+      // Create penalty separately if applicable
       if (isPenaltyApplicable && state.currentUser) {
         const penaltyData = {
-          member: actualMemberId, // Just send the member ID
+          member: actualMemberId,
           amount: 25,
           reason: "late_contribution",
-          description: `Late contribution for ${member.firstName} ${member.lastName} in ${getMonthName(
-            addDate
-          )}`,
-          assignedBy: state.currentUser._id || state.currentUser.id, // Send assigner ID
+          description: `Late contribution for ${member.firstName} ${member.lastName} in ${getMonthName(addDate)}`,
+          assignedBy: state.currentUser._id || state.currentUser.id,
           status: "pending",
           assignedDate: dateObj.toISOString(),
           branch: member.branch,
         };
 
         try {
-          console.log("Creating penalty with data:", penaltyData);
           await createPenalty(penaltyData);
-          console.log("Penalty created successfully");
         } catch (penaltyError) {
           console.error("Failed to create penalty:", penaltyError);
+          // Don't block the contribution if penalty creation fails
         }
       }
 
-      // Handle contribution success
+      // Handle success
       if (backendContribution?.contribution) {
         dispatch({
           type: "ADD_CONTRIBUTION",
