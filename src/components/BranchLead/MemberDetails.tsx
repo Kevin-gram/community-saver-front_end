@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { getGroupTheme } from "../../utils/calculations";
-import { addContribution, createPenalty } from "../../utils/api";
+import { addContribution } from "../../utils/api";
 
 interface MemberDetailsProps {
   memberId: string;
@@ -136,9 +136,8 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
 
     try {
       const dateObj = new Date(addDate);
-      const isPenaltyApplicable = dateObj.getDate() > 5;
-
-      // Create regular contribution without penalty
+      
+      // Just create the contribution - backend will handle penalty if needed
       const contributionData = {
         id: `contrib-${Date.now()}`,
         userId: actualMemberId,
@@ -146,31 +145,10 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         amount: addAmount,
         contributionDate: dateObj.toISOString(),
         month: getMonthName(addDate),
-        type: "regular" as const, // Always regular, penalty handled separately
+        type: "regular" as const,
       };
 
       const backendContribution = await addContribution(contributionData);
-
-      // Create penalty separately if applicable
-      if (isPenaltyApplicable && state.currentUser) {
-        const penaltyData = {
-          member: actualMemberId,
-          amount: 25,
-          reason: "late_contribution",
-          description: `Late contribution for ${member.firstName} ${member.lastName} in ${getMonthName(addDate)}`,
-          assignedBy: state.currentUser._id || state.currentUser.id,
-          status: "pending",
-          assignedDate: dateObj.toISOString(),
-          branch: member.branch,
-        };
-
-        try {
-          await createPenalty(penaltyData);
-        } catch (penaltyError) {
-          console.error("Failed to create penalty:", penaltyError);
-          // Don't block the contribution if penalty creation fails
-        }
-      }
 
       // Handle success
       if (backendContribution?.contribution) {

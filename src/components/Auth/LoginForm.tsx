@@ -44,10 +44,10 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-white to-purple-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-700 via-emerald-500 to-white flex items-center justify-center px-4">
+      <div className="max-w-md w-full space-y-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
         <div className="text-center">
-          <div className="bg-emerald-800 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
+          <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
             <LogIn className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-700">Welcome Back</h2>
@@ -77,13 +77,10 @@ const LoginForm: React.FC = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="mt-1 relative">
+              <div className="mt-1 relative group">
                 <input
                   id="password"
                   name="password"
@@ -97,13 +94,14 @@ const LoginForm: React.FC = () => {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
@@ -144,4 +142,3 @@ const LoginForm: React.FC = () => {
 };
 
 export default LoginForm;
-
