@@ -185,7 +185,6 @@ export const createPenalty = async (penaltyData: {
 }) => {
   try {
     const res = await api.post('/penalties', penaltyData);
-    console.log('Penalty creation response:', res.data);
     return res.data.data.penalty;
   } catch (error) {
     console.error('Penalty creation error:', error);

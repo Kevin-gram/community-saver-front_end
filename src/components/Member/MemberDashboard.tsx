@@ -156,7 +156,6 @@ const MemberDashboard: React.FC = () => {
   // Fetch penalties using the API utility
   const fetchPenaltiesData = useCallback(async () => {
     try {
-      console.log("=== Starting Penalties Fetch ===");
       const penaltiesArray = await fetchPenalties();
       
       // Filter penalties for current user with pending status
@@ -168,15 +167,11 @@ const MemberDashboard: React.FC = () => {
         return isPending && String(penaltyMemberId) === String(currentUserId);
       });
 
-      console.log("User Pending Penalties:", userPendingPenalties);
-
       // Calculate total pending penalties
       const totalPendingAmount = userPendingPenalties.reduce(
         (sum: number, penalty: any) => sum + (penalty.amount || 0),
         0
       );
-
-      console.log("Total Pending Penalties Amount: €", totalPendingAmount);
 
       if (isMountedRef.current) {
         setMemberPenalties(totalPendingAmount);
@@ -195,15 +190,11 @@ const MemberDashboard: React.FC = () => {
   // Convert getShares to a memoized callback
   const fetchMemberData = useCallback(async () => {
     try {
-      console.log("=== Fetching Member Data ===");
-      
       // Fetch both shares and penalties in parallel
       const [sharesData, penaltiesAmount] = await Promise.all([
         fetchMemberShares(),
         fetchPenaltiesData(),
       ]);
-
-      console.log("Shares Data Received:", sharesData);
 
       const sharesArray = Array.isArray(sharesData) ? sharesData : [];
 
@@ -213,7 +204,6 @@ const MemberDashboard: React.FC = () => {
             String(share.id || share._id) === String(currentUser._id || currentUser.id)
         );
         
-        console.log("Current Member Share Found:", currentShare);
         
         setMemberShares(currentShare);
         setSectionsLoading(false);
@@ -230,21 +220,16 @@ const MemberDashboard: React.FC = () => {
 
   // Setup polling effect
   useEffect(() => {
-    isMountedRef.current = true;
-
-    console.log("=== Component Mounted - Starting Initial Fetch ===");
-    
+    isMountedRef.current = true;    
     // Initial fetch with loading spinner
     fetchMemberData();
 
     // Setup polling interval for background updates - only if tab is visible
     const handleVisibilityChange = () => {
       if (document.hidden && pollingIntervalRef.current) {
-        console.log("Tab hidden - stopping polling");
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
       } else if (!document.hidden && !pollingIntervalRef.current) {
-        console.log("Tab visible - starting polling");
         pollingIntervalRef.current = setInterval(() => {
           fetchMemberData();
         }, POLLING_INTERVAL);
@@ -261,7 +246,6 @@ const MemberDashboard: React.FC = () => {
 
     // Cleanup
     return () => {
-      console.log("=== Component Unmounting - Cleanup ===");
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       isMountedRef.current = false;
       if (pollingIntervalRef.current) {
