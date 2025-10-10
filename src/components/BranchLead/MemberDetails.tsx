@@ -60,6 +60,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   );
   const [addError, setAddError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   if (!member) return null;
 
@@ -80,19 +81,12 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   };
 
   const handleSave = async () => {
-    const adjustmentAmount =
-      editData.totalSavings - (member.totalContributions || 0);
+    const adjustmentAmount = editData.totalSavings - (member.totalContributions || 0);
 
     if (adjustmentAmount !== 0) {
-      const adjustmentContribution: {
-        id: string;
-        userId: string;
-        memberId: string;
-        amount: number;
-        contributionDate: string;
-        month: string;
-        type: "adjustment" | "regular" | "penalty" | "interest";
-      } = {
+      setIsSavingEdit(true);
+      
+      const adjustmentContribution = {
         id: `adj-${Date.now()}`,
         userId: actualMemberId,
         memberId: actualMemberId,
@@ -103,14 +97,8 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
       };
 
       try {
-        const backendContribution = await addContribution(
-          adjustmentContribution
-        );
-        if (
-          backendContribution &&
-          (backendContribution.contribution.memberId ||
-            backendContribution.contribution.userId)
-        ) {
+        const backendContribution = await addContribution(adjustmentContribution);
+        if (backendContribution && (backendContribution.contribution.memberId || backendContribution.contribution.userId)) {
           dispatch({
             type: "ADD_CONTRIBUTION",
             payload: backendContribution.contribution,
@@ -119,6 +107,8 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         setIsEditing(false);
       } catch (error) {
         console.error("Failed to add adjustment contribution", error);
+      } finally {
+        setIsSavingEdit(false);
       }
     } else {
       setIsEditing(false);
@@ -265,16 +255,27 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                 <div className="flex space-x-2">
                   <button
                     onClick={handleCancel}
-                    className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    disabled={isSavingEdit}
+                    className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
-                    className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                    disabled={isSavingEdit}
+                    className="inline-flex items-center justify-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Save className="w-4 h-4 mr-1" />
-                    Save
+                    {isSavingEdit ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-1" />
+                        Save
+                      </>
+                    )}
                   </button>
                 </div>
               )}
