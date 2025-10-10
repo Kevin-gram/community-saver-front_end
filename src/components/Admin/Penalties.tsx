@@ -79,13 +79,14 @@ const Penalties: React.FC = () => {
     }
   };
 
-  // Calculate pagination values
-  const totalPages = Math.ceil(penalties.length / ITEMS_PER_PAGE);
+  // Filter valid penalties first (ones with valid members)
+  const validPenalties = penalties.filter((c) => c.member !== null && c.member !== undefined);
+  
+  // Calculate pagination values using valid penalties
+  const totalPages = Math.ceil(validPenalties.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentPenalties = penalties
-    .filter((c) => c.member !== null && c.member !== undefined)
-    .slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, validPenalties.length);
+  const currentPenalties = validPenalties.slice(startIndex, endIndex);
 
   return (
     <div className="w-full">
@@ -154,24 +155,29 @@ const Penalties: React.FC = () => {
               </table>
 
               {/* Modern Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-end space-x-4 mt-6">
-                  <button
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </button>
+              {totalPages > 1 && validPenalties.length > ITEMS_PER_PAGE && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-gray-500">
+                    Showing {startIndex + 1} to {endIndex} of {validPenalties.length} penalties
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" />
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages || endIndex >= validPenalties.length}
+                      className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </button>
+                  </div>
                 </div>
               )}
             </>
