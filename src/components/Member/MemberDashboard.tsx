@@ -12,7 +12,7 @@ import { useApp } from "../../context/AppContext";
 import { calculateMaxLoanAmount } from "../../utils/calculations";
 import LoanRequestForm from "./LoanRequestForm";
 import ContributionHistory from "./ContributionHistory";
-import { fetchMemberShares } from "../../utils/api";
+import { fetchMemberShares, fetchPenalties } from "../../utils/api";
 import { Bars } from "react-loader-spinner";
 
 const POLLING_INTERVAL = 10000; // 10 seconds
@@ -58,6 +58,7 @@ const MemberDashboard: React.FC = () => {
   const { state } = useApp();
   const { users, currentUser: rawCurrentUser, groupRules } = state;
   const [memberShares, setMemberShares] = useState<any>(null);
+  const [memberPenalties, setMemberPenalties] = useState<number>(0);
   const [sectionsLoading, setSectionsLoading] = useState(true);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -79,19 +80,18 @@ const MemberDashboard: React.FC = () => {
         rules.maxLoanAmount
       )
     : 0;
-    
 
   const availableBalance = state.users.reduce(
     (sum, user) => sum + user.totalContributions,
     0
   );
   const userSavings = currentUser.totalContributions;
-  
+
   const displayData = memberShares || currentUser;
 
   const stats = [
     {
-      id: 'total-savings',
+      id: "total-savings",
       title: "Total Savings",
       value: `€${(
         displayData?.totalContribution ??
@@ -103,7 +103,7 @@ const MemberDashboard: React.FC = () => {
       bg: "bg-emerald-100",
     },
     {
-      id: 'interest-received',
+      id: "interest-received",
       title: "Interest Received",
       value: `€${(
         displayData?.interestEarned ??
@@ -117,21 +117,21 @@ const MemberDashboard: React.FC = () => {
       color: "text-blue-600",
       bg: "bg-blue-100",
     },
-    // Only show penalties if not paid and pending > 0
-    ...(typeof currentUser.penalties === "object" &&
-      !currentUser.penalties.isPaid &&
-      currentUser.penalties.pending > 0
-      ? [{
-          id: 'penalties',
-          title: "Penalties",
-          value: `€${(currentUser.penalties.pending ?? 0).toLocaleString()}`,
-          icon: AlertTriangle,
-          color: "text-red-600",
-          bg: "bg-red-100",
-        }]
+    // Always show penalties card if there are pending penalties
+    ...(memberPenalties > 0
+      ? [
+          {
+            id: "penalties",
+            title: "Pending Penalties",
+            value: `€${memberPenalties.toLocaleString()}`,
+            icon: AlertTriangle,
+            color: "text-red-600",
+            bg: "bg-red-100",
+          },
+        ]
       : []),
     {
-      id: 'max-loanable',
+      id: "max-loanable",
       title: "Max Loanable",
       value: `€${(maxLoanAmount ?? 0).toLocaleString()}`,
       icon: Calculator,
@@ -153,44 +153,98 @@ const MemberDashboard: React.FC = () => {
     !latestLoan ||
     (latestLoan.status && ["repaid", "rejected"].includes(latestLoan.status));
 
-  
+  // Fetch penalties using the API utility
+  const fetchPenaltiesData = useCallback(async () => {
+    try {
+      console.log("=== Starting Penalties Fetch ===");
+      const penaltiesArray = await fetchPenalties();
+      
+      // Filter penalties for current user with pending status
+      const userPendingPenalties = penaltiesArray.filter((penalty: any) => {
+        const penaltyMemberId = penalty.member?._id || penalty.member?.id || penalty.member;
+        const currentUserId = currentUser._id || currentUser.id;
+        const isPending = penalty.status === "pending";
+
+        return isPending && String(penaltyMemberId) === String(currentUserId);
+      });
+
+      console.log("User Pending Penalties:", userPendingPenalties);
+
+      // Calculate total pending penalties
+      const totalPendingAmount = userPendingPenalties.reduce(
+        (sum: number, penalty: any) => sum + (penalty.amount || 0),
+        0
+      );
+
+      console.log("Total Pending Penalties Amount: €", totalPendingAmount);
+
+      if (isMountedRef.current) {
+        setMemberPenalties(totalPendingAmount);
+      }
+
+      return totalPendingAmount;
+    } catch (error) {
+      console.error("Failed to fetch penalties:", error);
+      if (isMountedRef.current) {
+        setMemberPenalties(0);
+      }
+      return 0;
+    }
+  }, [currentUser._id, currentUser.id]);
 
   // Convert getShares to a memoized callback
   const fetchMemberData = useCallback(async () => {
     try {
-      const data = await fetchMemberShares();
-      const sharesArray = Array.isArray(data) ? data : [];
+      console.log("=== Fetching Member Data ===");
       
+      // Fetch both shares and penalties in parallel
+      const [sharesData, penaltiesAmount] = await Promise.all([
+        fetchMemberShares(),
+        fetchPenaltiesData(),
+      ]);
+
+      console.log("Shares Data Received:", sharesData);
+
+      const sharesArray = Array.isArray(sharesData) ? sharesData : [];
+
       if (isMountedRef.current) {
         const currentShare = sharesArray.find(
           (share: any) =>
             String(share.id || share._id) === String(currentUser._id || currentUser.id)
         );
+        
+        console.log("Current Member Share Found:", currentShare);
+        
         setMemberShares(currentShare);
         setSectionsLoading(false);
       }
     } catch (error) {
-      console.error("Failed to fetch member shares", error);
+      console.error("=== Failed to Fetch Member Data ===");
+      console.error("Error:", error);
       if (isMountedRef.current) {
         setMemberShares(null);
         setSectionsLoading(false);
       }
     }
-  }, [currentUser._id, currentUser.id]);
+  }, [currentUser._id, currentUser.id, fetchPenaltiesData]);
 
   // Setup polling effect
   useEffect(() => {
     isMountedRef.current = true;
 
+    console.log("=== Component Mounted - Starting Initial Fetch ===");
+    
     // Initial fetch with loading spinner
     fetchMemberData();
-    
+
     // Setup polling interval for background updates - only if tab is visible
     const handleVisibilityChange = () => {
       if (document.hidden && pollingIntervalRef.current) {
+        console.log("Tab hidden - stopping polling");
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
       } else if (!document.hidden && !pollingIntervalRef.current) {
+        console.log("Tab visible - starting polling");
         pollingIntervalRef.current = setInterval(() => {
           fetchMemberData();
         }, POLLING_INTERVAL);
@@ -198,7 +252,7 @@ const MemberDashboard: React.FC = () => {
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    
+
     if (!document.hidden) {
       pollingIntervalRef.current = setInterval(() => {
         fetchMemberData();
@@ -207,6 +261,7 @@ const MemberDashboard: React.FC = () => {
 
     // Cleanup
     return () => {
+      console.log("=== Component Unmounting - Cleanup ===");
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       isMountedRef.current = false;
       if (pollingIntervalRef.current) {
@@ -224,7 +279,10 @@ const MemberDashboard: React.FC = () => {
           Member Dashboard
         </h1>
         <p className="text-gray-600">
-          Welcome back, {currentUser.firstName || "Member"}
+          Welcome back,{" "}
+          {displayData?.name ||
+            `${displayData?.firstName || ""} ${displayData?.lastName || ""}`.trim() ||
+            "Member"}
         </p>
       </div>
 
@@ -267,8 +325,6 @@ const MemberDashboard: React.FC = () => {
                   <span className="font-semibold">{latestLoan.status}</span>
                   <br />
                   Amount: €{latestLoan.amount.toLocaleString()}
-                  <br />
-                  {/* Repayment: €{latestLoan.totalAmount.toLocaleString()} */}
                   <br />
                   Due Date: {new Date(latestLoan.dueDate).toLocaleDateString()}
                 </p>
@@ -332,7 +388,9 @@ const MemberDashboard: React.FC = () => {
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-700 mb-2">Loan Calculation</h4>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Loan Calculation
+              </h4>
               <div className="space-y-1 text-sm text-gray-600">
                 <p>
                   Savings: €
