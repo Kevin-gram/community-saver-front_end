@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchUsers, updateUser } from "../../utils/api";
 import { User } from "../../types";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const RegistrationSkeleton = () => (
   <div className="space-y-4">
@@ -21,6 +22,8 @@ const RegistrationSkeleton = () => (
   </div>
 );
 
+const ITEMS_PER_PAGE = 6;
+
 const RegistrationApproval: React.FC = () => {
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [approvedUsers, setApprovedUsers] = useState<User[]>([]);
@@ -28,6 +31,7 @@ const RegistrationApproval: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"pending" | "approved" | "rejected">("pending");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -51,6 +55,10 @@ const RegistrationApproval: React.FC = () => {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const handleApprove = async (userId: string) => {
     try {
@@ -90,6 +98,13 @@ const RegistrationApproval: React.FC = () => {
     usersToShow = rejectedUsers;
     tabTitle = "Rejected Users";
   }
+
+  // Pagination calculations
+  const totalPages = Math.ceil(usersToShow.length / ITEMS_PER_PAGE);
+  const paginatedUsers = usersToShow.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -132,37 +147,61 @@ const RegistrationApproval: React.FC = () => {
             : "No rejected users."}
         </p>
       ) : (
-        <div className="space-y-4">
-          {usersToShow.map((user) => (
-            <div
-              key={user._id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-            >
-              <div>
-                <p className="font-medium text-gray-900">
-                  {user.firstName} {user.lastName}
-                </p>
-                <p className="text-sm text-gray-500">{user.email}</p>
-              </div>
-              {activeTab === "pending" && (
-                <div className="flex gap-2">
-                  <button
-                    className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700"
-                    onClick={() => handleApprove(user._id!)}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                    onClick={() => handleReject(user._id!)}
-                  >
-                    Reject
-                  </button>
+        <>
+          <div className="space-y-4">
+            {paginatedUsers.map((user) => (
+              <div
+                key={user._id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {user.firstName} {user.lastName}
+                  </p>
+                  <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
-              )}
+                {activeTab === "pending" && (
+                  <div className="flex gap-2">
+                    <button
+                      className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                      onClick={() => handleApprove(user._id!)}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                      onClick={() => handleReject(user._id!)}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-end space-x-4 mt-6">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
