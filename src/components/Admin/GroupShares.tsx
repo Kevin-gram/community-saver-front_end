@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { fetchMemberShares } from "../../utils/api";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 type MemberShare = {
   id: string;
@@ -57,11 +57,14 @@ const SharesTableSkeleton = () => (
   </div>
 );
 
+const ITEMS_PER_PAGE = 6;
+
 const GroupShares: React.FC = () => {
   const [globalStats, setGlobalStats] = useState<MemberShare[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const cachedDataRef = useRef<{data: MemberShare[] | null, timestamp: number}>({
     data: null,
     timestamp: 0
@@ -195,6 +198,12 @@ const GroupShares: React.FC = () => {
   const totalSavings = globalStats.reduce((sum, member) => sum + member.totalContribution, 0);
   const totalInterest = globalStats.reduce((sum, member) => sum + member.interestEarned, 0);
 
+  // Calculate pagination values
+  const totalPages = Math.ceil(globalStats.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentMembers = globalStats.slice(startIndex, endIndex);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <h2 className="text-3xl font-extrabold mb-8 text-emerald-700 text-center drop-shadow">
@@ -248,7 +257,7 @@ const GroupShares: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {globalStats.map((member: MemberShare, idx: number) => (
+                {currentMembers.map((member: MemberShare, idx: number) => (
                   <tr
                     key={member.id}
                     className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
@@ -280,6 +289,28 @@ const GroupShares: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Modern Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-end space-x-4 mt-6">
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

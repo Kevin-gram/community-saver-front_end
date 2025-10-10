@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useApp } from "../../context/AppContext";
 import { fetchPenalties, updatePenalty } from "../../utils/api";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const PenaltiesTableSkeleton = () => (
   <table className="min-w-full bg-white rounded-lg shadow border">
@@ -33,11 +34,14 @@ const PenaltiesTableSkeleton = () => (
   </table>
 );
 
+const ITEMS_PER_PAGE = 6;
+
 const Penalties: React.FC = () => {
   const { state, dispatch } = useApp();
   const { paidPenalties = [] } = state;
   const [penalties, setPenalties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const loadPenalties = async () => {
@@ -75,6 +79,14 @@ const Penalties: React.FC = () => {
     }
   };
 
+  // Calculate pagination values
+  const totalPages = Math.ceil(penalties.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentPenalties = penalties
+    .filter((c) => c.member !== null && c.member !== undefined)
+    .slice(startIndex, endIndex);
+
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -83,19 +95,18 @@ const Penalties: React.FC = () => {
           {loading ? (
             <PenaltiesTableSkeleton />
           ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="py-2 px-4 text-left">Member</th>
-                  <th className="py-2 px-4 text-left">Contribution Date</th>
-                  <th className="py-2 px-4 text-left">Penalty</th>
-                  <th className="py-2 px-4 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {penalties
-                  .filter((c) => c.member !== null && c.member !== undefined)
-                  .map((c) => {
+            <>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="py-2 px-4 text-left">Member</th>
+                    <th className="py-2 px-4 text-left">Contribution Date</th>
+                    <th className="py-2 px-4 text-left">Penalty</th>
+                    <th className="py-2 px-4 text-left">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentPenalties.map((c) => {
                     const isPenalty = c.createdAt;
                     const penaltyId = c.id || c._id;
                     const memberName = `${c.member.firstName} ${c.member.lastName || ''}`.trim();
@@ -139,8 +150,31 @@ const Penalties: React.FC = () => {
                       </tr>
                     );
                   })}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+
+              {/* Modern Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-end space-x-4 mt-6">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

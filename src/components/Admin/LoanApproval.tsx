@@ -7,6 +7,8 @@ import {
   User as UserIcon,
   Calendar,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { Loan, User, NormalizedLoan } from "../../types";
@@ -19,6 +21,8 @@ import {
   approveOrReject,
   repayLoan,
 } from "../../utils/api";
+
+const ITEMS_PER_PAGE = 2; // Set to show only 2 items per page
 
 const LoanApproval: React.FC = () => {
   const { state, dispatch } = useApp();
@@ -35,10 +39,19 @@ const LoanApproval: React.FC = () => {
     null
   );
   const [isRepaying, setIsRepaying] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // Filter and paginate loans
   const filteredLoans = loans.filter((loan) => {
     return !filterStatus || loan.status === filterStatus;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredLoans.length / ITEMS_PER_PAGE);
+  const paginatedLoans = filteredLoans.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   // Modify the handleLoanAction to not set processingLoanId immediately
   const handleLoanAction = (loan: Loan, action: "approve" | "reject") => {
@@ -193,7 +206,7 @@ const LoanApproval: React.FC = () => {
 
       {/* Loans List */}
       <div className="space-y-4">
-        {filteredLoans.map((loan) => {
+        {paginatedLoans.map((loan) => {
           const member =
             typeof loan.member === "object"
               ? loan.member
@@ -419,7 +432,7 @@ const LoanApproval: React.FC = () => {
         })}
       </div>
 
-      {filteredLoans.length === 0 && (
+      {filteredLoans.length === 0 ? (
         <div className="text-center py-8">
           <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500">
@@ -427,6 +440,26 @@ const LoanApproval: React.FC = () => {
               ? `No ${filterStatus} loans found`
               : "No loan requests found"}
           </p>
+        </div>
+      ) : (
+        // Add pagination controls
+        <div className="flex items-center justify-end space-x-4 mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous
+          </button>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
         </div>
       )}
 
