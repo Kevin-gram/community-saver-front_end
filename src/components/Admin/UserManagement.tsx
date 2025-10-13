@@ -9,7 +9,7 @@ import MemberDetails from "../BranchLead/MemberDetails";
 import { deleteUser, fetchUsers } from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 5; // Set to display 5 users per page
 
 const UserManagement: React.FC = () => {
   const { state, dispatch } = useApp();
@@ -205,7 +205,7 @@ const UserManagement: React.FC = () => {
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
           >
             <option value="">All Groups</option>
-            <option value="blue">blue Group</option>
+            <option value="blue">Blue Group</option>
             <option value="yellow">Yellow Group</option>
             <option value="red">Red Group</option>
             <option value="purple">Purple Group</option>
@@ -213,6 +213,7 @@ const UserManagement: React.FC = () => {
         </div>
       </div>
 
+      {/* User Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -336,44 +337,33 @@ const UserManagement: React.FC = () => {
               })}
             </tbody>
           </table>
-
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-end space-x-4 p-4 border-t border-gray-200">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
-              </button>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </button>
-            </div>
-          )}
         </div>
 
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-8">
-            <Filter className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">
-              No users found matching your criteria
-            </p>
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-end space-x-4 p-4 border-t border-gray-200">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </button>
           </div>
         )}
       </div>
 
-      {showUserForm && (
-        <UserForm user={editingUser} onClose={handleFormClose} />
-      )}
-
+      {/* Modals */}
+      {showUserForm && <UserForm user={editingUser} onClose={handleFormClose} />}
       {deletingUser && (
         <ConfirmDialog
           title="Delete User"

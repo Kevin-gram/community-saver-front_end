@@ -13,11 +13,37 @@ import { calculateMaxLoanAmount } from "../../utils/calculations";
 import LoanRequestForm from "./LoanRequestForm";
 import ContributionHistory from "./ContributionHistory";
 import { fetchMemberShares, fetchPenalties } from "../../utils/api";
-import { Bars } from "react-loader-spinner";
 
-const POLLING_INTERVAL = 10000; // 10 seconds
+const INITIAL_POLLING_INTERVAL = 30000; // 30 seconds
+const MAX_POLLING_INTERVAL = 300000; // Max 5 minutes
+const MIN_POLLING_INTERVAL = 30000; // Min 30 seconds
 
-// Add skeleton components
+// Request Queue for deduplication
+class RequestQueue {
+  private queue: Map<string, { promise: Promise<any>; timestamp: number }> = new Map();
+  
+  async fetch(key: string, fetchFn: () => Promise<any>, ttl: number = 10000) {
+    const cached = this.queue.get(key);
+    const now = Date.now();
+    
+    // Return cached promise if still valid
+    if (cached && (now - cached.timestamp) < ttl) {
+      return cached.promise;
+    }
+    
+    // Create new request
+    const promise = fetchFn().finally(() => {
+      setTimeout(() => this.queue.delete(key), ttl);
+    });
+    
+    this.queue.set(key, { promise, timestamp: now });
+    return promise;
+  }
+}
+
+const requestQueue = new RequestQueue();
+
+// Skeleton components
 const LoanStatusSkeleton = () => (
   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full animate-pulse">
     <div className="flex items-center">
@@ -62,21 +88,30 @@ const MemberDashboard: React.FC = () => {
   const [sectionsLoading, setSectionsLoading] = useState(true);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [pollingInterval, setPollingInterval] = useState(INITIAL_POLLING_INTERVAL);
+  const [errorCount, setErrorCount] = useState(0);
+  
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSuccessfulFetch = useRef<number>(Date.now());
+  const lastFetchTime = useRef<number>(0);
 
-  const currentUser =
-    users.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
+  const currentUser = users.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
 
   if (!currentUser || currentUser.role !== "member") return null;
 
-  // Normalize group key and check rules existence
   const groupKey = currentUser.branch?.toLowerCase();
   const rules = groupRules[groupKey];
+  
+  // Use displayData for calculations to reflect updated values
+  const displayData = memberShares || currentUser;
+  
+  // Recalculate maxLoanAmount based on the latest displayData
+  const currentSavings = displayData?.totalContribution ?? displayData?.totalContributions ?? 0;
   const maxLoanAmount = rules
     ? calculateMaxLoanAmount(
-        currentUser,
-        rules.maxLoanMultiplier,
+        { ...currentUser, totalContributions: currentSavings }, 
+        rules.maxLoanMultiplier, 
         rules.maxLoanAmount
       )
     : 0;
@@ -87,37 +122,26 @@ const MemberDashboard: React.FC = () => {
   );
   const userSavings = currentUser.totalContributions;
 
-  const displayData = memberShares || currentUser;
-
   const stats = [
     {
       id: "total-savings",
       title: "Total Savings",
-      value: `€${(
-        displayData?.totalContribution ??
-        displayData?.totalContributions ??
-        0
-      ).toLocaleString()}`,
+      value: `€${currentSavings.toLocaleString()}`,
       icon: DollarSign,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     {
       id: "interest-received",
       title: "Interest Received",
-      value: `€${(
-        displayData?.interestEarned ??
-        displayData?.interestReceived ??
-        0
-      ).toLocaleString(undefined, {
+      value: `€${(displayData?.interestEarned ?? displayData?.interestReceived ?? 0).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`,
       icon: TrendingUp,
-      color: "text-blue-600",
-      bg: "bg-blue-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
-    // Always show penalties card if there are pending penalties
     ...(memberPenalties > 0
       ? [
           {
@@ -125,8 +149,8 @@ const MemberDashboard: React.FC = () => {
             title: "Pending Penalties",
             value: `€${memberPenalties.toLocaleString()}`,
             icon: AlertTriangle,
-            color: "text-red-600",
-            bg: "bg-red-100",
+            color: "text-emerald-600", // Green icon
+            bg: "bg-emerald-100", // Green background
           },
         ]
       : []),
@@ -135,13 +159,12 @@ const MemberDashboard: React.FC = () => {
       title: "Max Loanable",
       value: `€${(maxLoanAmount ?? 0).toLocaleString()}`,
       icon: Calculator,
-      color: "text-purple-600",
-      bg: "bg-purple-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
   ];
 
   const userLoans = state.loans.filter((loan) => {
-    // loan.member could be an object or an ID
     if (typeof loan.member === "object") {
       return loan.member._id === currentUser._id;
     }
@@ -149,25 +172,23 @@ const MemberDashboard: React.FC = () => {
   });
 
   const latestLoan = userLoans[0];
-  const eligible =
-    !latestLoan ||
-    (latestLoan.status && ["repaid", "rejected"].includes(latestLoan.status));
+  const eligible = !latestLoan || (latestLoan.status && ["repaid", "rejected"].includes(latestLoan.status));
 
-  // Fetch penalties using the API utility
-  const fetchPenaltiesData = useCallback(async () => {
+  // Fetch penalties - stable function with no state dependencies in callback
+  const fetchPenaltiesData = useCallback(async (userId: string) => {
     try {
-      const penaltiesArray = await fetchPenalties();
+      const penaltiesArray = await requestQueue.fetch(
+        'penalties',
+        () => fetchPenalties(),
+        15000 // Cache for 15 seconds
+      );
       
-      // Filter penalties for current user with pending status
       const userPendingPenalties = penaltiesArray.filter((penalty: any) => {
         const penaltyMemberId = penalty.member?._id || penalty.member?.id || penalty.member;
-        const currentUserId = currentUser._id || currentUser.id;
         const isPending = penalty.status === "pending";
-
-        return isPending && String(penaltyMemberId) === String(currentUserId);
+        return isPending && String(penaltyMemberId) === String(userId);
       });
 
-      // Calculate total pending penalties
       const totalPendingAmount = userPendingPenalties.reduce(
         (sum: number, penalty: any) => sum + (penalty.amount || 0),
         0
@@ -178,73 +199,117 @@ const MemberDashboard: React.FC = () => {
       }
 
       return totalPendingAmount;
-    } catch (error) {
-      console.error("Failed to fetch penalties:", error);
+    } catch (error: any) {
+      console.error("Failed to fetch penalties:", error?.message || error);
+      
+      if (error?.response?.status === 429) {
+        console.warn('Rate limit hit on penalties - backing off');
+        setErrorCount(prev => prev + 1);
+        setPollingInterval(prev => Math.min(prev * 2, MAX_POLLING_INTERVAL));
+      }
+      
       if (isMountedRef.current) {
         setMemberPenalties(0);
       }
       return 0;
     }
-  }, [currentUser._id, currentUser.id]);
+  }, []); // No dependencies - userId passed as parameter
 
-  // Convert getShares to a memoized callback
-  const fetchMemberData = useCallback(async () => {
+  // Fetch member data - stable function with no state dependencies in callback
+  const fetchMemberData = useCallback(async (userId: string, isInitialLoad = false) => {
+    const now = Date.now();
+    const timeSinceLastFetch = now - lastFetchTime.current;
+    
+    // Prevent fetching if last fetch was too recent (unless initial load)
+    if (!isInitialLoad && timeSinceLastFetch < 10000) {
+      console.log('Skipping fetch - too soon since last fetch');
+      return;
+    }
+
     try {
-      // Fetch both shares and penalties in parallel
-      const [sharesData, penaltiesAmount] = await Promise.all([
-        fetchMemberShares(),
-        fetchPenaltiesData(),
+      lastFetchTime.current = now;
+      
+      // Batch requests using Promise.all with request queue
+      const [sharesData] = await Promise.all([
+        requestQueue.fetch('member-shares', () => fetchMemberShares(), 15000),
+        fetchPenaltiesData(userId),
       ]);
 
       const sharesArray = Array.isArray(sharesData) ? sharesData : [];
 
       if (isMountedRef.current) {
         const currentShare = sharesArray.find(
-          (share: any) =>
-            String(share.id || share._id) === String(currentUser._id || currentUser.id)
+          (share: any) => String(share.id || share._id) === String(userId)
         );
-        
         
         setMemberShares(currentShare);
         setSectionsLoading(false);
+        
+        // Success - gradually decrease interval but not below minimum
+        setErrorCount(0);
+        setPollingInterval(prev => {
+          if (prev > MIN_POLLING_INTERVAL) {
+            return Math.max(prev * 0.8, MIN_POLLING_INTERVAL);
+          }
+          return MIN_POLLING_INTERVAL;
+        });
+        lastSuccessfulFetch.current = now;
       }
-    } catch (error) {
-      console.error("=== Failed to Fetch Member Data ===");
-      console.error("Error:", error);
+    } catch (error: any) {
+      console.error("Failed to fetch member data:", error?.message || error);
+      
+      // Handle errors with exponential backoff
+      if (error?.response?.status === 429) {
+        console.warn('Rate limit hit - backing off');
+        setErrorCount(prev => prev + 1);
+        setPollingInterval(prev => Math.min(prev * 2, MAX_POLLING_INTERVAL));
+      } else {
+        setPollingInterval(prev => Math.min(prev * 1.5, MAX_POLLING_INTERVAL));
+      }
+      
       if (isMountedRef.current) {
         setMemberShares(null);
         setSectionsLoading(false);
       }
     }
-  }, [currentUser._id, currentUser.id, fetchPenaltiesData]);
+  }, [fetchPenaltiesData]); // Only depends on fetchPenaltiesData which is stable
 
-  // Setup polling effect
+  // Manual refresh
+  const handleManualRefresh = useCallback(() => {
+    setSectionsLoading(true);
+    const userId = currentUser._id || currentUser.id;
+    fetchMemberData(userId, true);
+  }, [currentUser._id, currentUser.id, fetchMemberData]);
+
+  // Smart polling effect - separated from data fetching
   useEffect(() => {
-    isMountedRef.current = true;    
-    // Initial fetch with loading spinner
-    fetchMemberData();
+    isMountedRef.current = true;
+    const userId = currentUser._id || currentUser.id;
+    
+    // Initial fetch
+    fetchMemberData(userId, true);
 
-    // Setup polling interval for background updates - only if tab is visible
+    // Setup polling with current interval
+    pollingIntervalRef.current = setInterval(() => {
+      // Only fetch if tab is visible
+      if (!document.hidden) {
+        fetchMemberData(userId, false);
+      }
+    }, pollingInterval);
+
+    // Handle visibility changes
     const handleVisibilityChange = () => {
-      if (document.hidden && pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      } else if (!document.hidden && !pollingIntervalRef.current) {
-        pollingIntervalRef.current = setInterval(() => {
-          fetchMemberData();
-        }, POLLING_INTERVAL);
+      if (!document.hidden) {
+        // When tab becomes visible, fetch immediately if enough time has passed
+        const timeSinceLastSuccess = Date.now() - lastSuccessfulFetch.current;
+        if (timeSinceLastSuccess > pollingInterval) {
+          fetchMemberData(userId, false);
+        }
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    if (!document.hidden) {
-      pollingIntervalRef.current = setInterval(() => {
-        fetchMemberData();
-      }, POLLING_INTERVAL);
-    }
-
-    // Cleanup
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       isMountedRef.current = false;
@@ -253,38 +318,43 @@ const MemberDashboard: React.FC = () => {
         pollingIntervalRef.current = null;
       }
     };
-  }, [fetchMemberData]);
+  }, [pollingInterval, currentUser._id, currentUser.id, fetchMemberData]); // Re-run when interval changes
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header and stats - always show */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Member Dashboard
-        </h1>
-        <p className="text-gray-600">
-          Welcome back,{" "}
-          {displayData?.name ||
-            `${displayData?.firstName || ""} ${displayData?.lastName || ""}`.trim() ||
-            "Member"}
-        </p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Member Dashboard
+          </h1>
+          <p className="text-gray-600">
+            Welcome back, {displayData?.name || `${displayData?.firstName || ""} ${displayData?.lastName || ""}`.trim() || "Member"}
+          </p>
+        </div>
+        
+        <button
+          onClick={handleManualRefresh}
+          disabled={sectionsLoading}
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+        >
+          {sectionsLoading ? "Refreshing..." : "Refresh Data"}
+        </button>
       </div>
 
-      {/* Stats Grid - always show */}
+      {errorCount > 0 && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+          <AlertTriangle className="w-4 h-4 inline mr-2" />
+          Auto-refresh temporarily slowed due to server load. Next update in {Math.round(pollingInterval / 1000)}s
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
-          <div
-            key={stat.id}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-          >
+          <div key={stat.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">
-                  {stat.title}
-                </p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">
-                  {stat.value}
-                </p>
+                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
               </div>
               <div className={`${stat.bg} rounded-lg p-3`}>
                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -294,19 +364,17 @@ const MemberDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Loan Status Section */}
       {sectionsLoading ? (
         <LoanStatusSkeleton />
       ) : (
         latestLoan && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full">
             <div className="flex items-center">
-              <Clock className="w-5 h-5 text-blue-600 mr-3" />
+              <Clock className="w-5 h-5 text-emerald-600 mr-3" /> {/* Icon is green */}
               <div>
-                <h3 className="font-medium text-blue-800">Loan Status</h3>
+                <h3 className="font-medium text-black">Loan Status</h3> {/* Text is black */}
                 <p className="text-sm text-gray-700 mt-1">
-                  Status:{" "}
-                  <span className="font-semibold">{latestLoan.status}</span>
+                  Status: <span className="font-semibold">{latestLoan.status}</span>
                   <br />
                   Amount: €{latestLoan.amount.toLocaleString()}
                   <br />
@@ -318,13 +386,12 @@ const MemberDashboard: React.FC = () => {
         )
       )}
 
-      {/* Action Buttons - always show */}
       <div className="flex flex-wrap gap-4 mb-8">
         <button
           onClick={() => setShowLoanForm(true)}
-          disabled={!eligible}
+          disabled={!eligible || sectionsLoading} // Disable if loan status is loading
           className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
-            eligible
+            eligible && !sectionsLoading
               ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
@@ -342,24 +409,17 @@ const MemberDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Loan Eligibility Info */}
       {sectionsLoading ? (
         <LoanInfoSkeleton />
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Loan Information
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Loan Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium text-gray-700 mb-2">
-                Eligibility Status
-              </h4>
+              <h4 className="font-medium text-gray-700 mb-2">Eligibility Status</h4>
               <div
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  eligible
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-red-100 text-red-800"
+                  eligible ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
                 }`}
               >
                 {eligible ? "Eligible" : "Not Eligible"}
@@ -372,30 +432,13 @@ const MemberDashboard: React.FC = () => {
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-700 mb-2">
-                Loan Calculation
-              </h4>
+              <h4 className="font-medium text-gray-700 mb-2">Loan Calculation</h4>
               <div className="space-y-1 text-sm text-gray-600">
-                <p>
-                  Savings: €
-                  {(
-                    displayData?.totalContribution ??
-                    displayData?.totalContributions ??
-                    0
-                  ).toLocaleString()}
-                </p>
+                <p>Savings: €{currentSavings.toLocaleString()}</p>
                 <p>Multiplier: {rules ? rules.maxLoanMultiplier : "N/A"}x</p>
-                <p>
-                  Maximum: €
-                  {rules && rules.maxLoanAmount !== undefined
-                    ? rules.maxLoanAmount.toLocaleString()
-                    : "N/A"}
-                </p>
+                <p>Maximum: €{rules && rules.maxLoanAmount !== undefined ? rules.maxLoanAmount.toLocaleString() : "N/A"}</p>
                 <p className="font-medium text-gray-900">
-                  Your Max: €
-                  {maxLoanAmount !== undefined && maxLoanAmount !== null
-                    ? maxLoanAmount.toLocaleString()
-                    : "N/A"}
+                  Your Max: €{maxLoanAmount !== undefined && maxLoanAmount !== null ? maxLoanAmount.toLocaleString() : "N/A"}
                 </p>
               </div>
             </div>
@@ -403,7 +446,6 @@ const MemberDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Modals */}
       {showLoanForm && (
         <LoanRequestForm
           onClose={() => setShowLoanForm(false)}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Check,
   X,
@@ -23,6 +23,7 @@ import {
 } from "../../utils/api";
 
 const ITEMS_PER_PAGE = 2; // Set to show only 2 items per page
+const POLLING_INTERVAL = 5000; // Poll every 5 seconds
 
 const LoanApproval: React.FC = () => {
   const { state, dispatch } = useApp();
@@ -40,6 +41,8 @@ const LoanApproval: React.FC = () => {
   );
   const [isRepaying, setIsRepaying] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true); // Track initial loading state
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Filter and paginate loans
   const filteredLoans = loans.filter((loan) => {
@@ -53,7 +56,41 @@ const LoanApproval: React.FC = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Modify the handleLoanAction to not set processingLoanId immediately
+  const fetchData = async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
+    try {
+      const [usersData, loansData] = await Promise.all([
+        fetchUsers(),
+        fetchLoans(),
+      ]);
+      const normalizedLoans = loansData.map((l: NormalizedLoan) => ({
+        ...l,
+        id: l.id || l._id,
+      }));
+      dispatch({ type: "LOAD_USERS", payload: usersData });
+      dispatch({ type: "LOAD_LOANS", payload: normalizedLoans });
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      if (showLoading) setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(true); // Initial fetch with loading skeleton
+
+    // Setup polling interval
+    pollingIntervalRef.current = setInterval(() => {
+      fetchData(false); // Subsequent fetches without loading skeleton
+    }, POLLING_INTERVAL);
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [dispatch]);
+
   const handleLoanAction = (loan: Loan, action: "approve" | "reject") => {
     setSelectedLoan(loan);
     setActionType(action);
@@ -165,19 +202,24 @@ const LoanApproval: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUsers().then((users) => {
-      dispatch({ type: "LOAD_USERS", payload: users });
-    });
-    fetchLoans().then((loans) => {
-      // Normalize id for each loan
-      const normalized = loans.map((l: NormalizedLoan) => ({
-        ...l,
-        id: l.id || l._id,
-      }));
-      dispatch({ type: "LOAD_LOANS", payload: normalized });
-    });
-  }, [dispatch]);
+  const LoanSkeleton = () => (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+      <div className="flex items-center space-x-4 mb-4">
+        <div className="w-10 h-10 bg-emerald-200 rounded-full"></div>
+        <div className="flex-1">
+          <div className="h-4 bg-emerald-200 rounded w-32 mb-2"></div>
+          <div className="h-3 bg-emerald-200 rounded w-24"></div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="h-16 bg-emerald-200 rounded"></div>
+        <div className="h-16 bg-emerald-200 rounded"></div>
+        <div className="h-16 bg-emerald-200 rounded"></div>
+      </div>
+      <div className="h-4 bg-emerald-200 rounded w-40 mb-2"></div>
+      <div className="h-4 bg-emerald-200 rounded w-32"></div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -205,77 +247,82 @@ const LoanApproval: React.FC = () => {
       </div>
 
       {/* Loans List */}
-      <div className="space-y-4">
-        {paginatedLoans.map((loan) => {
-          const member =
-            typeof loan.member === "object"
-              ? loan.member
-              : users.find((u) => u.id === loan._id || u._id === loan.member);
+      {isLoading ? (
+        <div className="space-y-4">
+          {[...Array(2)].map((_, i) => (
+            <LoanSkeleton key={i} />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {paginatedLoans.map((loan) => {
+            const member =
+              typeof loan.member === "object"
+                ? loan.member
+                : users.find((u) => u.id === loan._id || u._id === loan.member);
 
-          if (!member) return null;
+            if (!member) return null;
 
-          const theme = getGroupTheme(member.branch);
-          const approver = loan.approvedBy
-            ? users.find((u) => u.id === loan.approvedBy)
-            : null;
+            const theme = getGroupTheme(member.branch);
+            const approver = loan.approvedBy
+              ? users.find((u) => u.id === loan.approvedBy)
+              : null;
 
-          return (
-            <div
-              key={loan.id || loan._id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
-            >
-              <div className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div
-                        className={`w-10 h-10 rounded-full ${theme.primary} flex items-center justify-center`}
-                      >
-                        <UserIcon className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {`${member.firstName} ${member.lastName}`}
-                        </h3>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>{member.email}</span>
-                          <span className="flex items-center">
-                            <div
-                              className={`w-2 h-2 rounded-full mr-1 ${theme.primary}`}
-                            />
-                            {member.branch} Group
-                          </span>
-                          {member.branch && <span>{member.branch}</span>}
+            return (
+              <div
+                key={loan.id || loan._id}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div
+                          className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center"
+                        >
+                          <UserIcon className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900">
+                            {`${member.firstName} ${member.lastName}`}
+                          </h3>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <span>{member.email}</span>
+                            <span className="flex items-center">
+                              <div className="w-2 h-2 rounded-full mr-1 bg-emerald-500" />
+                              {member.branch} Group
+                            </span>
+                            {member.branch && <span>{member.branch}</span>}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Loan Amount
-                          </span>
-                          <DollarSign className="w-4 h-4 text-gray-400" />
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">
+                              Loan Amount
+                            </span>
+                            <DollarSign className="w-4 h-4 text-gray-400" />
+                          </div>
+                          <p className="text-xl font-bold text-gray-900 mt-1">
+                            €{loan.amount.toLocaleString()}
+                          </p>
                         </div>
-                        <p className="text-xl font-bold text-gray-900 mt-1">
-                          €{loan.amount.toLocaleString()}
-                        </p>
-                      </div>
 
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Repayment Amount
-                          </span>
-                          <DollarSign className="w-4 h-4 text-gray-400" />
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">
+                              Repayment Amount
+                            </span>
+                            <DollarSign className="w-4 h-4 text-gray-400" />
+                          </div>
+                          <p className="text-xl font-bold text-gray-900 mt-1">
+                            €{(loan.totalAmount ?? 0).toLocaleString()}
+                          </p>
                         </div>
-                        <p className="text-xl font-bold text-gray-900 mt-1">
-                          €{(loan.totalAmount ?? 0).toLocaleString()}
-                        </p>
-                      </div>
 
-                      {/* <div className="bg-gray-50 rounded-lg p-3">
+                        {/* <div className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-gray-600">
                             Member Savings
@@ -286,153 +333,154 @@ const LoanApproval: React.FC = () => {
                           ${(member?.totalContributions ?? 0).toLocaleString()}
                         </p>
                       </div> */}
-                    </div>
+                      </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <span>
-                          Requested:{" "}
-                          {loan.requestDate
-                            ? new Date(loan.requestDate).toLocaleDateString()
-                            : "-"}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <span>
-                          Due:{" "}
-                          {loan.dueDate
-                            ? new Date(loan.dueDate).toLocaleDateString()
-                            : "-"}
-                        </span>
-                      </div>
-                      {loan.approvedDate && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                         <div className="flex items-center">
-                          <Check className="w-4 h-4 mr-2 text-emerald-500" />
+                          <Calendar className="w-4 h-4 mr-2" />
                           <span>
-                            Approved:{" "}
-                            {new Date(loan.approvedDate).toLocaleDateString()}
+                            Requested:{" "}
+                            {loan.requestDate
+                              ? new Date(loan.requestDate).toLocaleDateString()
+                              : "-"}
                           </span>
                         </div>
-                      )}
-                      {approver && (
                         <div className="flex items-center">
-                          <UserIcon className="w-4 h-4 mr-2" />
+                          <Calendar className="w-4 h-4 mr-2" />
                           <span>
-                            Approved by:{" "}
-                            {`${approver.firstName} ${approver.lastName}`}
+                            Due:{" "}
+                            {loan.dueDate
+                              ? new Date(loan.dueDate).toLocaleDateString()
+                              : "-"}
                           </span>
                         </div>
-                      )}
-                    </div>
+                        {loan.approvedDate && (
+                          <div className="flex items-center">
+                            <Check className="w-4 h-4 mr-2 text-emerald-500" />
+                            <span>
+                              Approved:{" "}
+                              {new Date(loan.approvedDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                        {approver && (
+                          <div className="flex items-center">
+                            <UserIcon className="w-4 h-4 mr-2" />
+                            <span>
+                              Approved by:{" "}
+                              {`${approver.firstName} ${approver.lastName}`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Risk Assessment */}
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium text-emerald-900 mb-2">
-                        Risk Assessment
-                      </h4>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-emerald-700">
-                            Loan to Savings Ratio:
-                          </span>
-                          <span className="font-medium ml-2">
-                            {
-                              (loan.riskAssessment)?.toFixed(1)}
-                            %
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-emerald-700">
-                            Interest Amount:
-                          </span>
-                          <span className="font-medium ml-2">
-                            €
-                            {(
-                              (loan.totalAmount ?? 0) - loan.amount
-                            ).toLocaleString()}
-                          </span>
+                      {/* Risk Assessment */}
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <h4 className="font-medium text-emerald-900 mb-2">
+                          Risk Assessment
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-emerald-700">
+                              Loan to Savings Ratio:
+                            </span>
+                            <span className="font-medium ml-2">
+                              {
+                                (loan.riskAssessment)?.toFixed(1)}
+                              %
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-emerald-700">
+                              Interest Amount:
+                            </span>
+                            <span className="font-medium ml-2">
+                              €
+                              {(
+                                (loan.totalAmount ?? 0) - loan.amount
+                              ).toLocaleString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col items-end space-y-3">
-                    <span
-                      className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadgeColor(
-                        loan.status
-                      )}`}
-                    >
-                      {loan.status.charAt(0).toUpperCase() +
-                        loan.status.slice(1)}
-                    </span>
-
-                    {loan.status === "pending" && (
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleLoanAction(loan, "reject")}
-                          disabled={
-                            isProcessing && processingLoanId ===
-                            (loan.id || loan._id)
-                          }
-                          className={`inline-flex items-center px-3 py-1 border border-red-300 text-red-700 rounded-lg transition-colors ${
-                            isProcessing && processingLoanId ===
-                            (loan.id || loan._id)
-                              ? "opacity-50 cursor-not-allowed"
-                              : "hover:bg-red-50"
-                          }`}
-                        >
-                          {isProcessing && processingLoanId ===
-                          (loan.id || loan._id) ? (
-                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                          ) : (
-                            <X className="w-4 h-4 mr-1" />
-                          )}
-                          Reject
-                        </button>
-                        <button
-                          onClick={() => handleLoanAction(loan, "approve")}
-                          disabled={
-                            isProcessing && processingLoanId ===
-                            (loan.id || loan._id)
-                          }
-                          className={`inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg transition-colors ${
-                            isProcessing && processingLoanId ===
-                            (loan.id || loan._id)
-                              ? "opacity-50 cursor-not-allowed"
-                              : "hover:bg-emerald-700"
-                          }`}
-                        >
-                          {isProcessing && processingLoanId ===
-                          (loan.id || loan._id) ? (
-                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                          ) : (
-                            <Check className="w-4 h-4 mr-1" />
-                          )}
-                          Approve
-                        </button>
-                      </div>
-                    )}
-                    {(loan.status === "approved" ||
-                      loan.status === "active") && (
-                      <button
-                        onClick={() => handleRepayClick(loan)}
-                        className="inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                    <div className="flex flex-col items-end space-y-3">
+                      <span
+                        className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadgeColor(
+                          loan.status
+                        )}`}
                       >
-                        <DollarSign className="w-4 h-4 mr-1" />
-                        Repay Loan
-                      </button>
-                    )}
+                        {loan.status.charAt(0).toUpperCase() +
+                          loan.status.slice(1)}
+                      </span>
+
+                      {loan.status === "pending" && (
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleLoanAction(loan, "reject")}
+                            disabled={
+                              isProcessing && processingLoanId ===
+                              (loan.id || loan._id)
+                            }
+                            className={`inline-flex items-center px-3 py-1 border border-red-300 text-red-700 rounded-lg transition-colors ${
+                              isProcessing && processingLoanId ===
+                              (loan.id || loan._id)
+                                ? "opacity-50 cursor-not-allowed"
+                                : "hover:bg-red-50"
+                            }`}
+                          >
+                            {isProcessing && processingLoanId ===
+                            (loan.id || loan._id) ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : (
+                              <X className="w-4 h-4 mr-1" />
+                            )}
+                            Reject
+                          </button>
+                          <button
+                            onClick={() => handleLoanAction(loan, "approve")}
+                            disabled={
+                              isProcessing && processingLoanId ===
+                              (loan.id || loan._id)
+                            }
+                            className={`inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg transition-colors ${
+                              isProcessing && processingLoanId ===
+                              (loan.id || loan._id)
+                                ? "opacity-50 cursor-not-allowed"
+                                : "hover:bg-emerald-700"
+                            }`}
+                          >
+                            {isProcessing && processingLoanId ===
+                            (loan.id || loan._id) ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : (
+                              <Check className="w-4 h-4 mr-1" />
+                            )}
+                            Approve
+                          </button>
+                        </div>
+                      )}
+                      {(loan.status === "approved" ||
+                        loan.status === "active") && (
+                        <button
+                          onClick={() => handleRepayClick(loan)}
+                          className="inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                        >
+                          <DollarSign className="w-4 h-4 mr-1" />
+                          Repay Loan
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {filteredLoans.length === 0 ? (
+      {filteredLoans.length === 0 && !isLoading && (
         <div className="text-center py-8">
           <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500">
@@ -441,8 +489,10 @@ const LoanApproval: React.FC = () => {
               : "No loan requests found"}
           </p>
         </div>
-      ) : (
-        // Add pagination controls
+      )}
+
+      {/* Pagination Controls */}
+      {filteredLoans.length > 0 && (
         <div className="flex items-center justify-end space-x-4 mt-6">
           <button
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
@@ -463,7 +513,7 @@ const LoanApproval: React.FC = () => {
         </div>
       )}
 
-      {/* Confirmation Dialog - Updated with loading state */}
+      {/* Confirmation Dialog */}
       {selectedLoan && actionType && (
         <ConfirmDialog
           title={`${actionType === "approve" ? "Approve" : "Reject"} Loan`}

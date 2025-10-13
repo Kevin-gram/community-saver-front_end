@@ -120,8 +120,8 @@ const AdminDashboard: React.FC = () => {
       title: "Total Members",
       value: totalMembers.toString(),
       icon: Users,
-      color: "text-emerald-600",
-      bg: "bg-blue-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     {
       title: "Available Balance",
@@ -138,15 +138,15 @@ const AdminDashboard: React.FC = () => {
         ? `€${netContributions.bestFutureBalance.toLocaleString()}`
         : "-",
       icon: TrendingUp,
-      color: "text-purple-600",
-      bg: "bg-purple-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     {
       title: "Pending Loans",
       value: pendingLoans.toString(),
       icon: AlertCircle,
-      color: "text-blue-600",
-      bg: "bg-blue-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     {
       title: "Total Penalties Collected",
@@ -154,8 +154,8 @@ const AdminDashboard: React.FC = () => {
         ? `€${netContributions.totalPaidPenalties.toLocaleString()}`
         : "-",
       icon: AlertCircle,
-      color: "text-red-600",
-      bg: "bg-red-100",
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
   ];
 
@@ -303,6 +303,8 @@ const AdminDashboard: React.FC = () => {
                                 <Clock className="w-4 h-4 text-blue-500 mr-2" />
                               ) : loan.status === "approved" ? (
                                 <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
+                              ) : loan.status === "repaid" ? (
+                                <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
                               ) : (
                                 <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
                               )}
@@ -311,6 +313,8 @@ const AdminDashboard: React.FC = () => {
                                   loan.status === "pending"
                                     ? "bg-blue-100 text-blue-800"
                                     : loan.status === "approved"
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : loan.status === "repaid"
                                     ? "bg-emerald-100 text-emerald-800"
                                     : "bg-red-100 text-red-800"
                                 }`}

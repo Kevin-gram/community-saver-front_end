@@ -34,9 +34,9 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-3">
             <div
-              className={`w-8 h-8 rounded-full ${theme.primary} flex items-center justify-center bg-emerald-700 `}
+              className={`w-8 h-8 rounded-full ${theme.primary} flex items-center justify-center bg-emerald-700`}
             >
-              <UserIcon className="w-4 h-4 text-white " />
+              <UserIcon className="w-4 h-4 text-white" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-emerald-700">
@@ -57,14 +57,14 @@ const Header: React.FC = () => {
               </p>
               {(currentUser.role === "member" ||
                 currentUser.role === "branch_lead") && (
-                <p className={`text-xs uppercase font-medium ${theme.text}`}>
+                <p className="text-xs uppercase font-medium text-emerald-700">
                   {currentUser.branch} Group
                 </p>
               )}
             </div>
             <button
               onClick={handleLogout}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 transition-colors"
               title="Logout"
             >
               <LogOut className="w-5 h-5" />
