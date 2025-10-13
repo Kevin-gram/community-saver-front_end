@@ -160,29 +160,29 @@ const BranchLeadDashboard: React.FC = () => {
       title: "Branch Members",
       value: branchMembers.length.toString(),
       icon: Users,
-      color: "text-blue-600",
-      bg: "bg-blue-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     {
       title: "Total Branch Savings",
       value: `€${totalBranchSavings.toLocaleString()}`,
       icon: DollarSign,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     {
       title: "Active Loans",
       value: activeLoans.toString(),
       icon: TrendingUp,
-      color: "text-purple-600",
-      bg: "bg-purple-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     {
       title: "Pending Approvals",
       value: pendingLoans.toString(),
       icon: AlertCircle,
-      color: "text-emerald-700",
-      bg: "bg-emerald-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
   ];
 
@@ -194,8 +194,8 @@ const BranchLeadDashboard: React.FC = () => {
       title: "Total Savings",
       value: `€${(displayData?.totalContribution || userSavings).toLocaleString()}`,
       icon: DollarSign,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     {
       id: 'interest-received',
@@ -209,8 +209,8 @@ const BranchLeadDashboard: React.FC = () => {
         maximumFractionDigits: 2,
       })}`,
       icon: TrendingUp,
-      color: "text-blue-600",
-      bg: "bg-blue-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
     // Only show penalties if not paid and pending > 0
     ...(typeof currentUser.penalties === "object" &&
@@ -221,8 +221,8 @@ const BranchLeadDashboard: React.FC = () => {
           title: "Penalties",
           value: `€${(currentUser.penalties.pending ?? 0).toLocaleString()}`,
           icon: AlertTriangle,
-          color: "text-red-600",
-          bg: "bg-red-100",
+          color: "text-emerald-600", // Green icon
+          bg: "bg-emerald-100", // Green background
         }]
       : []),
     {
@@ -230,8 +230,8 @@ const BranchLeadDashboard: React.FC = () => {
       title: "Max Loanable",
       value: `€${maxLoanAmount.toLocaleString()}`,
       icon: Calculator,
-      color: "text-purple-600",
-      bg: "bg-purple-100",
+      color: "text-emerald-600", // Green icon
+      bg: "bg-emerald-100", // Green background
     },
   ];
 
@@ -420,9 +420,9 @@ const BranchLeadDashboard: React.FC = () => {
       {latestLoan && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full">
           <div className="flex items-center">
-            <Clock className="w-5 h-5 text-blue-600 mr-3" />
+            <Clock className="w-5 h-5 text-emerald-600 mr-3" /> {/* Icon is green */}
             <div>
-              <h3 className="font-medium text-blue-800">Your Loan Status</h3>
+              <h3 className=" font-semibold text-gray-900">Your Loan Status</h3> {/* Text is black and bold */}
               <p className="text-sm text-gray-700 mt-1">
                 Status:{" "}
                 <span className="font-semibold">{latestLoan.status}</span>

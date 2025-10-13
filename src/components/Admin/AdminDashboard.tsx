@@ -162,11 +162,11 @@ const AdminDashboard: React.FC = () => {
   // Tabs configuration
   const tabs = [
     { id: "overview", label: "Overview", icon: TrendingUp },
-    { id: "registrations", label: "Registration Approval", icon: UserCheck },
-    { id: "users", label: "User Management", icon: Users },
-    { id: "loans", label: "Loan Approval", icon: CheckCircle },
-    { id: "groupshares", label: "Group Shares & Interest", icon: DollarSign },
-    { id: "penalties", label: "Penalties", icon: AlertCircle },
+    { id: "users", label: "User Management", icon: Users }, // Moved to second position
+    { id: "loans", label: "Loan Approval", icon: CheckCircle }, // Moved to third position
+    { id: "groupshares", label: "Group Shares & Interest", icon: DollarSign }, // Moved to fourth position
+    { id: "penalties", label: "Penalties", icon: AlertCircle }, // Moved to fifth position
+    { id: "registrations", label: "Registration Approval", icon: UserCheck }, // Moved to last position
   ];
 
   // Get branch color classes
