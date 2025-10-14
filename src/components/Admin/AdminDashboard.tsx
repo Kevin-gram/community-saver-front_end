@@ -7,7 +7,6 @@ import {
   CheckCircle,
   Clock,
   UserCheck,
-  AlertOctagon,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { NetContributions } from "../../types";
@@ -37,15 +36,13 @@ const AdminDashboard: React.FC = () => {
   
   // Refs for cleanup
   const isMountedRef = useRef(true);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Memoized calculations
   const pendingLoans = loans.filter((loan) => loan.status === "pending").length;
   const totalMembers = users.filter(
     (user) => user.role === "member" && user.status === "approved"
   ).length;
-  const pendingRegistrations = users.filter((user) => user.status === "pending").length;
-
   // Fetch net contributions with error handling
   const fetchNetData = useCallback(async (showLoader = false) => {
     try {

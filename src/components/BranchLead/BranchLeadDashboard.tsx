@@ -18,7 +18,7 @@ import MemberDetails from "./MemberDetails";
 import LoanRequestForm from "../Member/LoanRequestForm";
 import ContributionHistory from "../Member/ContributionHistory";
 import { approveOrReject, updateUser, fetchMemberShares } from "../../utils/api";
-import { Loan, User } from "../../types";
+import { Loan, User, MemberShare } from "../../types";
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
@@ -70,8 +70,8 @@ const BranchLeadDashboard: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [memberShares, setMemberShares] = useState<any>(null);
-  const [allShares, setAllShares] = useState<any[]>([]);
+  const [memberShares, setMemberShares] = useState<MemberShare | null>(null);
+  const [allShares, setAllShares] = useState<MemberShare[]>([]);
   const [sharesLoading, setSharesLoading] = useState(true);
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -236,7 +236,7 @@ const BranchLeadDashboard: React.FC = () => {
   ];
 
   // Branch lead can always edit
-  const getMemberUpdateAccess = (_memberId: string) => true;
+  const getMemberUpdateAccess = () => true;
 
   const handleLoanAction = (loan: Loan, action: "approve" | "reject") => {
     setSelectedLoan(loan);
@@ -273,7 +273,7 @@ const BranchLeadDashboard: React.FC = () => {
   };
 
   // Handler for loan request submission
-  const handleLoanRequestSubmit = async (loanData: any) => {
+  const handleLoanRequestSubmit = async () => {
     setShowLoanForm(false);
     // Trigger a background refresh without showing loading
     fetchSharesData(false);
@@ -648,7 +648,7 @@ const BranchLeadDashboard: React.FC = () => {
       {selectedMember && (
         <MemberDetails
           memberId={selectedMember}
-          canEdit={getMemberUpdateAccess(selectedMember)}
+          canEdit={getMemberUpdateAccess()}
           onClose={() => setSelectedMember(null)}
         />
       )}

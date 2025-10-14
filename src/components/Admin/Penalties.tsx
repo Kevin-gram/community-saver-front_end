@@ -42,6 +42,7 @@ const Penalties: React.FC = () => {
   const [penalties, setPenalties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [processingPenaltyId, setProcessingPenaltyId] = useState<string | null>(null); // Track processing state
 
   useEffect(() => {
     const loadPenalties = async () => {
@@ -60,6 +61,7 @@ const Penalties: React.FC = () => {
 
   // Handle paying penalty: update penalty status in backend and deduct 25 from member
   const handlePayPenalty = async (penaltyId: string) => {
+    setProcessingPenaltyId(penaltyId); // Set processing state
     try {
       // 1. Update penalty status in backend (backend should also create a penalty contribution of -25)
       await updatePenalty(penaltyId, { status: "paid" });
@@ -76,6 +78,8 @@ const Penalties: React.FC = () => {
       dispatch({ type: "ADD_PAID_PENALTY", payload: penaltyId });
     } catch (error) {
       console.error("Failed to pay penalty", error);
+    } finally {
+      setProcessingPenaltyId(null); // Reset processing state
     }
   };
 
@@ -91,19 +95,19 @@ const Penalties: React.FC = () => {
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold mb-6 text-red-700">Penalties</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-black">Penalties</h2> {/* Title is now black */}
         <div className="overflow-x-auto">
           {loading ? (
             <PenaltiesTableSkeleton />
           ) : (
             <>
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 table-fixed"> {/* Added table-fixed for stable layout */}
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="py-2 px-4 text-left">Member</th>
-                    <th className="py-2 px-4 text-left">Contribution Date</th>
-                    <th className="py-2 px-4 text-left">Penalty</th>
-                    <th className="py-2 px-4 text-left">Action</th>
+                    <th className="py-2 px-4 text-left w-1/4">Member</th> {/* Explicit width */}
+                    <th className="py-2 px-4 text-left w-1/4">Contribution Date</th> {/* Explicit width */}
+                    <th className="py-2 px-4 text-left w-1/4">Penalty</th> {/* Explicit width */}
+                    <th className="py-2 px-4 text-left w-1/4">Action</th> {/* Explicit width */}
                   </tr>
                 </thead>
                 <tbody>
@@ -122,10 +126,10 @@ const Penalties: React.FC = () => {
                         </td>
                         <td
                           className={`py-2 px-4 font-bold ${
-                            isPenalty ? "text-red-600" : "text-green-600"
-                          }`}
+                            isPenalty && c.status !== "paid" ? "text-red-600" : "text-green-600"
+                          }`} // Unpaid penalties in red
                         >
-                          {isPenalty ? "$25" : "No Penalty"}
+                          {isPenalty ? `€25` : "No Penalty"} {/* Changed to euro sign */}
                         </td>
                         <td className="py-2 px-4">
                           {isPenalty ? (
@@ -135,13 +139,17 @@ const Penalties: React.FC = () => {
                               </span>
                             ) : (
                               <button
-                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50"
+                                className={`px-3 py-1 rounded text-white ${
+                                  processingPenaltyId === penaltyId
+                                    ? "bg-orange-500 hover:bg-orange-600" // Orange button while processing
+                                    : "bg-red-600 hover:bg-red-700"
+                                } disabled:opacity-50`}
                                 onClick={() => handlePayPenalty(penaltyId)}
                                 disabled={
-                                  c.status === "paid" || paidPenalties.includes(penaltyId)
+                                  processingPenaltyId === penaltyId || c.status === "paid" || paidPenalties.includes(penaltyId)
                                 }
                               >
-                                Pay Penalty
+                                {processingPenaltyId === penaltyId ? "Processing..." : "Pay Penalty"}
                               </button>
                             )
                           ) : (
@@ -162,7 +170,7 @@ const Penalties: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
                       className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
@@ -170,7 +178,7 @@ const Penalties: React.FC = () => {
                       Previous
                     </button>
                     <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages || endIndex >= validPenalties.length}
                       className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >

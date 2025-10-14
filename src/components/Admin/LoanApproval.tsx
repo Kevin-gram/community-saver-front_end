@@ -278,7 +278,7 @@ const LoanApproval: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-4">
                         <div
-                          className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center"
+                          className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center" // Updated to dark green
                         >
                           <UserIcon className="w-5 h-5 text-white" />
                         </div>
@@ -289,7 +289,7 @@ const LoanApproval: React.FC = () => {
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
                             <span>{member.email}</span>
                             <span className="flex items-center">
-                              <div className="w-2 h-2 rounded-full mr-1 bg-emerald-500" />
+                              <div className="w-2 h-2 rounded-full mr-1 bg-emerald-700" /> {/* Updated to dark green */}
                               {member.branch} Group
                             </span>
                             {member.branch && <span>{member.branch}</span>}

@@ -222,7 +222,6 @@ const MemberDashboard: React.FC = () => {
     
     // Prevent fetching if last fetch was too recent (unless initial load)
     if (!isInitialLoad && timeSinceLastFetch < 10000) {
-      console.log('Skipping fetch - too soon since last fetch');
       return;
     }
 

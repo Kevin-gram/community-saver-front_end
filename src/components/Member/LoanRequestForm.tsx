@@ -10,6 +10,7 @@ interface LoanRequestFormProps {
   interestRate: number;
   availableBalance: number;
   userSavings: number;
+  onSubmit: () => Promise<void>; // Added onSubmit property
 }
 
 const LoanRequestForm: React.FC<LoanRequestFormProps> = ({

@@ -97,3 +97,22 @@ export interface MemberPenalties {
   pending: number;
   total: number;
 }
+
+export interface MemberShare {
+  id: string;
+  _id?: string;
+  branch: string;
+  totalContribution: number;
+  [key: string]: any; // Allow additional properties
+}
+
+export interface Penalty {
+  id: string;
+  _id?: string;
+  member: string | User | { _id: string };
+  status: "pending" | "paid";
+  amount: number;
+  createdAt?: Date;
+  assignedDate?: Date;
+  [key: string]: any; // Allow additional properties
+}
