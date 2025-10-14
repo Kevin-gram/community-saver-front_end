@@ -319,8 +319,82 @@ const MemberDashboard: React.FC = () => {
     };
   }, [pollingInterval, currentUser._id, currentUser.id, fetchMemberData]); // Re-run when interval changes
 
+  const loanInfoCard = latestLoan ? (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-medium text-gray-600">Loan Status</p>
+          <p
+            className={`text-lg font-semibold mt-1 ${
+              latestLoan.status === "repaid"
+                ? "text-emerald-600"
+                : latestLoan.status === "pending"
+                ? "text-orange-600"
+                : latestLoan.status === "approved"
+                ? "text-red-600"
+                : "text-gray-900"
+            }`}
+          >
+            {latestLoan.status.charAt(0).toUpperCase() + latestLoan.status.slice(1)}
+          </p>
+        </div>
+        <div
+          className={`rounded-lg p-3 ${
+            latestLoan.status === "repaid"
+              ? "bg-emerald-100"
+              : latestLoan.status === "pending"
+              ? "bg-orange-100"
+              : latestLoan.status === "approved"
+              ? "bg-red-100"
+              : "bg-gray-100"
+          }`}
+        >
+          <Clock
+            className={`w-6 h-6 ${
+              latestLoan.status === "repaid"
+                ? "text-emerald-600"
+                : latestLoan.status === "pending"
+                ? "text-orange-600"
+                : latestLoan.status === "approved"
+                ? "text-red-600"
+                : "text-gray-600"
+            }`}
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+        <p>
+          <span className="font-medium text-gray-900">Amount:</span> €{latestLoan.amount?.toLocaleString() || "N/A"}
+        </p>
+        <p>
+          <span className="font-medium text-gray-900">Repayment:</span> €{latestLoan.repaymentAmount?.toLocaleString() || latestLoan.totalAmount?.toLocaleString() || "N/A"}
+        </p>
+        <p>
+          <span className="font-medium text-gray-900">Rate per month:</span> {latestLoan.interestRate || 0}%
+        </p>
+        <p>
+          <span className="font-medium text-gray-900">Duration:</span> {latestLoan.duration || "N/A"} months
+        </p>
+        <p>
+          <span className="font-medium text-gray-900">Due Date:</span> {latestLoan.dueDate ? new Date(latestLoan.dueDate).toLocaleDateString() : "N/A"}
+        </p>
+        {latestLoan.approvedDate && (
+          <p>
+            <span className="font-medium text-gray-900">Approved Date:</span> {new Date(latestLoan.approvedDate).toLocaleDateString()}
+          </p>
+        )}
+        {latestLoan.requestDate && (
+          <p>
+            <span className="font-medium text-gray-900">Request Date:</span> {new Date(latestLoan.requestDate).toLocaleDateString()}
+          </p>
+        )}
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -331,21 +405,21 @@ const MemberDashboard: React.FC = () => {
           </p>
         </div>
         
-        <button
+        {/* <button
           onClick={handleManualRefresh}
           disabled={sectionsLoading}
           className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
           {sectionsLoading ? "Refreshing..." : "Refresh Data"}
-        </button>
+        </button> */}
       </div>
 
-      {errorCount > 0 && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          <AlertTriangle className="w-4 h-4 inline mr-2" />
-          Auto-refresh temporarily slowed due to server load. Next update in {Math.round(pollingInterval / 1000)}s
-        </div>
-      )}
+      {/* {errorCount > 0 && (
+        // <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+        //   <AlertTriangle className="w-4 h-4 inline mr-2" />
+        //   Auto-refresh temporarily slowed due to server load. Next update in {Math.round(pollingInterval / 1000)}s
+        // </div>
+      )} */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
@@ -363,27 +437,9 @@ const MemberDashboard: React.FC = () => {
         ))}
       </div>
 
-      {sectionsLoading ? (
-        <LoanStatusSkeleton />
-      ) : (
-        latestLoan && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full">
-            <div className="flex items-center">
-              <Clock className="w-5 h-5 text-emerald-600 mr-3" /> {/* Icon is green */}
-              <div>
-                <h3 className="font-medium text-black">Loan Status</h3> {/* Text is black */}
-                <p className="text-sm text-gray-700 mt-1">
-                  Status: <span className="font-semibold">{latestLoan.status}</span>
-                  <br />
-                  Amount: €{latestLoan.amount.toLocaleString()}
-                  <br />
-                  Due Date: {new Date(latestLoan.dueDate).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        )
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loanInfoCard /* Add loan status card in the grid */}
+      </div>
 
       <div className="flex flex-wrap gap-4 mb-8">
         <button
@@ -433,7 +489,7 @@ const MemberDashboard: React.FC = () => {
             <div>
               <h4 className="font-medium text-gray-700 mb-2">Loan Calculation</h4>
               <div className="space-y-1 text-sm text-gray-600">
-                <p>Savings: €{currentSavings.toLocaleString()}</p>
+                <p>Savings: €{currentSavings?.toLocaleString() || "N/A"}</p>
                 <p>Multiplier: {rules ? rules.maxLoanMultiplier : "N/A"}x</p>
                 <p>Maximum: €{rules && rules.maxLoanAmount !== undefined ? rules.maxLoanAmount.toLocaleString() : "N/A"}</p>
                 <p className="font-medium text-gray-900">

@@ -42,7 +42,8 @@ const Penalties: React.FC = () => {
   const [penalties, setPenalties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [processingPenaltyId, setProcessingPenaltyId] = useState<string | null>(null); // Track processing state
+  const [processingPenaltyId, setProcessingPenaltyId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "unpaid" | "paid">("all"); // Filter state
 
   useEffect(() => {
     const loadPenalties = async () => {
@@ -83,39 +84,66 @@ const Penalties: React.FC = () => {
     }
   };
 
-  // Filter valid penalties first (ones with valid members)
-  const validPenalties = penalties.filter((c) => c.member !== null && c.member !== undefined);
+  // Filter and sort penalties based on the selected filter
+  const filteredPenalties = penalties
+    .filter((c) => {
+      if (filter === "unpaid") return c.status !== "paid";
+      if (filter === "paid") return c.status === "paid";
+      return true; // "all"
+    })
+    .sort((a, b) => {
+      if (filter === "all") {
+        // Sort unpaid penalties first when "All" is selected
+        if (a.status !== "paid" && b.status === "paid") return -1;
+        if (a.status === "paid" && b.status !== "paid") return 1;
+      }
+      return 0; // Keep original order for other filters
+    });
   
   // Calculate pagination values using valid penalties
-  const totalPages = Math.ceil(validPenalties.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredPenalties.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, validPenalties.length);
-  const currentPenalties = validPenalties.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredPenalties.length);
+  const currentPenalties = filteredPenalties.slice(startIndex, endIndex);
 
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-2xl font-semibold mb-6 text-black">Penalties</h2> {/* Title is now black */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold text-black">Penalties</h2>
+          <select
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value as "all" | "unpaid" | "paid");
+              setCurrentPage(1); // Reset to the first page when filter changes
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="all">All</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
         <div className="overflow-x-auto">
           {loading ? (
             <PenaltiesTableSkeleton />
           ) : (
             <>
-              <table className="min-w-full divide-y divide-gray-200 table-fixed"> {/* Added table-fixed for stable layout */}
+              <table className="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="py-2 px-4 text-left w-1/4">Member</th> {/* Explicit width */}
-                    <th className="py-2 px-4 text-left w-1/4">Contribution Date</th> {/* Explicit width */}
-                    <th className="py-2 px-4 text-left w-1/4">Penalty</th> {/* Explicit width */}
-                    <th className="py-2 px-4 text-left w-1/4">Action</th> {/* Explicit width */}
+                    <th className="py-2 px-4 text-left w-1/4">Member</th>
+                    <th className="py-2 px-4 text-left w-1/4">Contribution Date</th>
+                    <th className="py-2 px-4 text-left w-1/4">Penalty</th>
+                    <th className="py-2 px-4 text-left w-1/4">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentPenalties.map((c) => {
                     const isPenalty = c.createdAt;
                     const penaltyId = c.id || c._id;
-                    const memberName = `${c.member.firstName} ${c.member.lastName || ''}`.trim();
-                    
+                    const memberName = `${c.member.firstName} ${c.member.lastName || ""}`.trim();
+
                     return (
                       <tr key={penaltyId}>
                         <td className="py-2 px-4">{memberName}</td>
@@ -127,26 +155,26 @@ const Penalties: React.FC = () => {
                         <td
                           className={`py-2 px-4 font-bold ${
                             isPenalty && c.status !== "paid" ? "text-red-600" : "text-green-600"
-                          }`} // Unpaid penalties in red
+                          }`}
                         >
-                          {isPenalty ? `€25` : "No Penalty"} {/* Changed to euro sign */}
+                          {isPenalty ? `€25` : "No Penalty"}
                         </td>
                         <td className="py-2 px-4">
                           {isPenalty ? (
                             c.status === "paid" || paidPenalties.includes(penaltyId) ? (
-                              <span className="text-green-600 font-semibold">
-                                Repaid
-                              </span>
+                              <span className="text-green-600 font-semibold">Repaid</span>
                             ) : (
                               <button
                                 className={`px-3 py-1 rounded text-white ${
                                   processingPenaltyId === penaltyId
-                                    ? "bg-orange-500 hover:bg-orange-600" // Orange button while processing
+                                    ? "bg-orange-500 hover:bg-orange-600"
                                     : "bg-red-600 hover:bg-red-700"
                                 } disabled:opacity-50`}
                                 onClick={() => handlePayPenalty(penaltyId)}
                                 disabled={
-                                  processingPenaltyId === penaltyId || c.status === "paid" || paidPenalties.includes(penaltyId)
+                                  processingPenaltyId === penaltyId ||
+                                  c.status === "paid" ||
+                                  paidPenalties.includes(penaltyId)
                                 }
                               >
                                 {processingPenaltyId === penaltyId ? "Processing..." : "Pay Penalty"}
@@ -163,10 +191,10 @@ const Penalties: React.FC = () => {
               </table>
 
               {/* Modern Pagination Controls */}
-              {totalPages > 1 && validPenalties.length > ITEMS_PER_PAGE && (
+              {totalPages > 1 && filteredPenalties.length > ITEMS_PER_PAGE && (
                 <div className="flex items-center justify-between mt-6">
                   <div className="text-sm text-gray-500">
-                    Showing {startIndex + 1} to {endIndex} of {validPenalties.length} penalties
+                    Showing {startIndex + 1} to {endIndex} of {filteredPenalties.length} penalties
                   </div>
                   <div className="flex items-center space-x-4">
                     <button
@@ -179,7 +207,7 @@ const Penalties: React.FC = () => {
                     </button>
                     <button
                       onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages || endIndex >= validPenalties.length}
+                      disabled={currentPage === totalPages || endIndex >= filteredPenalties.length}
                       className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Next
