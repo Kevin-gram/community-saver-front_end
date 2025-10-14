@@ -168,7 +168,7 @@ const Penalties: React.FC = () => {
                                 className={`px-3 py-1 rounded text-white ${
                                   processingPenaltyId === penaltyId
                                     ? "bg-orange-500 hover:bg-orange-600"
-                                    : "bg-red-600 hover:bg-red-700"
+                                    : "bg-green-700 hover:bg-green-800"
                                 } disabled:opacity-50`}
                                 onClick={() => handlePayPenalty(penaltyId)}
                                 disabled={
