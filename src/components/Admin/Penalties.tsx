@@ -87,6 +87,12 @@ const Penalties: React.FC = () => {
   // Filter and sort penalties based on the selected filter
   const filteredPenalties = penalties
     .filter((c) => {
+      // First check if member data exists and is valid
+      if (!c.member || !c.member.firstName) {
+        return false; // Exclude penalties with missing member data
+      }
+      
+      // Then apply status filter
       if (filter === "unpaid") return c.status !== "paid";
       if (filter === "paid") return c.status === "paid";
       return true; // "all"
@@ -142,7 +148,10 @@ const Penalties: React.FC = () => {
                   {currentPenalties.map((c) => {
                     const isPenalty = c.createdAt;
                     const penaltyId = c.id || c._id;
-                    const memberName = `${c.member.firstName} ${c.member.lastName || ""}`.trim();
+                    // Add null check for member
+                    const memberName = c.member 
+                      ? `${c.member.firstName || ''} ${c.member.lastName || ''}`.trim() 
+                      : 'Unknown Member';
 
                     return (
                       <tr key={penaltyId}>
