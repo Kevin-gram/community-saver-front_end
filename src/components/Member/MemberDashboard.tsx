@@ -435,7 +435,7 @@ const MemberDashboard: React.FC = () => {
         </div>
       </div>
       <p className="text-sm text-gray-600">
-        Expected interest to be earned from active loans
+        Expected interest to be earned from active loans/Penalties
       </p>
     </div>
   );

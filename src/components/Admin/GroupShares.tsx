@@ -251,6 +251,9 @@ const GroupShares: React.FC = () => {
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
                     Interest
                   </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Future Interest
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -273,6 +276,12 @@ const GroupShares: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-emerald-700 font-bold">
                       €{member.interestEarned.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </td>
+                    <td className="py-3 px-4 text-purple-700 font-bold">
+                      €{member.interestToBeEarned.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
                     </td>
