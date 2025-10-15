@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { fetchMemberShares } from "../../utils/api";
-import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, TrendingUp, PiggyBank } from "lucide-react";
 
 type MemberShare = {
   id: string;
@@ -139,7 +139,7 @@ const GroupShares: React.FC = () => {
     return (
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-3xl font-extrabold mb-8 text-emerald-700 text-center drop-shadow">
-          Global Shares & Interest
+          Group Shares & Interest
         </h2>
         <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-8">
           <SharesTableSkeleton />
@@ -223,13 +223,13 @@ const GroupShares: React.FC = () => {
             <p className="text-lg font-medium text-gray-700 mb-2">
               Total Interest Distributed
             </p>
-            <div className="text-2xl font-bold text-blue-700">
+            <div className="text-2xl font-bold text-emerald-700">
               €{totalInterest.toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </div>
           </div>
         </div>
         <div className="mt-6">
-          <h4 className="text-xl font-semibold mb-4 text-purple-700">
+          <h4 className="text-xl font-semibold mb-4 text-emerald-700">
             Member Shares ({globalStats.length} members)
           </h4>
           <div className="overflow-x-auto rounded-lg border border-gray-100 bg-white shadow">
@@ -249,10 +249,16 @@ const GroupShares: React.FC = () => {
                     Percent
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Interest
+                    <div className="flex items-center gap-1">
+                      Interest
+                      <TrendingUp className="w-4 h-4 text-emerald-600" />
+                    </div>
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Future Interest
+                    <div className="flex items-center gap-1">
+                      Future Interest
+                      <PiggyBank className="w-4 h-4 text-emerald-600" />
+                    </div>
                   </th>
                 </tr>
               </thead>
@@ -265,7 +271,7 @@ const GroupShares: React.FC = () => {
                     <td className="py-3 px-4 font-medium text-gray-900">
                       {member.name}
                     </td>
-                    <td className="py-3 px-4 text-blue-700 font-semibold capitalize">
+                    <td className="py-3 px-4 text-gray-700 font-semibold capitalize">
                       {member.branch}
                     </td>
                     <td className="py-3 px-4">
@@ -279,7 +285,7 @@ const GroupShares: React.FC = () => {
                         maximumFractionDigits: 2,
                       })}
                     </td>
-                    <td className="py-3 px-4 text-purple-700 font-bold">
+                    <td className="py-3 px-4 text-emerald-700 font-bold">
                       €{member.interestToBeEarned.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
