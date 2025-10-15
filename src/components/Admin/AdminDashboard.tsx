@@ -178,6 +178,15 @@ const AdminDashboard: React.FC = () => {
     return colorMap[branch] || "bg-gray-500";
   };
 
+  // Filter out loans with invalid members or null values
+  const validLoans = loans.filter(loan => {
+    return loan.member && 
+           loan.member._id && 
+           loan.amount && 
+           loan.status &&
+           users.some(user => user._id === loan.member?._id);
+  });
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {loading && (
@@ -269,67 +278,58 @@ const AdminDashboard: React.FC = () => {
                     Recent Loan Requests
                   </h3>
                   <div className="space-y-4">
-                    {loans.length === 0 ? (
-                      <div className="space-y-4">
-                        {[...Array(3)].map((_, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg animate-pulse"
-                          >
-                            <div className="flex-1">
-                              <div className="h-4 bg-emerald-200 rounded w-32 mb-2"></div>
-                              <div className="h-3 bg-emerald-200 rounded w-20"></div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 bg-emerald-200 rounded-full"></div>
-                              <div className="h-6 bg-emerald-200 rounded-full w-16"></div>
-                            </div>
-                          </div>
-                        ))}
+                    {validLoans.length === 0 ? (
+                      <div className="text-gray-500 text-center py-4">
+                        No valid loan requests available
                       </div>
                     ) : (
-                      loans.slice(0, MAX_RECENT_LOANS).map((loan) => {
-                        const member = users.find((u) => u._id === loan.member?._id);
-                        return (
-                          <div
-                            key={loan._id || loan.id}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                          >
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {member?.firstName || "Unknown Member"}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                €{loan.amount.toLocaleString()}
-                              </p>
+                      validLoans
+                        .slice(0, MAX_RECENT_LOANS)
+                        .map((loan) => {
+                          const member = users.find((u) => u._id === loan.member?._id);
+                          if (!member) return null; // Skip if no valid member found
+
+                          return (
+                            <div
+                              key={loan._id || loan.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {member.firstName} {member.lastName}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  €{loan.amount.toLocaleString()}
+                                </p>
+                              </div>
+                              <div className="flex items-center">
+                                {loan.status === "pending" ? (
+                                  <Clock className="w-4 h-4 text-blue-500 mr-2" />
+                                ) : loan.status === "approved" ? (
+                                  <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
+                                ) : loan.status === "repaid" ? (
+                                  <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
+                                ) : (
+                                  <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
+                                )}
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    loan.status === "pending"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : loan.status === "approved"
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : loan.status === "repaid"
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center">
-                              {loan.status === "pending" ? (
-                                <Clock className="w-4 h-4 text-blue-500 mr-2" />
-                              ) : loan.status === "approved" ? (
-                                <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
-                              ) : loan.status === "repaid" ? (
-                                <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
-                              ) : (
-                                <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
-                              )}
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  loan.status === "pending"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : loan.status === "approved"
-                                    ? "bg-emerald-100 text-emerald-800"
-                                    : loan.status === "repaid"
-                                    ? "bg-emerald-100 text-emerald-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })
+                          );
+                        })
+                        .filter(Boolean) // Remove any null entries
                     )}
                   </div>
                 </div>
