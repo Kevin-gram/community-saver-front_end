@@ -154,7 +154,7 @@ const GroupShares: React.FC = () => {
     return (
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-3xl font-extrabold mb-8 text-emerald-700 text-center drop-shadow">
-          Global Shares & Interest
+          Group Shares & Interest
         </h2>
         <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-8">
           <div className="flex flex-col items-center justify-center py-12">
@@ -181,7 +181,7 @@ const GroupShares: React.FC = () => {
     return (
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-3xl font-extrabold mb-8 text-emerald-700 text-center drop-shadow">
-          Global Shares & Interest
+          Group Shares & Interest
         </h2>
         <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-8">
           <div className="flex flex-col items-center justify-center py-12">
@@ -207,7 +207,7 @@ const GroupShares: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <h2 className="text-3xl font-extrabold mb-8 text-emerald-700 text-center drop-shadow">
-        Global Shares & Interest
+        Group Shares & Interest
       </h2>
       <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-8">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
