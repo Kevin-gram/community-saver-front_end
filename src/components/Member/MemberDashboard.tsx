@@ -7,6 +7,7 @@ import {
   Plus,
   History,
   Calculator,
+  PiggyBank,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { calculateMaxLoanAmount } from "../../utils/calculations";
@@ -96,12 +97,29 @@ const MemberDashboard: React.FC = () => {
   const lastSuccessfulFetch = useRef<number>(Date.now());
   const lastFetchTime = useRef<number>(0);
 
-  const currentUser = users.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
+  // Early return if no user data
+  if (!rawCurrentUser) {
+    return (
+      <div className="p-8 text-center">
+        <p>Loading user data...</p>
+      </div>
+    );
+  }
 
-  if (!currentUser || currentUser.role !== "member") return null;
+  // Find current user with null check
+  const currentUser = users?.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
 
-  const groupKey = currentUser.branch?.toLowerCase();
-  const rules = groupRules[groupKey];
+  // Early return if not a member
+  if (!currentUser || currentUser.role !== "member") {
+    return (
+      <div className="p-8 text-center">
+        <p>Access denied. Member privileges required.</p>
+      </div>
+    );
+  }
+
+  const groupKey = currentUser.branch?.toLowerCase() || '';
+  const rules = groupRules[groupKey] || {};
   
   // Use displayData for calculations to reflect updated values
   const displayData = memberShares || currentUser;
@@ -164,12 +182,13 @@ const MemberDashboard: React.FC = () => {
     },
   ];
 
-  const userLoans = state.loans.filter((loan) => {
+  const userLoans = state.loans?.filter((loan) => {
+    if (!loan || !currentUser) return false;
     if (typeof loan.member === "object") {
-      return loan.member._id === currentUser._id;
+      return loan.member?._id === currentUser._id;
     }
     return loan.member === currentUser._id;
-  });
+  }) || [];
 
   const latestLoan = userLoans[0];
   const eligible = !latestLoan || (latestLoan.status && ["repaid", "rejected"].includes(latestLoan.status));
@@ -234,12 +253,18 @@ const MemberDashboard: React.FC = () => {
         fetchPenaltiesData(userId),
       ]);
 
+      console.log('All shares data:', sharesData); // Log all shares
+      
       const sharesArray = Array.isArray(sharesData) ? sharesData : [];
+      console.log('Shares array:', sharesArray); // Log processed shares array
 
       if (isMountedRef.current) {
         const currentShare = sharesArray.find(
           (share: any) => String(share.id || share._id) === String(userId)
         );
+        
+        console.log('Current user share:', currentShare); // Log current user's share
+        console.log('Looking for user ID:', userId); // Log the user ID we're looking for
         
         setMemberShares(currentShare);
         setSectionsLoading(false);
@@ -392,6 +417,29 @@ const MemberDashboard: React.FC = () => {
     </div>
   ) : null;
 
+  // Future Interest Card
+  const futureInterestCard = (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-medium text-gray-600">Future Interest</p>
+          <p className="text-lg font-semibold mt-1 text-emerald-600">
+            €{(displayData?.interestToBeEarned ?? 0).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </p>
+        </div>
+        <div className="rounded-lg p-3 bg-emerald-100">
+          <PiggyBank className="w-6 h-6 text-emerald-600" />
+        </div>
+      </div>
+      <p className="text-sm text-gray-600">
+        Expected interest to be earned from active loans
+      </p>
+    </div>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -437,8 +485,9 @@ const MemberDashboard: React.FC = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loanInfoCard /* Add loan status card in the grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {loanInfoCard}
+        {futureInterestCard}
       </div>
 
       <div className="flex flex-wrap gap-4 mb-8">

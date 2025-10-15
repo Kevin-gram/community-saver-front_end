@@ -64,9 +64,6 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
       repaymentPeriod <= 0
     )
       return;
-
-    console.log("Repayment Amount:", repaymentAmount); // Log the repayment amount
-
     setIsSubmitting(true);
 
     const newLoan: Loan = {
