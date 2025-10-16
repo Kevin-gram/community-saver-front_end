@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchUsers, updateUser } from "../../utils/api";
 import { User } from "../../types";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 const RegistrationSkeleton = () => (
   <div className="space-y-4">
@@ -32,6 +32,8 @@ const RegistrationApproval: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"pending" | "approved" | "rejected">("pending");
   const [currentPage, setCurrentPage] = useState(1);
+  const [processing, setProcessing] = useState<{ userId: string | null, action: "approve" | "reject" | null }>({ userId: null, action: null });
+  const [fadingOutUserId, setFadingOutUserId] = useState<string | null>(null);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -45,7 +47,7 @@ const RegistrationApproval: React.FC = () => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Failed to reject user.");
+        setError("Failed to load users.");
       }
     } finally {
       setLoading(false);
@@ -61,23 +63,47 @@ const RegistrationApproval: React.FC = () => {
   }, [activeTab]);
 
   const handleApprove = async (userId: string) => {
+    setProcessing({ userId, action: "approve" });
+    setError(null);
     try {
       await updateUser({ id: userId, status: "approved" });
-      loadUsers();
+      setFadingOutUserId(userId);
+      setTimeout(() => {
+        const user = pendingUsers.find(u => u._id === userId);
+        if (user) {
+          setPendingUsers(prev => prev.filter(u => u._id !== userId));
+          setApprovedUsers(prev => [...prev, { ...user, status: "approved" }]);
+        }
+        setProcessing({ userId: null, action: null });
+        setFadingOutUserId(null);
+      }, 300);
     } catch (err: unknown) {
+      setProcessing({ userId: null, action: null });
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Failed to reject user.");
+        setError("Failed to approve user.");
       }
     }
   };
 
   const handleReject = async (userId: string) => {
+    setProcessing({ userId, action: "reject" });
+    setError(null);
     try {
       await updateUser({ id: userId, status: "rejected" });
-      loadUsers();
+      setFadingOutUserId(userId);
+      setTimeout(() => {
+        const user = pendingUsers.find(u => u._id === userId);
+        if (user) {
+          setPendingUsers(prev => prev.filter(u => u._id !== userId));
+          setRejectedUsers(prev => [...prev, { ...user, status: "rejected" }]);
+        }
+        setProcessing({ userId: null, action: null });
+        setFadingOutUserId(null);
+      }, 300);
     } catch (err: unknown) {
+      setProcessing({ userId: null, action: null });
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -152,7 +178,9 @@ const RegistrationApproval: React.FC = () => {
             {paginatedUsers.map((user) => (
               <div
                 key={user._id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg transition-all duration-300 ${
+                  fadingOutUserId === user._id ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                }`}
               >
                 <div>
                   <p className="font-medium text-gray-900">
@@ -163,16 +191,32 @@ const RegistrationApproval: React.FC = () => {
                 {activeTab === "pending" && (
                   <div className="flex gap-2">
                     <button
-                      className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                      className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                       onClick={() => handleApprove(user._id!)}
+                      disabled={processing.userId === user._id}
                     >
-                      Approve
+                      {processing.userId === user._id && processing.action === "approve" ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Approving...
+                        </>
+                      ) : (
+                        "Approve"
+                      )}
                     </button>
                     <button
-                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                       onClick={() => handleReject(user._id!)}
+                      disabled={processing.userId === user._id}
                     >
-                      Reject
+                      {processing.userId === user._id && processing.action === "reject" ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Rejecting...
+                        </>
+                      ) : (
+                        "Reject"
+                      )}
                     </button>
                   </div>
                 )}
