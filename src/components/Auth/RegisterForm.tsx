@@ -152,7 +152,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-700 via-emerald-500 to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-white flex items-center justify-center px-4">
       <div className="max-w-4xl w-full space-y-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
         <div className="text-center">
           <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
