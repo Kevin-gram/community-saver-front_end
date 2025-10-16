@@ -5,6 +5,7 @@ import Header from "./components/Layout/Header";
 import MemberDashboard from "./components/Member/MemberDashboard";
 import AdminDashboard from "./components/Admin/AdminDashboard";
 import BranchLeadDashboard from "./components/BranchLead/BranchLeadDashboard";
+import AuthCallback from "./components/Auth/AuthCallback";
 import {
   BrowserRouter as Router,
   Routes,
@@ -60,6 +61,7 @@ const AppContent: React.FC = () => {
             )
           }
         />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route
           path="*"
           element={
