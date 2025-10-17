@@ -253,18 +253,13 @@ const MemberDashboard: React.FC = () => {
         fetchPenaltiesData(userId),
       ]);
 
-      console.log('All shares data:', sharesData); // Log all shares
       
       const sharesArray = Array.isArray(sharesData) ? sharesData : [];
-      console.log('Shares array:', sharesArray); // Log processed shares array
 
       if (isMountedRef.current) {
         const currentShare = sharesArray.find(
           (share: any) => String(share.id || share._id) === String(userId)
         );
-        
-        console.log('Current user share:', currentShare); // Log current user's share
-        console.log('Looking for user ID:', userId); // Log the user ID we're looking for
         
         setMemberShares(currentShare);
         setSectionsLoading(false);

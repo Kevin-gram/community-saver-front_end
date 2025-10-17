@@ -6,6 +6,7 @@ import MemberDashboard from "./components/Member/MemberDashboard";
 import AdminDashboard from "./components/Admin/AdminDashboard";
 import BranchLeadDashboard from "./components/BranchLead/BranchLeadDashboard";
 import AuthCallback from "./components/Auth/AuthCallback";
+import ResetPassword from "./components/Auth/ResetPassword";
 import {
   BrowserRouter as Router,
   Routes,
@@ -62,6 +63,7 @@ const AppContent: React.FC = () => {
           }
         />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="*"
           element={
