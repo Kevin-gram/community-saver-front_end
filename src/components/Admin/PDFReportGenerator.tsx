@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FileDown, Loader2, Calendar } from "lucide-react";
+import { FileDown, Loader2, Calendar, Upload } from "lucide-react";
 import { fetchUsers, fetchLoans, fetchMemberShares, fetchPenalties } from "../../utils/api";
 import { User, Loan, MemberShare } from "../../types";
 
@@ -13,14 +13,18 @@ type ReportData = {
   timestamp: string;
 };
 
-const FinancialReport: React.FC = () => {
+const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) => void }> = ({
+  loading: externalLoading,
+  setLoading: setExternalLoading,
+}) => {
   const [data, setData] = useState<ReportData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>("month");
   const [hoveredPeriod, setHoveredPeriod] = useState<ReportPeriod | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [loadingButton, setLoadingButton] = useState<"download" | "publish" | null>(null);
 
   const periods: { value: ReportPeriod; label: string; description: string }[] = [
     { value: "week", label: "Last 7 Days", description: "Weekly Report" },
@@ -30,10 +34,14 @@ const FinancialReport: React.FC = () => {
     { value: "all", label: "All Time", description: "Complete History" },
   ];
 
+  // Use external loading state if provided, otherwise use internal
+  const loading = typeof externalLoading === "boolean" ? externalLoading : internalLoading;
+
   // Fetch data from endpoints
   const fetchData = async () => {
     try {
-      setLoading(true);
+      setInternalLoading(true);
+      if (setExternalLoading) setExternalLoading(true);
       setError(null);
       
       const [users, loansResponse, shares, penaltiesResponse] = await Promise.all([
@@ -66,7 +74,8 @@ const FinancialReport: React.FC = () => {
       console.error('Fetch Error:', err);
       setError("Failed to fetch report data.");
     } finally {
-      setLoading(false);
+      setInternalLoading(false);
+      if (setExternalLoading) setExternalLoading(false);
     }
   };
 
@@ -298,9 +307,35 @@ const FinancialReport: React.FC = () => {
     }
   };
 
+  const uploadReport = async (pdfBlob: Blob, description: string = "") => {
+    const formData = new FormData();
+    formData.append("report", pdfBlob, "financial-report.pdf");
+    if (description) formData.append("description", description);
+
+    // Get token from localStorage or context (adjust as needed)
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("No admin token found. Please log in as admin.");
+      return;
+    }
+
+    const response = await fetch("http://localhost:5000/api/reports/upload", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to upload report");
+    }
+  };
+
   const handleGeneratePDF = async () => {
     if (!data) return;
     setIsGenerating(true);
+    setLoadingButton("download");
     try {
       const filtered = filterDataByPeriod(data, selectedPeriod);
       const doc = await generatePDFWithJsPDF(filtered);
@@ -311,18 +346,53 @@ const FinancialReport: React.FC = () => {
       alert("Failed to generate PDF. Please check console for details.");
     } finally {
       setIsGenerating(false);
+      setLoadingButton(null);
     }
   };
 
-  if (loading) return <p>Loading report data...</p>;
+  const handlePublishPDF = async () => {
+    if (!data) return;
+    setIsGenerating(true);
+    setLoadingButton("publish");
+    try {
+      const filtered = filterDataByPeriod(data, selectedPeriod);
+      const doc = await generatePDFWithJsPDF(filtered);
+      const pdfBlob = doc.output("blob");
+      await uploadReport(pdfBlob, `Financial report for period: ${selectedPeriod}`);
+     
+    } catch (error) {
+      console.error("Report publish failed:", error);
+      alert("Failed to publish report. Please check console for details.");
+    } finally {
+      setIsGenerating(false);
+      setLoadingButton(null);
+    }
+  };
+
+  // Remove: if (loading) return <p>Loading report data...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
-  if (!data) return null;
+  if (!data) {
+    return (
+      <button
+        disabled
+        className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-400 text-white cursor-not-allowed"
+      >
+        <FileDown className="w-4 h-4" />
+        <span className="text-sm font-medium">Export PDF</span>
+      </button>
+    );
+  }
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
+        disabled={loading}
+        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors shadow-sm ${
+          loading
+            ? "bg-gray-400 text-white cursor-not-allowed"
+            : "bg-emerald-600 text-white hover:bg-emerald-700"
+        }`}
       >
         <FileDown className="w-4 h-4" />
         <span className="text-sm font-medium">Export PDF</span>
@@ -330,9 +400,9 @@ const FinancialReport: React.FC = () => {
 
       {isExpanded && (
         <>
-          <div className="fixed inset-0 bg-black bg-opacity-20 z-40" onClick={() => setIsExpanded(false)} />
-          <div className="absolute right-0 top-12 bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-72 z-50">
-            <div className="space-y-2 mb-4">
+          <div className="fixed inset-0 bg-black bg-opacity-30 z-40" onClick={() => setIsExpanded(false)} />
+          <div className="absolute right-0 top-12 bg-white rounded-lg shadow-xl border border-gray-200 p-8 w-[420px] z-50">
+            <div className="space-y-4 mb-6">
               <label className="text-sm font-medium text-gray-700 flex items-center">
                 <Calendar className="w-4 h-4 mr-1" />
                 Report Period
@@ -364,25 +434,47 @@ const FinancialReport: React.FC = () => {
               </div>
             </div>
 
-            <button
-              onClick={handleGeneratePDF}
-              disabled={isGenerating}
-              className={`w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-                isGenerating ? "bg-gray-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
-              } text-white`}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Generating...</span>
-                </>
-              ) : (
-                <>
-                  <FileDown className="w-4 h-4" />
-                  <span className="text-sm">Download Report</span>
-                </>
-              )}
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleGeneratePDF}
+                disabled={isGenerating}
+                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                  isGenerating ? "bg-gray-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                } text-white`}
+              >
+                {loadingButton === "download" ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-4 h-4" />
+                    <span className="text-sm">Download Report</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handlePublishPDF}
+                disabled={isGenerating}
+                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                  isGenerating ? "bg-gray-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                } text-white`}
+                title="Publish report to server"
+              >
+                {loadingButton === "publish" ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Publishing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    <span className="text-sm">Publish Report</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </>
       )}

@@ -8,11 +8,13 @@ import {
   History,
   Calculator,
   PiggyBank,
+  FileDown,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { calculateMaxLoanAmount } from "../../utils/calculations";
 import LoanRequestForm from "./LoanRequestForm";
 import ContributionHistory from "./ContributionHistory";
+import FinancialReports from "./FinancialReports";
 import { fetchMemberShares, fetchPenalties } from "../../utils/api";
 
 const INITIAL_POLLING_INTERVAL = 30000; // 30 seconds
@@ -89,6 +91,7 @@ const MemberDashboard: React.FC = () => {
   const [sectionsLoading, setSectionsLoading] = useState(true);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showReportsPopup, setShowReportsPopup] = useState(false);
   const [pollingInterval, setPollingInterval] = useState(INITIAL_POLLING_INTERVAL);
   const [errorCount, setErrorCount] = useState(0);
   
@@ -447,14 +450,16 @@ const MemberDashboard: React.FC = () => {
             Welcome back, {displayData?.name || `${displayData?.firstName || ""} ${displayData?.lastName || ""}`.trim() || "Member"}
           </p>
         </div>
-        
-        {/* <button
-          onClick={handleManualRefresh}
-          disabled={sectionsLoading}
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-        >
-          {sectionsLoading ? "Refreshing..." : "Refresh Data"}
-        </button> */}
+        <div className="flex items-center space-x-3">
+          <button
+            className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            onClick={() => setShowReportsPopup(true)}
+            title="View Financial Reports"
+          >
+            <FileDown className="w-5 h-5 mr-2" />
+            <span className="text-sm font-medium">Reports</span>
+          </button>
+        </div>
       </div>
 
       {/* {errorCount > 0 && (
@@ -557,6 +562,10 @@ const MemberDashboard: React.FC = () => {
 
       {showHistory && (
         <ContributionHistory onClose={() => setShowHistory(false)} />
+      )}
+
+      {showReportsPopup && (
+        <FinancialReports open={showReportsPopup} onClose={() => setShowReportsPopup(false)} />
       )}
     </div>
   );

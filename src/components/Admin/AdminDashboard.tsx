@@ -34,7 +34,9 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [netContributions, setNetContributions] = useState<NetContributions | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+  // Add loading state for PDFReportGenerator
+  const [pdfReportLoading, setPdfReportLoading] = useState(true);
+
   // Refs for cleanup
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -219,7 +221,12 @@ const AdminDashboard: React.FC = () => {
             
             {/* PDF Report Generator - Top Right Corner */}
             <div className="ml-4">
-              <PDFReportGenerator />
+              <div>
+                <PDFReportGenerator
+                  loading={pdfReportLoading}
+                  setLoading={setPdfReportLoading}
+                />
+              </div>
             </div>
           </div>
 
