@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FileDown, Loader2, Calendar, Upload } from "lucide-react";
 import { fetchUsers, fetchLoans, fetchMemberShares, fetchPenalties } from "../../utils/api";
 import { User, Loan, MemberShare } from "../../types";
+import { API_BASE } from "../../utils/api";
 
 type ReportPeriod = "week" | "month" | "quarter" | "year" | "all";
 
@@ -319,7 +320,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       return;
     }
 
-    const response = await fetch("http://localhost:5000/api/reports/upload", {
+    const response = await fetch(`${API_BASE}/reports/upload`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
