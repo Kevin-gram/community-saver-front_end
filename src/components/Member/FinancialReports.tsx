@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { FileDown, Loader2, Calendar, X, Sparkles } from "lucide-react";
+import { API_BASE } from "../../utils/api";
 
 interface Report {
   _id: string;
@@ -29,7 +30,7 @@ export const useNewReportsCount = (): number => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const response = await fetch("http://localhost:5000/api/reports", {
+      const response = await fetch(`${API_BASE}/reports`, {
         method: "GET",
         headers: {
           "Accept": "application/json",
@@ -120,7 +121,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
       throw new Error("Access denied. No token provided.");
     }
 
-    const response = await fetch("http://localhost:5000/api/reports", {
+    const response = await fetch(`${API_BASE}/reports`, {
       method: "GET",
       headers: {
         "Accept": "application/json",
@@ -189,7 +190,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
         throw new Error("Authentication required");
       }
       
-      const response = await fetch(`http://localhost:5000/api/reports/${id}/download`, {
+      const response = await fetch(`${API_BASE}/reports/${id}/download`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
