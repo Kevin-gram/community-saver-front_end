@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { FileDown, Loader2, Calendar, Upload } from "lucide-react";
-import { fetchUsers, fetchLoans, fetchMemberShares, fetchPenalties } from "../../utils/api";
+import { FileDown, Loader2, Calendar, Upload, Mail } from "lucide-react";
+import { fetchUsers, fetchLoans, fetchMemberShares, fetchPenalties, API_BASE } from "../../utils/api";
 import { User, Loan, MemberShare } from "../../types";
-import { API_BASE } from "../../utils/api";
 
 type ReportPeriod = "week" | "month" | "quarter" | "year" | "all";
+
+type User = any;
+type Loan = any;
+type MemberShare = any;
 
 type ReportData = {
   users: User[];
@@ -25,7 +28,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
   const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>("month");
   const [hoveredPeriod, setHoveredPeriod] = useState<ReportPeriod | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [loadingButton, setLoadingButton] = useState<"download" | "publish" | null>(null);
+  const [loadingButton, setLoadingButton] = useState<"download" | "publish" | "send" | null>(null);
 
   const periods: { value: ReportPeriod; label: string; description: string }[] = [
     { value: "week", label: "Last 7 Days", description: "Weekly Report" },
@@ -35,10 +38,8 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
     { value: "all", label: "All Time", description: "Complete History" },
   ];
 
-  // Use external loading state if provided, otherwise use internal
   const loading = typeof externalLoading === "boolean" ? externalLoading : internalLoading;
 
-  // Fetch data from endpoints
   const fetchData = async () => {
     try {
       setInternalLoading(true);
@@ -52,13 +53,8 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         fetchPenalties(),
       ]);
 
-      // Enhanced logging to see actual data structure
-
-
-      // Handle different possible response structures
       const loans = Array.isArray(loansResponse) ? loansResponse : loansResponse?.loans || [];
       const penalties = Array.isArray(penaltiesResponse) ? penaltiesResponse : penaltiesResponse?.penalties || [];
-
 
       const reportData: ReportData = {
         users,
@@ -69,8 +65,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       };
       
       setData(reportData);
-      
-      // Additional verification logging
     } catch (err) {
       console.error('Fetch Error:', err);
       setError("Failed to fetch report data.");
@@ -103,7 +97,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
     };
   };
 
-  // Helper function to match member IDs
   const matchMemberId = (id1: any, id2: any): boolean => {
     if (!id1 || !id2) return false;
     const str1 = typeof id1 === 'object' ? id1._id || id1.toString() : id1.toString();
@@ -123,7 +116,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
 
       const darkGreen = [15, 94, 75];
 
-      // Header
       doc.setFontSize(22);
       doc.setTextColor(darkGreen[0], darkGreen[1], darkGreen[2]);
       doc.text("Financial Report", pageWidth / 2, yPos, { align: "center" });
@@ -140,7 +132,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       );
       yPos += 20;
 
-      // Calculate totals - modify to only show unpaid penalties
       const totalMembers = filteredData.users.length;
       const totalLoans = filteredData.loans.length;
       const activeLoans = filteredData.loans.filter(l => 
@@ -153,7 +144,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         .filter(p => p.status === 'pending')
         .reduce((sum, p) => sum + (p.amount || 0), 0);
 
-      // Update summary data to show only unpaid penalties
       const summaryData = [
         ["Total Members", totalMembers.toString()],
         ["Total Loans Issued", totalLoans.toString()],
@@ -164,7 +154,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         ["Outstanding Penalties", `€${pendingPenalties.toLocaleString()}`],
       ];
 
-      // Executive Summary
       doc.setFontSize(14);
       doc.text("Executive Summary", 14, yPos);
       yPos += 10;
@@ -181,7 +170,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
 
       yPos = (doc as any).lastAutoTable.finalY + 15;
 
-      // Enhanced Member Financial Status Table
       if (filteredData.shares.length > 0) {
         doc.setFontSize(14);
         doc.text("Member Financial Status", 14, yPos);
@@ -190,29 +178,18 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         const sharesBody = filteredData.shares.map((share) => {
           const memberId = share._id || share.id;
 
-          // Find member loans with multiple ID matching strategies
           const memberLoans = filteredData.loans.filter((loan) => {
             const loanMemberId = loan.member?._id || loan.member?.id || loan.memberId || loan.member;
-            const matches = matchMemberId(loanMemberId, memberId);
-            if (matches) {
-              console.log(`  - Loan match found: ${loan.amount}, status: ${loan.status}`);
-            }
-            return matches;
+            return matchMemberId(loanMemberId, memberId);
           });
 
-          // Calculate unpaid loan amount
           const unpaidLoanAmount = memberLoans
             .filter(loan => loan.status === 'approved' || loan.status === 'active')
             .reduce((sum, loan) => sum + (loan.totalAmount || loan.amount || 0), 0);
 
-          // Find member penalties with multiple ID matching strategies
           const memberPenalties = filteredData.penalties.filter((penalty) => {
             const penaltyMemberId = penalty.member?._id || penalty.member?.id || penalty.memberId || penalty.member;
-            const matches = matchMemberId(penaltyMemberId, memberId);
-            if (matches) {
-              console.log(`  - Penalty match found: ${penalty.amount}, paid: ${penalty.isPaid}`);
-            }
-            return matches;
+            return matchMemberId(penaltyMemberId, memberId);
           });
           
           const pendingPenaltiesAmount = memberPenalties
@@ -242,7 +219,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         yPos = (doc as any).lastAutoTable.finalY + 15;
       }
 
-      // Active & Unpaid Loans Table
       const unpaidLoans = filteredData.loans.filter(
         loan => loan.status === 'approved' || loan.status === 'active'
       );
@@ -291,7 +267,6 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         yPos = (doc as any).lastAutoTable.finalY + 15;
       }
 
-      // Footer
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -313,10 +288,9 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
     formData.append("report", pdfBlob, "financial-report.pdf");
     if (description) formData.append("description", description);
 
-    // Get token from localStorage or context (adjust as needed)
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("No admin token found. Please log in as admin.");
+      // alert("No admin token found. Please log in as admin.");
       return;
     }
 
@@ -344,7 +318,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       doc.save(fileName);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please check console for details.");
+      // alert("Failed to generate PDF. Please check console for details.");
     } finally {
       setIsGenerating(false);
       setLoadingButton(null);
@@ -360,17 +334,69 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       const doc = await generatePDFWithJsPDF(filtered);
       const pdfBlob = doc.output("blob");
       await uploadReport(pdfBlob, `Financial report for period: ${selectedPeriod}`);
-     
+      // alert("Report published successfully!");
     } catch (error) {
       console.error("Report publish failed:", error);
-      alert("Failed to publish report. Please check console for details.");
+      // alert("Failed to publish report. Please check console for details.");
     } finally {
       setIsGenerating(false);
       setLoadingButton(null);
     }
   };
 
-  // Remove: if (loading) return <p>Loading report data...</p>;
+  const handleSendPDF = async () => {
+    if (!data) return;
+    setIsGenerating(true);
+    setLoadingButton("send");
+    try {
+      const filtered = filterDataByPeriod(data, selectedPeriod);
+      const doc = await generatePDFWithJsPDF(filtered);
+      const pdfBlob = doc.output("blob");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        // alert("No admin token found. Please log in as admin.");
+        setIsGenerating(false);
+        setLoadingButton(null);
+        return;
+      }
+      const formData = new FormData();
+      formData.append("pdf", pdfBlob, "financial-report.pdf");
+      formData.append("description", `Financial report for period: ${selectedPeriod}`);
+
+
+
+      const response = await fetch(`${API_BASE}/reports/send-pdf`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorMsg = "Failed to send report via email";
+        try {
+          const errData = await response.json();
+          console.error("Error response data:", errData);
+          if (errData?.message) errorMsg = errData.message;
+        } catch (e) {
+          console.error("Could not parse error response:", e);
+          const textResponse = await response.text();
+          console.error("Raw error response:", textResponse);
+          if (textResponse) errorMsg = textResponse;
+        }
+        throw new Error(errorMsg);
+      }
+      // alert("Report sent to all users via email!");
+    } catch (error) {
+      console.error("Send PDF failed:", error);
+      // alert(`Failed to send report via email: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsGenerating(false);
+      setLoadingButton(null);
+    }
+  };
+
   if (error) return <p className="text-red-500">{error}</p>;
   if (!data) {
     return (
@@ -402,10 +428,10 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       {isExpanded && (
         <>
           <div className="fixed inset-0 bg-black bg-opacity-30 z-40" onClick={() => setIsExpanded(false)} />
-          <div className="absolute right-0 top-12 bg-white rounded-lg shadow-xl border border-gray-200 p-8 w-[420px] z-50">
+          <div className="absolute right-0 top-12 bg-white rounded-xl shadow-xl border border-gray-200 p-6 w-[500px] max-w-[95vw] z-50">
             <div className="space-y-4 mb-6">
-              <label className="text-sm font-medium text-gray-700 flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
+              <label className="text-sm font-semibold text-gray-700 flex items-center">
+                <Calendar className="w-4 h-4 mr-2" />
                 Report Period
               </label>
               <div className="grid grid-cols-1 gap-2">
@@ -415,7 +441,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
                     onClick={() => setSelectedPeriod(period.value)}
                     onMouseEnter={() => setHoveredPeriod(period.value)}
                     onMouseLeave={() => setHoveredPeriod(null)}
-                    className={`relative px-3 py-2 rounded-lg text-left transition-all duration-200 ${
+                    className={`relative px-4 py-2.5 rounded-lg text-left transition-all duration-200 ${
                       selectedPeriod === period.value
                         ? "bg-emerald-600 text-white shadow-md"
                         : hoveredPeriod === period.value
@@ -435,12 +461,14 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
               </div>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="grid grid-cols-1 gap-2.5">
               <button
                 onClick={handleGeneratePDF}
                 disabled={isGenerating}
-                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  isGenerating ? "bg-gray-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+                  isGenerating && loadingButton === "download"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
                 } text-white`}
               >
                 {loadingButton === "download" ? (
@@ -458,8 +486,10 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
               <button
                 onClick={handlePublishPDF}
                 disabled={isGenerating}
-                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  isGenerating ? "bg-gray-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+                  isGenerating && loadingButton === "publish"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
                 } text-white`}
                 title="Publish report to server"
               >
@@ -472,6 +502,28 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
                   <>
                     <Upload className="w-4 h-4" />
                     <span className="text-sm">Publish Report</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleSendPDF}
+                disabled={isGenerating}
+                className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+                  isGenerating && loadingButton === "send"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                } text-white`}
+                title="Send report to all users via email"
+              >
+                {loadingButton === "send" ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm">Send via Email</span>
                   </>
                 )}
               </button>
