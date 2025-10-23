@@ -79,13 +79,20 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
   }, []);
 
   const filterDataByPeriod = (data: ReportData, period: ReportPeriod): ReportData => {
-    if (period === "all") return data;
+    if (period === "all") {
+      // Exclude admin users from the users array
+      return {
+        ...data,
+        users: data.users.filter((user: any) => user.role !== "admin"),
+      };
+    }
     const now = new Date();
     const daysMap = { week: 7, month: 30, quarter: 90, year: 365 };
     const days = daysMap[period];
     const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     return {
       ...data,
+      users: data.users.filter((user: any) => user.role !== "admin"),
       loans: data.loans.filter((loan) => {
         const loanDate = new Date(loan.requestDate || loan.createdAt || loan.date);
         return loanDate >= cutoffDate;
@@ -283,9 +290,23 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
     }
   };
 
+// Helper to format the report name in CamelCase with each part capitalized
+const getReportFileName = (period: ReportPeriod) => {
+  const periodMap: Record<ReportPeriod, string> = {
+    week: "Weekly",
+    month: "Monthly",
+    quarter: "Quarterly",
+    year: "Annual",
+    all: "AllTime",
+  };
+  const dateStr = new Date().toISOString().split("T")[0];
+  // Example: FinancialReport_Monthly_2024-06-10.pdf
+  return `FinancialReport_${periodMap[period] || "Report"}_${dateStr}.pdf`;
+};
+
   const uploadReport = async (pdfBlob: Blob, description: string = "") => {
     const formData = new FormData();
-    formData.append("report", pdfBlob, "financial-report.pdf");
+    formData.append("report", pdfBlob, getReportFileName(selectedPeriod));
     if (description) formData.append("description", description);
 
     const token = localStorage.getItem("token");
@@ -314,7 +335,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
     try {
       const filtered = filterDataByPeriod(data, selectedPeriod);
       const doc = await generatePDFWithJsPDF(filtered);
-      const fileName = `financial-report-${selectedPeriod}-${new Date().toISOString().split("T")[0]}.pdf`;
+      const fileName = getReportFileName(selectedPeriod);
       doc.save(fileName);
     } catch (error) {
       console.error("PDF generation failed:", error);
@@ -360,7 +381,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         return;
       }
       const formData = new FormData();
-      formData.append("pdf", pdfBlob, "financial-report.pdf");
+      formData.append("pdf", pdfBlob, getReportFileName(selectedPeriod));
       formData.append("description", `Financial report for period: ${selectedPeriod}`);
 
 
@@ -405,7 +426,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-400 text-white cursor-not-allowed"
       >
         <FileDown className="w-4 h-4" />
-        <span className="text-sm font-medium">Export PDF</span>
+        <span className="text-sm font-medium">Report</span>
       </button>
     );
   }
@@ -422,7 +443,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         }`}
       >
         <FileDown className="w-4 h-4" />
-        <span className="text-sm font-medium">Export PDF</span>
+        <span className="text-sm font-medium">Report</span>
       </button>
 
       {isExpanded && (
@@ -479,6 +500,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
                   isGenerating && loadingButton === "download"
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                    
                 } text-white`}
               >
                 {loadingButton === "download" ? (
