@@ -16,7 +16,7 @@ import UserManagement from "./UserManagement";
 import LoanApproval from "./LoanApproval";
 import GroupShares from "./GroupShares";
 import Penalties from "./Penalties";
-import { fetchNetContributions, fetchUsers } from "../../utils/api";
+import { fetchNetContributions, fetchUsers, fetchLoans } from "../../utils/api";
 import RegistrationApproval from "./RegistrationApproval";
 import PDFReportGenerator from "./PDFReportGenerator";
 
@@ -31,12 +31,18 @@ const AdminDashboard: React.FC = () => {
 
   // State management - SEPARATED LOADING STATES
   const [activeTab, setActiveTab] = useState("overview");
-  const [netContributionsLoading, setNetContributionsLoading] = useState(true); // Only for net contributions
+  const [netContributionsLoading, setNetContributionsLoading] = useState(true);
   const [netContributions, setNetContributions] = useState<NetContributions | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pdfReportLoading, setPdfReportLoading] = useState(true);
   const [totalMembers, setTotalMembers] = useState<number>(0);
   const [totalMembersLoading, setTotalMembersLoading] = useState(true);
+  
+  // NEW: Direct fetch states for Overview sections
+  const [overviewLoans, setOverviewLoans] = useState<any[]>([]);
+  const [overviewLoansLoading, setOverviewLoansLoading] = useState(true);
+  const [overviewUsers, setOverviewUsers] = useState<any[]>([]);
+  const [overviewUsersLoading, setOverviewUsersLoading] = useState(true);
 
   // Refs for cleanup
   const isMountedRef = useRef(true);
@@ -66,6 +72,52 @@ const AdminDashboard: React.FC = () => {
       }
     };
     getTotalMembers();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // NEW: Fetch loans directly for Overview section
+  useEffect(() => {
+    let mounted = true;
+    const getOverviewLoans = async () => {
+      try {
+        setOverviewLoansLoading(true);
+        const fetchedLoans = await fetchLoans();
+        if (mounted && Array.isArray(fetchedLoans)) {
+          setOverviewLoans(fetchedLoans);
+        }
+      } catch (e) {
+        console.error("Failed to fetch overview loans:", e);
+        if (mounted) setOverviewLoans([]);
+      } finally {
+        if (mounted) setOverviewLoansLoading(false);
+      }
+    };
+    getOverviewLoans();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // NEW: Fetch users directly for Overview section (Branch Distribution)
+  useEffect(() => {
+    let mounted = true;
+    const getOverviewUsers = async () => {
+      try {
+        setOverviewUsersLoading(true);
+        const fetchedUsers = await fetchUsers();
+        if (mounted && Array.isArray(fetchedUsers)) {
+          setOverviewUsers(fetchedUsers);
+        }
+      } catch (e) {
+        console.error("Failed to fetch overview users:", e);
+        if (mounted) setOverviewUsers([]);
+      } finally {
+        if (mounted) setOverviewUsersLoading(false);
+      }
+    };
+    getOverviewUsers();
     return () => {
       mounted = false;
     };
@@ -157,7 +209,7 @@ const AdminDashboard: React.FC = () => {
       icon: DollarSign,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
-      loading: netContributionsLoading, // API data - has its own loading state
+      loading: netContributionsLoading,
     },
     {
       title: "Future Balance",
@@ -167,7 +219,7 @@ const AdminDashboard: React.FC = () => {
       icon: TrendingUp,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
-      loading: netContributionsLoading, // API data - has its own loading state
+      loading: netContributionsLoading,
     },
     {
       title: "Pending Loans",
@@ -175,7 +227,7 @@ const AdminDashboard: React.FC = () => {
       icon: AlertCircle,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
-      loading: false, // Context data - available immediately
+      loading: false,
     },
     {
       title: "Total Penalties Collected",
@@ -185,7 +237,7 @@ const AdminDashboard: React.FC = () => {
       icon: AlertCircle,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
-      loading: netContributionsLoading, // API data - has its own loading state
+      loading: netContributionsLoading,
     },
   ];
 
@@ -210,22 +262,17 @@ const AdminDashboard: React.FC = () => {
     return colorMap[branch] || "bg-gray-500";
   };
 
-  // Filter out loans with invalid members or null values
-  const validLoans = loans.filter(loan => {
+  // Filter out loans with invalid members or null values - NOW USING DIRECT FETCH
+  const validLoans = overviewLoans.filter(loan => {
     return loan.member && 
            loan.member._id && 
            loan.amount && 
            loan.status &&
-           users.some(user => user._id === loan.member?._id);
+           overviewUsers.some(user => user._id === loan.member?._id);
   });
-
-  // Check if context data is available (users and loans are loaded from context)
-  const isContextDataAvailable = users.length > 0 || loans.length > 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* REMOVED: Global loading overlay - now each section loads independently */}
-      
       <div className="mb-8 flex justify-between items-start">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-700 mb-2">
@@ -305,14 +352,14 @@ const AdminDashboard: React.FC = () => {
       {activeTab === "overview" && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recent Loans - LOADS INDEPENDENTLY */}
+            {/* Recent Loans - NOW USES DIRECT FETCH */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Recent Loan Requests
               </h3>
               <div className="space-y-4">
-                {!isContextDataAvailable ? (
-                  // Show skeleton while context is loading
+                {overviewLoansLoading ? (
+                  // Show skeleton while loading
                   <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
                       <div
@@ -335,7 +382,7 @@ const AdminDashboard: React.FC = () => {
                   validLoans
                     .slice(0, MAX_RECENT_LOANS)
                     .map((loan) => {
-                      const member = users.find((u) => u._id === loan.member?._id);
+                      const member = overviewUsers.find((u) => u._id === loan.member?._id);
                       if (!member) return null;
 
                       return (
@@ -378,19 +425,19 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       );
                     })
-                    .filter(Boolean) // Remove any null entries
+                    .filter(Boolean)
                 )}
               </div>
             </div>
 
-            {/* Branch Overview - LOADS INDEPENDENTLY */}
+            {/* Branch Overview - NOW USES DIRECT FETCH */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Branch Distribution
               </h3>
               <div className="space-y-4">
-                {!isContextDataAvailable ? (
-                  // Show skeleton while context is loading
+                {overviewUsersLoading ? (
+                  // Show skeleton while loading
                   <div className="space-y-4">
                     {[...Array(4)].map((_, i) => (
                       <div
@@ -410,7 +457,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 ) : (
                   BRANCHES.map((branch) => {
-                    const groupMembers = users.filter(
+                    const groupMembers = overviewUsers.filter(
                       (u) => u.branch === branch && u.role === "member"
                     );
                     const totalSavings = groupMembers.reduce(
