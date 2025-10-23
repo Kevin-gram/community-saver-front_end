@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FileDown, Loader2, Calendar, Upload, Mail } from "lucide-react";
+import { FileDown, Loader2, Calendar, Upload, Mail, X } from "lucide-react";
 import { fetchUsers, fetchLoans, fetchMemberShares, fetchPenalties, API_BASE } from "../../utils/api";
 import { User, Loan, MemberShare } from "../../types";
 
@@ -429,6 +429,16 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         <>
           <div className="fixed inset-0 bg-black bg-opacity-30 z-40" onClick={() => setIsExpanded(false)} />
           <div className="absolute right-0 top-12 bg-white rounded-xl shadow-xl border border-gray-200 p-6 w-[500px] max-w-[95vw] z-50">
+            {/* X Cancel Button */}
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close"
+              type="button"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
             <div className="space-y-4 mb-6">
               <label className="text-sm font-semibold text-gray-700 flex items-center">
                 <Calendar className="w-4 h-4 mr-2" />
