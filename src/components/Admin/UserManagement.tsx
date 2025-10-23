@@ -6,7 +6,7 @@ import { getGroupTheme } from "../../utils/calculations";
 import UserForm from "./UserForm";
 import ConfirmDialog from "../Common/ConfirmDialog";
 import MemberDetails from "../BranchLead/MemberDetails";
-import { deleteUser, fetchUsers } from "../../utils/api";
+import { deleteUser, fetchUsers, fetchPenalties } from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 5; // Set to display 5 users per page
@@ -25,6 +25,7 @@ const UserManagement: React.FC = () => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [userPendingPenalties, setUserPendingPenalties] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -52,6 +53,31 @@ const UserManagement: React.FC = () => {
     };
     loadUsers();
   }, [token, navigate, dispatch]);
+
+  useEffect(() => {
+    const loadPenalties = async () => {
+      try {
+        const response = await fetchPenalties();
+        const penalties = response.data?.penalties || response.penalties || response;
+        
+        // Create a map of userId -> hasPendingPenalties (only count pending penalties)
+        const penaltyMap: Record<string, boolean> = {};
+        penalties.forEach((penalty: any) => {
+          // Only count pending penalties
+          if (penalty.status === "pending") {
+            const userId = penalty.member?.id || penalty.member?._id || penalty.userId || penalty.user;
+            if (userId) {
+              penaltyMap[userId] = true;
+            }
+          }
+        });
+        setUserPendingPenalties(penaltyMap);
+      } catch (err) {
+        console.error("Failed to fetch penalties", err);
+      }
+    };
+    loadPenalties();
+  }, []);
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -83,10 +109,11 @@ const UserManagement: React.FC = () => {
   };
 
   const handleDeleteUser = (user: User) => {
-   
-    // Check if user has contributions
-    if ((user.totalContributions || 0) > 0) {
-      // Don't allow deletion if user has contributions
+    const hasPendingPenalties = userPendingPenalties[user.id];
+    
+    // Check if user has contributions or pending penalties
+    if ((user.totalContributions || 0) > 0 || hasPendingPenalties) {
+      // Don't allow deletion if user has contributions or pending penalties
       return;
     }
     setDeletingUser(user);
@@ -232,6 +259,9 @@ const UserManagement: React.FC = () => {
                   Savings
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Penalties
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -245,6 +275,7 @@ const UserManagement: React.FC = () => {
                   (user.branch || "blue").toLowerCase()
                 );
                 const uniqueId = getUserUniqueId(user);
+                const hasPendingPenalties = userPendingPenalties[user.id];
 
                 return (
                   <tr key={uniqueId} className="hover:bg-gray-50">
@@ -290,6 +321,17 @@ const UserManagement: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          hasPendingPenalties
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {hasPendingPenalties ? "Yes" : "No"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           user.activeLoan?.status
                             ? "bg-blue-100 text-blue-800"
                             : "bg-emerald-100 text-emerald-800"
@@ -309,15 +351,17 @@ const UserManagement: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user)}
-                          disabled={(user.totalContributions || 0) > 0}
+                          disabled={(user.totalContributions || 0) > 0 || hasPendingPenalties}
                           className={`p-1 ${
-                            (user.totalContributions || 0) > 0
+                            (user.totalContributions || 0) > 0 || hasPendingPenalties
                               ? "text-gray-400 cursor-not-allowed"
                               : "text-red-600 hover:text-red-900"
                           }`}
                           title={
                             (user.totalContributions || 0) > 0
                               ? "Cannot delete user with contributions"
+                              : hasPendingPenalties
+                              ? "Cannot delete user with pending penalties"
                               : "Delete user"
                           }
                         >
@@ -374,20 +418,22 @@ const UserManagement: React.FC = () => {
                 } because they have contributions of $${(
                   deletingUser.totalContributions || 0
                 ).toLocaleString()}. Users with contributions cannot be deleted.`
+              : userPendingPenalties[deletingUser.id]
+              ? `Cannot delete ${deletingUser.firstName} because they have pending penalties. Users with pending penalties cannot be deleted.`
               : `Are you sure you want to delete ${deletingUser.firstName}? This action cannot be undone.`
           }
           confirmText={
-            (deletingUser.totalContributions || 0) > 0 
+            (deletingUser.totalContributions || 0) > 0 || userPendingPenalties[deletingUser.id]
               ? "OK" 
               : isConfirming 
                 ? "Deleting..." 
                 : "Delete"
           }
           confirmVariant={
-            (deletingUser.totalContributions || 0) > 0 ? "primary" : "danger"
+            (deletingUser.totalContributions || 0) > 0 || userPendingPenalties[deletingUser.id] ? "primary" : "danger"
           }
           onConfirm={
-            (deletingUser.totalContributions || 0) > 0
+            (deletingUser.totalContributions || 0) > 0 || userPendingPenalties[deletingUser.id]
               ? () => setDeletingUser(null)
               : confirmDelete
           }
