@@ -191,6 +191,9 @@ const AdminDashboard: React.FC = () => {
     };
   }, [fetchNetData]);
 
+  // COMBINED LOADING STATE: All financial cards wait for all data to finish loading
+  const financialDataLoading = netContributionsLoading || totalMembersLoading;
+
   // Stats configuration - EACH STAT NOW HAS ITS OWN LOADING STATE
   const stats = [
     {
@@ -199,7 +202,7 @@ const AdminDashboard: React.FC = () => {
       icon: Users,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
-      loading: totalMembersLoading,
+      loading: financialDataLoading, // FIXED: Now waits for both to complete
     },
     {
       title: "Available Balance",
@@ -209,7 +212,7 @@ const AdminDashboard: React.FC = () => {
       icon: DollarSign,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
-      loading: netContributionsLoading,
+      loading: financialDataLoading,
     },
     {
       title: "Future Balance",
@@ -219,7 +222,7 @@ const AdminDashboard: React.FC = () => {
       icon: TrendingUp,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
-      loading: netContributionsLoading,
+      loading: financialDataLoading,
     },
     {
       title: "Pending Loans",
@@ -227,7 +230,7 @@ const AdminDashboard: React.FC = () => {
       icon: AlertCircle,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
-      loading: false,
+      loading: financialDataLoading,
     },
     {
       title: "Total Penalties Collected",
