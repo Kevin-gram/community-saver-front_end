@@ -50,8 +50,13 @@ const LoginForm: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Redirect to backend Google OAuth route
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    // Use dynamic API URL from environment variable
+    const API_URL = import.meta.env.VITE_API_URL;
+    if (!API_URL) {
+      console.error("VITE_API_URL environment variable is not set");
+      setError("Configuration error. Please contact support.");
+      return;
+    }
     window.location.href = `${API_URL}/api/auth/google`;
   };
 
