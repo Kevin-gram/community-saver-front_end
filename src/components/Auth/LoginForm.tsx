@@ -64,11 +64,6 @@ const LoginForm: React.FC = () => {
     // Pass it as returnUrl so backend knows where to redirect
     const googleAuthUrl = `${API_URL}/api/auth/google?returnUrl=${encodeURIComponent(currentUrl)}`;
     
-    console.log("🚀 Initiating Google OAuth");
-    console.log("📍 Current frontend URL:", currentUrl);
-    console.log("🔗 Backend API URL:", API_URL);
-    console.log("🌐 Full Google Auth URL:", googleAuthUrl);
-    
     window.location.href = googleAuthUrl;
   };
 
