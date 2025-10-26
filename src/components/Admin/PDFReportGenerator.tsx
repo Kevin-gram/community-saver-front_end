@@ -29,6 +29,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
   const [hoveredPeriod, setHoveredPeriod] = useState<ReportPeriod | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [loadingButton, setLoadingButton] = useState<"download" | "publish" | "send" | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   const periods: { value: ReportPeriod; label: string; description: string }[] = [
     { value: "week", label: "Last 7 Days", description: "Weekly Report" },
@@ -337,6 +338,8 @@ const getReportFileName = (period: ReportPeriod) => {
       const doc = await generatePDFWithJsPDF(filtered);
       const fileName = getReportFileName(selectedPeriod);
       doc.save(fileName);
+      setToast("Report downloaded successfully!");
+      setTimeout(() => setToast(null), 2000);
     } catch (error) {
       console.error("PDF generation failed:", error);
       // alert("Failed to generate PDF. Please check console for details.");
@@ -355,6 +358,8 @@ const getReportFileName = (period: ReportPeriod) => {
       const doc = await generatePDFWithJsPDF(filtered);
       const pdfBlob = doc.output("blob");
       await uploadReport(pdfBlob, `Financial report for period: ${selectedPeriod}`);
+      setToast("Report published successfully!");
+      setTimeout(() => setToast(null), 2000);
       // alert("Report published successfully!");
     } catch (error) {
       console.error("Report publish failed:", error);
@@ -375,7 +380,6 @@ const getReportFileName = (period: ReportPeriod) => {
       const pdfBlob = doc.output("blob");
       const token = localStorage.getItem("token");
       if (!token) {
-        // alert("No admin token found. Please log in as admin.");
         setIsGenerating(false);
         setLoadingButton(null);
         return;
@@ -383,8 +387,6 @@ const getReportFileName = (period: ReportPeriod) => {
       const formData = new FormData();
       formData.append("pdf", pdfBlob, getReportFileName(selectedPeriod));
       formData.append("description", `Financial report for period: ${selectedPeriod}`);
-
-
 
       const response = await fetch(`${API_BASE}/reports/send-pdf`, {
         method: "POST",
@@ -408,6 +410,8 @@ const getReportFileName = (period: ReportPeriod) => {
         }
         throw new Error(errorMsg);
       }
+      setToast("Report sent via email successfully!");
+      setTimeout(() => setToast(null), 2000);
       // alert("Report sent to all users via email!");
     } catch (error) {
       console.error("Send PDF failed:", error);
@@ -433,6 +437,14 @@ const getReportFileName = (period: ReportPeriod) => {
 
   return (
     <div className="relative">
+      {/* Toaster */}
+      {toast && (
+        <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
+          <div className="bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg text-lg font-semibold animate-fade-in pointer-events-auto">
+            {toast}
+          </div>
+        </div>
+      )}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         disabled={loading}
