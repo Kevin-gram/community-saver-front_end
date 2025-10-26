@@ -57,7 +57,13 @@ const LoginForm: React.FC = () => {
       setError("Configuration error. Please contact support.");
       return;
     }
-    window.location.href = `${API_URL}/api/auth/google`;
+
+    // Get the current frontend URL (where the user is right now)
+    const currentUrl = window.location.origin;
+    
+    // Pass it as returnUrl so backend knows where to redirect
+    const googleAuthUrl = `${API_URL}/api/auth/google?returnUrl=${encodeURIComponent(currentUrl)}`;
+    window.location.href = googleAuthUrl;
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {

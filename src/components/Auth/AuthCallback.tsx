@@ -11,7 +11,7 @@ const AuthCallback: React.FC = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Get token from URL parameters
+      // Get token and error from URL parameters
       const token = searchParams.get("token");
       const errorParam = searchParams.get("error");
 
@@ -34,11 +34,13 @@ const AuthCallback: React.FC = () => {
       }
 
       try {
-        // Store token in localStorage
+        // Store token in localStorage FIRST
         localStorage.setItem("token", token);
 
+        // Get API URL from environment variable
+        const API_URL = import.meta.env.VITE_API_URL;
+
         // Fetch user data with the token
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
         const response = await fetch(`${API_URL}/api/auth/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,7 +59,7 @@ const AuthCallback: React.FC = () => {
           const user = data.data.user;
           dispatch({ type: "LOGIN", payload: user });
 
-          // FIXED: Navigate based on user role instead of hardcoded /dashboard
+          // Navigate based on user role
           switch (user.role) {
             case "admin":
               navigate("/admin");
