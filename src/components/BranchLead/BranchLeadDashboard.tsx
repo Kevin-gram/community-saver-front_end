@@ -351,6 +351,9 @@ const BranchLeadDashboard: React.FC = () => {
     };
   }, []); // Empty dependency array - only run once
 
+  // Add a single loading state for all cards
+  const allCardsLoading = sharesLoading;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header - Always visible */}
@@ -363,39 +366,28 @@ const BranchLeadDashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Branch Stats Grid - Always visible */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  {stat.title}
-                </p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">
-                  {stat.value}
-                </p>
-              </div>
-              <div className={`${stat.bg} rounded-lg p-3`}>
-                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+      {/* Branch Stats Grid - Skeleton */}
+      {allCardsLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[...Array(stats.length)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
+                  <div className="h-8 bg-emerald-200 rounded w-32"></div>
+                </div>
+                <div className="bg-emerald-100 rounded-lg p-3">
+                  <div className="w-6 h-6 bg-emerald-200 rounded"></div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Personal Finance Section - Always visible */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Your Personal Finance
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {personalStats.map((stat) => (
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, index) => (
             <div
-              key={stat.id}
+              key={index}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
             >
               <div className="flex items-center justify-between">
@@ -414,35 +406,86 @@ const BranchLeadDashboard: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Personal Finance Section - Skeleton */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Your Personal Finance
+        </h2>
+        {allCardsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(personalStats.length)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
+                    <div className="h-8 bg-emerald-200 rounded w-32"></div>
+                  </div>
+                  <div className="bg-emerald-100 rounded-lg p-3">
+                    <div className="w-6 h-6 bg-emerald-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {personalStats.map((stat) => (
+              <div
+                key={stat.id}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {stat.title}
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">
+                      {stat.value}
+                    </p>
+                  </div>
+                  <div className={`${stat.bg} rounded-lg p-3`}>
+                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Loan Status Section - Conditional */}
-      {latestLoan && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full">
-          <div className="flex items-center">
-            <Clock className="w-5 h-5 text-emerald-600 mr-3" /> {/* Icon is green */}
-            <div>
-              <h3 className=" font-semibold text-gray-900">Your Loan Status</h3> {/* Text is black and bold */}
-              <p className="text-sm text-gray-700 mt-1">
-                Status:{" "}
-                <span className="font-semibold">{latestLoan.status}</span>
-                <br />
-                Amount: €{latestLoan.amount.toLocaleString()}
-                <br />
-                Due Date: {new Date(latestLoan.dueDate).toLocaleDateString()}
-              </p>
+      {/* Loan Status Section - Skeleton */}
+      {allCardsLoading ? (
+        <LoanCardSkeleton />
+      ) : (
+        latestLoan && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full">
+            <div className="flex items-center">
+              <Clock className="w-5 h-5 text-emerald-600 mr-3" />
+              <div>
+                <h3 className="font-semibold text-gray-900">Your Loan Status</h3>
+                <p className="text-sm text-gray-700 mt-1">
+                  Status:{" "}
+                  <span className="font-semibold">{latestLoan.status}</span>
+                  <br />
+                  Amount: €{latestLoan.amount.toLocaleString()}
+                  <br />
+                  Due Date: {new Date(latestLoan.dueDate).toLocaleDateString()}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Action Buttons - Always visible */}
       <div className="flex flex-wrap gap-4 mb-8">
         <button
           onClick={() => setShowLoanForm(true)}
-          disabled={!eligible}
+          disabled={!eligible || allCardsLoading}
           className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
-            eligible
+            eligible && !allCardsLoading
               ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
@@ -468,7 +511,7 @@ const BranchLeadDashboard: React.FC = () => {
             Branch Members
           </h3>
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            {sharesLoading ? (
+            {allCardsLoading ? (
               <>
                 <MemberCardSkeleton />
                 <MemberCardSkeleton />
@@ -557,7 +600,7 @@ const BranchLeadDashboard: React.FC = () => {
             Pending Loan Requests
           </h3>
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            {sharesLoading ? (
+            {allCardsLoading ? (
               <>
                 <LoanCardSkeleton />
                 <LoanCardSkeleton />
