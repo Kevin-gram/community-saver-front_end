@@ -438,6 +438,12 @@ const MemberDashboard: React.FC = () => {
     </div>
   );
 
+  // Only show loanInfoCard and futureInterestCard when memberShares is loaded and not loading
+  const showLoanInfoSkeleton = sectionsLoading || !memberShares;
+
+  // Unified loading state for all cards
+  const allCardsLoading = sectionsLoading;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -462,40 +468,64 @@ const MemberDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* {errorCount > 0 && (
-        // <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-        //   <AlertTriangle className="w-4 h-4 inline mr-2" />
-        //   Auto-refresh temporarily slowed due to server load. Next update in {Math.round(pollingInterval / 1000)}s
-        // </div>
-      )} */}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => (
-          <div key={stat.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
-              </div>
-              <div className={`${stat.bg} rounded-lg p-3`}>
-                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+      {/* Stats Cards Skeleton */}
+      {allCardsLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[...Array(stats.length)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
+                  <div className="h-8 bg-emerald-200 rounded w-32"></div>
+                </div>
+                <div className="bg-emerald-100 rounded-lg p-3">
+                  <div className="w-6 h-6 bg-emerald-200 rounded"></div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat) => (
+            <div key={stat.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                </div>
+                <div className={`${stat.bg} rounded-lg p-3`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
+      {/* Loan Info and Future Interest Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {loanInfoCard}
-        {futureInterestCard}
+        {showLoanInfoSkeleton ? (
+          <>
+            <LoanInfoSkeleton />
+            <LoanInfoSkeleton />
+          </>
+        ) : (
+          <>
+            {/* Only render loanInfoCard if memberShares is loaded and not loading */}
+            {memberShares && loanInfoCard}
+            {memberShares && futureInterestCard}
+          </>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-4 mb-8">
         <button
           onClick={() => setShowLoanForm(true)}
-          disabled={!eligible || sectionsLoading} // Disable if loan status is loading
+          // Only enable if loan status data is ready and eligible
+          disabled={showLoanInfoSkeleton || !eligible}
           className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
-            eligible && !sectionsLoading
+            !showLoanInfoSkeleton && eligible
               ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
