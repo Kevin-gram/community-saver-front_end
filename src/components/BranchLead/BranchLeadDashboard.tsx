@@ -73,6 +73,7 @@ const BranchLeadDashboard: React.FC = () => {
   const [memberShares, setMemberShares] = useState<MemberShare | null>(null);
   const [allShares, setAllShares] = useState<MemberShare[]>([]);
   const [sharesLoading, setSharesLoading] = useState(true);
+  const [processingLoanId, setProcessingLoanId] = useState<string | null>(null);
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyLoadedRef = useRef(false);
@@ -160,29 +161,29 @@ const BranchLeadDashboard: React.FC = () => {
       title: "Branch Members",
       value: branchMembers.length.toString(),
       icon: Users,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
     {
       title: "Total Branch Savings",
       value: `€${totalBranchSavings.toLocaleString()}`,
       icon: DollarSign,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
     {
       title: "Active Loans",
       value: activeLoans.toString(),
       icon: TrendingUp,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
     {
       title: "Pending Approvals",
       value: pendingLoans.toString(),
       icon: AlertCircle,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
   ];
 
@@ -194,8 +195,8 @@ const BranchLeadDashboard: React.FC = () => {
       title: "Total Savings",
       value: `€${(displayData?.totalContribution || userSavings).toLocaleString()}`,
       icon: DollarSign,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
     {
       id: 'interest-received',
@@ -209,10 +210,9 @@ const BranchLeadDashboard: React.FC = () => {
         maximumFractionDigits: 2,
       })}`,
       icon: TrendingUp,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
-    // Only show penalties if not paid and pending > 0
     ...(typeof currentUser.penalties === "object" &&
       !currentUser.penalties.isPaid &&
       currentUser.penalties.pending > 0
@@ -221,8 +221,8 @@ const BranchLeadDashboard: React.FC = () => {
           title: "Penalties",
           value: `€${(currentUser.penalties.pending ?? 0).toLocaleString()}`,
           icon: AlertTriangle,
-          color: "text-emerald-600", // Green icon
-          bg: "bg-emerald-100", // Green background
+          color: "text-emerald-600",
+          bg: "bg-emerald-100",
         }]
       : []),
     {
@@ -230,31 +230,27 @@ const BranchLeadDashboard: React.FC = () => {
       title: "Max Loanable",
       value: `€${maxLoanAmount.toLocaleString()}`,
       icon: Calculator,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
   ];
 
   // Branch lead can always edit
   const getMemberUpdateAccess = () => true;
 
-  const handleLoanAction = (loan: Loan, action: "approve" | "reject") => {
+  const handleLoanAction = async (loan: Loan, action: "approve" | "reject") => {
+    setProcessingLoanId(loan.id || loan._id || null);
     setSelectedLoan(loan);
     setActionType(action);
-    setTimeout(() => confirmAction(), 0);
-  };
-
-  const confirmAction = async () => {
-    if (!selectedLoan || !actionType || !currentUser) return;
 
     try {
       const backendLoan = await approveOrReject(
-        selectedLoan.id || (selectedLoan._id as string),
-        actionType === "approve" ? "approved" : "rejected"
+        loan.id || (loan._id as string),
+        action === "approve" ? "approved" : "rejected"
       );
       dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
 
-      if (actionType === "approve" && backendLoan.member) {
+      if (action === "approve" && backendLoan.member) {
         const updatedMember: User = {
           ...backendLoan.member,
           activeLoan: { ...backendLoan, status: "active" as const },
@@ -266,10 +262,11 @@ const BranchLeadDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to update loan/user in backend", error);
+    } finally {
+      setSelectedLoan(null);
+      setActionType(null);
+      setProcessingLoanId(null);
     }
-
-    setSelectedLoan(null);
-    setActionType(null);
   };
 
   // Handler for loan request submission
@@ -616,6 +613,7 @@ const BranchLeadDashboard: React.FC = () => {
                     if (!member) return null;
 
                     const memberTheme = getGroupTheme(member.branch);
+                    const isProcessing = processingLoanId === (loan.id || loan._id);
 
                     return (
                       <div
@@ -646,7 +644,6 @@ const BranchLeadDashboard: React.FC = () => {
                             Pending
                           </span>
                         </div>
-
                         <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
                           <div>
                             <span className="text-gray-600">Due:</span>
@@ -655,19 +652,54 @@ const BranchLeadDashboard: React.FC = () => {
                             </span>
                           </div>
                         </div>
-
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleLoanAction(loan, "reject")}
-                            className="flex-1 px-3 py-1 border border-red-300 text-red-700 rounded text-sm hover:bg-red-50 transition-colors"
+                            disabled={isProcessing}
+                            className={`flex-1 px-3 py-1 border border-red-300 text-red-700 rounded text-sm transition-colors ${
+                              isProcessing 
+                                ? "opacity-50 cursor-not-allowed" 
+                                : "hover:bg-red-50"
+                            }`}
                           >
                             Reject
                           </button>
                           <button
                             onClick={() => handleLoanAction(loan, "approve")}
-                            className="flex-1 px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700 transition-colors"
+                            disabled={isProcessing}
+                            className={`flex-1 px-3 py-1 rounded text-sm transition-colors flex items-center justify-center ${
+                              isProcessing
+                                ? "bg-emerald-400 text-white cursor-not-allowed"
+                                : "bg-emerald-600 text-white hover:bg-emerald-700"
+                            }`}
                           >
-                            Approve
+                            {isProcessing ? (
+                              <>
+                                <svg
+                                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Processing...
+                              </>
+                            ) : (
+                              "Approve"
+                            )}
                           </button>
                         </div>
                       </div>
