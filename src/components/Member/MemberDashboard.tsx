@@ -20,6 +20,7 @@ import { fetchMemberShares, fetchPenalties } from "../../utils/api";
 const INITIAL_POLLING_INTERVAL = 30000; // 30 seconds
 const MAX_POLLING_INTERVAL = 300000; // Max 5 minutes
 const MIN_POLLING_INTERVAL = 30000; // Min 30 seconds
+const LOADING_DELAY = 300; // 300ms delay for smoother transition
 
 // Request Queue for deduplication
 class RequestQueue {
@@ -85,10 +86,10 @@ const LoanInfoSkeleton = () => (
 
 const MemberDashboard: React.FC = () => {
   const { state } = useApp();
-  const { users, currentUser: rawCurrentUser, groupRules } = state;
+  const { users, currentUser: rawCurrentUser, groupRules, loans } = state;
   const [memberShares, setMemberShares] = useState<any>(null);
   const [memberPenalties, setMemberPenalties] = useState<number>(0);
-  const [sectionsLoading, setSectionsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Consolidated loading state
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showReportsPopup, setShowReportsPopup] = useState(false);
@@ -185,7 +186,7 @@ const MemberDashboard: React.FC = () => {
     },
   ];
 
-  const userLoans = state.loans?.filter((loan) => {
+  const userLoans = loans?.filter((loan) => {
     if (!loan || !currentUser) return false;
     if (typeof loan.member === "object") {
       return loan.member?._id === currentUser._id;
@@ -256,7 +257,6 @@ const MemberDashboard: React.FC = () => {
         fetchPenaltiesData(userId),
       ]);
 
-      
       const sharesArray = Array.isArray(sharesData) ? sharesData : [];
 
       if (isMountedRef.current) {
@@ -264,9 +264,20 @@ const MemberDashboard: React.FC = () => {
           (share: any) => String(share.id || share._id) === String(userId)
         );
         
-        setMemberShares(currentShare);
-        setSectionsLoading(false);
-        
+        // Only update state and stop loading after confirming loans are ready
+        if (loans !== undefined) {
+          // Add slight delay for smoother transition
+          setTimeout(() => {
+            if (isMountedRef.current) {
+              setMemberShares(currentShare);
+              setIsLoading(false);
+            }
+          }, LOADING_DELAY);
+        } else {
+          setMemberShares(currentShare);
+          // Keep isLoading true until loans are ready
+        }
+
         // Success - gradually decrease interval but not below minimum
         setErrorCount(0);
         setPollingInterval(prev => {
@@ -291,14 +302,18 @@ const MemberDashboard: React.FC = () => {
       
       if (isMountedRef.current) {
         setMemberShares(null);
-        setSectionsLoading(false);
+        setTimeout(() => {
+          if (isMountedRef.current) {
+            setIsLoading(false);
+          }
+        }, LOADING_DELAY);
       }
     }
-  }, [fetchPenaltiesData]); // Only depends on fetchPenaltiesData which is stable
+  }, [fetchPenaltiesData, loans]); // Depend on loans to recheck readiness
 
   // Manual refresh
   const handleManualRefresh = useCallback(() => {
-    setSectionsLoading(true);
+    setIsLoading(true);
     const userId = currentUser._id || currentUser.id;
     fetchMemberData(userId, true);
   }, [currentUser._id, currentUser.id, fetchMemberData]);
@@ -330,6 +345,15 @@ const MemberDashboard: React.FC = () => {
       }
     };
 
+    // Check if loans are available and update isLoading if necessary
+    if (loans !== undefined && memberShares !== null && isMountedRef.current) {
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
+      }, LOADING_DELAY);
+    }
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
@@ -340,7 +364,7 @@ const MemberDashboard: React.FC = () => {
         pollingIntervalRef.current = null;
       }
     };
-  }, [pollingInterval, currentUser._id, currentUser.id, fetchMemberData]); // Re-run when interval changes
+  }, [pollingInterval, currentUser._id, currentUser.id, fetchMemberData, loans, memberShares]);
 
   const loanInfoCard = latestLoan ? (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
@@ -438,9 +462,6 @@ const MemberDashboard: React.FC = () => {
     </div>
   );
 
-  // Ensure skeleton is shown until both memberShares and latestLoan are fully loaded
-  const showLoanInfoSkeleton = sectionsLoading || (!memberShares && latestLoan === undefined);
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -466,7 +487,7 @@ const MemberDashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards Skeleton */}
-      {sectionsLoading ? (
+      {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(stats.length)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
@@ -500,8 +521,8 @@ const MemberDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Loan Info and Future Interest - Fixed to prevent jump */}
-      {showLoanInfoSkeleton ? (
+      {/* Loan Info and Future Interest */}
+      {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <LoanInfoSkeleton />
           <LoanInfoSkeleton />
@@ -516,9 +537,9 @@ const MemberDashboard: React.FC = () => {
       <div className="flex flex-wrap gap-4 mb-8">
         <button
           onClick={() => setShowLoanForm(true)}
-          disabled={!eligible || sectionsLoading} // Disable if loan status is loading
+          disabled={!eligible || isLoading}
           className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
-            eligible && !sectionsLoading
+            eligible && !isLoading
               ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
@@ -536,7 +557,7 @@ const MemberDashboard: React.FC = () => {
         </button>
       </div>
 
-      {sectionsLoading ? (
+      {isLoading ? (
         <LoanInfoSkeleton />
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
