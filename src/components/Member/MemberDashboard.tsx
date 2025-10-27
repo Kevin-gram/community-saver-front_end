@@ -438,11 +438,8 @@ const MemberDashboard: React.FC = () => {
     </div>
   );
 
-  // Only show loanInfoCard and futureInterestCard when memberShares is loaded and not loading
-  const showLoanInfoSkeleton = sectionsLoading || !memberShares;
-
-  // Unified loading state for all cards
-  const allCardsLoading = sectionsLoading;
+  // Ensure skeleton is shown until both memberShares and latestLoan are fully loaded
+  const showLoanInfoSkeleton = sectionsLoading || (!memberShares && latestLoan === undefined);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -469,7 +466,7 @@ const MemberDashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards Skeleton */}
-      {allCardsLoading ? (
+      {sectionsLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(stats.length)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
@@ -503,29 +500,25 @@ const MemberDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Loan Info and Future Interest Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {showLoanInfoSkeleton ? (
-          <>
-            <LoanInfoSkeleton />
-            <LoanInfoSkeleton />
-          </>
-        ) : (
-          <>
-            {/* Only render loanInfoCard if memberShares is loaded and not loading */}
-            {memberShares && loanInfoCard}
-            {memberShares && futureInterestCard}
-          </>
-        )}
-      </div>
+      {/* Loan Info and Future Interest - Fixed to prevent jump */}
+      {showLoanInfoSkeleton ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <LoanInfoSkeleton />
+          <LoanInfoSkeleton />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {loanInfoCard}
+          {futureInterestCard}
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-4 mb-8">
         <button
           onClick={() => setShowLoanForm(true)}
-          // Only enable if loan status data is ready and eligible
-          disabled={showLoanInfoSkeleton || !eligible}
+          disabled={!eligible || sectionsLoading} // Disable if loan status is loading
           className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
-            !showLoanInfoSkeleton && eligible
+            eligible && !sectionsLoading
               ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
