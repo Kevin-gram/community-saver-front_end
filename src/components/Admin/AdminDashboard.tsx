@@ -51,30 +51,38 @@ const AdminDashboard: React.FC = () => {
   // Memoized calculations - THESE DON'T NEED API CALLS, THEY USE CONTEXT DATA
   const pendingLoans = loans.filter((loan) => loan.status === "pending").length;
   
-  // Fetch total members directly from API (exclude admins, only approved)
+  // Fetch total members (members + branch_leads, status: approved)
+  const fetchTotalMembers = async (showLoader = false) => {
+    try {
+      if (showLoader) setTotalMembersLoading(true);
+      const fetchedUsers = await fetchUsers();
+      const members = Array.isArray(fetchedUsers)
+        ? fetchedUsers.filter(
+            (u: any) =>
+              (u.role === "member" || u.role === "branch_lead") &&
+              u.status === "approved"
+          )
+        : [];
+      if (showLoader) console.log("Total Members counted:", members);
+      setTotalMembers(members.length);
+    } catch (e) {
+      setTotalMembers(0);
+    } finally {
+      if (showLoader) setTotalMembersLoading(false);
+    }
+  };
+
+  // Initial load (show skeletons)
   useEffect(() => {
-    let mounted = true;
-    const getTotalMembers = async () => {
-      try {
-        setTotalMembersLoading(true);
-        const fetchedUsers = await fetchUsers();
-        const count =
-          Array.isArray(fetchedUsers)
-            ? fetchedUsers.filter(
-                (u: any) => u.role === "member" && u.status === "approved"
-              ).length
-            : 0;
-        if (mounted) setTotalMembers(count);
-      } catch (e) {
-        if (mounted) setTotalMembers(0);
-      } finally {
-        if (mounted) setTotalMembersLoading(false);
-      }
-    };
-    getTotalMembers();
-    return () => {
-      mounted = false;
-    };
+    fetchTotalMembers(true);
+  }, []);
+
+  // Polling for total members (no skeletons, just update)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchTotalMembers(false);
+    }, POLLING_INTERVAL);
+    return () => clearInterval(interval);
   }, []);
 
   // NEW: Fetch loans directly for Overview section

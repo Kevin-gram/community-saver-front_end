@@ -13,7 +13,13 @@ const ITEMS_PER_PAGE = 5; // Set to display 5 users per page
 
 const UserManagement: React.FC = () => {
   const { state, dispatch } = useApp();
-  const users = state.users.filter((user) => user.role !== "admin");
+  // Only show users whose status is "approved" and role is "member" or "branch_lead"
+  const users = state.users.filter(
+    (user) =>
+      user.role !== "admin" &&
+      (user.role === "member" || user.role === "branch_lead") &&
+      user.status === "approved"
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("");
   const [filterGroup, setFilterGroup] = useState("");
