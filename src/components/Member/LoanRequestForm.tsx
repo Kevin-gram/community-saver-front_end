@@ -129,20 +129,19 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               savings)
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Bank's available balance: ${availableBalance.toLocaleString()}
+             Available Savings: ${userSavings.toLocaleString()}
             </p>
             {loanAmount > maxLoanable && (
               <p className="text-xs text-red-500 mt-1">
                 Loan amount exceeds your maximum loanable limit.
               </p>
             )}
-            {loanAmount > availableBalance && (
+            {loanAmount > maxLoanable && (
               <p className="text-xs text-red-500 mt-1">
-                Loan amount exceeds the bank's available balance.
+                Loan amount exceeds 3 times your savings  balance.
               </p>
             )}
           </div>
-
           <div>
             <label
               htmlFor="repaymentPeriod"
