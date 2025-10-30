@@ -11,13 +11,15 @@ import {
   History,
   Clock,
   Calculator,
+  PiggyBank,
+  BarChart,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { getGroupTheme, calculateMaxLoanAmount } from "../../utils/calculations";
 import MemberDetails from "./MemberDetails";
 import LoanRequestForm from "../Member/LoanRequestForm";
 import ContributionHistory from "../Member/ContributionHistory";
-import { approveOrReject, updateUser, fetchMemberShares } from "../../utils/api";
+import { approveOrReject, updateUser, fetchMemberShares, fetchNetContributions } from "../../utils/api";
 import { Loan, User, MemberShare } from "../../types";
 
 const POLLING_INTERVAL = 5000; // 5 seconds
@@ -74,6 +76,7 @@ const BranchLeadDashboard: React.FC = () => {
   const [allShares, setAllShares] = useState<MemberShare[]>([]);
   const [sharesLoading, setSharesLoading] = useState(true);
   const [processingLoanId, setProcessingLoanId] = useState<string | null>(null);
+  const [netContributions, setNetContributions] = useState<any>(null);
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyLoadedRef = useRef(false);
@@ -185,6 +188,21 @@ const BranchLeadDashboard: React.FC = () => {
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
+    // Add group-level cards (distinct, relevant icons)
+    {
+      title: "Gross Contribution",
+      value: `€${(netContributions?.netAvailable ?? 0).toLocaleString()}`,
+      icon: PiggyBank,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
+    {
+      title: "Future Gross Contribution (SA applies here)",
+      value: `€${(netContributions?.bestFutureBalance ?? 0).toLocaleString()}`,
+      icon: BarChart,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
   ];
 
   // Personal stats for branch lead
@@ -283,11 +301,15 @@ const BranchLeadDashboard: React.FC = () => {
     }
     
     try {
-      const data = await fetchMemberShares();
+      const [data, netData] = await Promise.all([
+        fetchMemberShares(),
+        fetchNetContributions(),
+      ]);
       const sharesArray = Array.isArray(data) ? data : [];
       
       if (isMountedRef.current) {
         setAllShares(sharesArray);
+        setNetContributions(netData || null);
         const currentUserId = currentUser._id || currentUser.id;
         const currentShare = sharesArray.find(
           (share: any) =>
@@ -383,18 +405,11 @@ const BranchLeadDashboard: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-            >
-              <div className="flex items-center justify-between">
+            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[140px]">
+              <div className="flex items-center justify-between h-full">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    {stat.title}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
-                    {stat.value}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
                 </div>
                 <div className={`${stat.bg} rounded-lg p-3`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />

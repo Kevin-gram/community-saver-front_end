@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Calculator } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { Loan } from "../../types";
-import { addLoan } from "../../utils/api";
+import { addLoan, fetchNetContributions } from "../../utils/api";
 
 interface LoanRequestFormProps {
   onClose: () => void;
@@ -43,6 +43,24 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
   const [amount, setAmount] = useState("");
   const [repaymentPeriod, setRepaymentPeriod] = useState(6);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [grossContribution, setGrossContribution] = useState<number | null>(null);
+
+  // Load gross contribution (netAvailable) from backend on mount
+  useEffect(() => {
+    let mounted = true;
+    const loadGross = async () => {
+      try {
+        const net = await fetchNetContributions();
+        // Support different shapes: net.netAvailable or net.net_available
+        const value = net?.netAvailable ?? net?.net_available ?? null;
+        if (mounted) setGrossContribution(typeof value === "number" ? value : null);
+      } catch (err) {
+        console.error("Failed to load gross contribution:", err);
+      }
+    };
+    loadGross();
+    return () => { mounted = false; };
+  }, []);
 
   if (!currentUser) return null;
 
@@ -129,7 +147,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               savings)
             </p>
             <p className="text-xs text-gray-500 mt-1">
-             Available Savings: ${userSavings.toLocaleString()}
+              Gross contributions: €{(grossContribution ?? totalSavings).toLocaleString()}
             </p>
             {loanAmount > maxLoanable && (
               <p className="text-xs text-red-500 mt-1">
@@ -138,7 +156,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
             )}
             {loanAmount > maxLoanable && (
               <p className="text-xs text-red-500 mt-1">
-                Loan amount exceeds 3 times your savings  balance.
+                Loan amount exceeds 3 times your savings balance.
               </p>
             )}
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FileDown, Loader2, Calendar, Upload, Mail, X } from "lucide-react";
-import { fetchUsers, fetchLoans, fetchMemberShares, fetchPenalties, API_BASE } from "../../utils/api";
+import { fetchUsers, fetchLoans, fetchMemberShares, fetchPenalties, API_BASE, fetchNetContributions } from "../../utils/api";
 import { User, Loan, MemberShare } from "../../types";
 
 type ReportPeriod = "week" | "month" | "quarter" | "year" | "all";
@@ -15,6 +15,10 @@ type ReportData = {
   shares: MemberShare[];
   penalties: any[];
   timestamp: string;
+  netContributions?: {
+    netAvailable?: number;
+    bestFutureBalance?: number;
+  };
 };
 
 const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) => void }> = ({
@@ -47,11 +51,12 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       if (setExternalLoading) setExternalLoading(true);
       setError(null);
       
-      const [users, loansResponse, shares, penaltiesResponse] = await Promise.all([
+      const [users, loansResponse, shares, penaltiesResponse, netData] = await Promise.all([
         fetchUsers(),
         fetchLoans(),
         fetchMemberShares(),
         fetchPenalties(),
+        fetchNetContributions(),
       ]);
 
       const loans = Array.isArray(loansResponse) ? loansResponse : loansResponse?.loans || [];
@@ -63,6 +68,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         shares,
         penalties,
         timestamp: new Date().toISOString(),
+        netContributions: netData || undefined,
       };
       
       setData(reportData);
@@ -151,6 +157,21 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       const pendingPenalties = filteredData.penalties
         .filter(p => p.status === 'pending')
         .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+      // Net contributions from backend (fallback to computed totalSavings if missing)
+      const net = filteredData.netContributions || {};
+      const totalBalance = typeof net.netAvailable === "number" ? net.netAvailable : totalSavings;
+      const futureBalance = typeof net.bestFutureBalance === "number" ? net.bestFutureBalance : 0;
+
+      // Render important balances above the summary (bold, dark green)
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(darkGreen[0], darkGreen[1], darkGreen[2]);
+      doc.text(`Total Balance: €${totalBalance.toLocaleString()}`, 14, yPos);
+      doc.text(`Future Balance: €${futureBalance.toLocaleString()}`, pageWidth - 14, yPos, { align: "right" });
+      yPos += 12;
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(100);
 
       const summaryData = [
         ["Total Members", totalMembers.toString()],

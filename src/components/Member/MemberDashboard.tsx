@@ -8,6 +8,8 @@ import {
   History,
   Calculator,
   PiggyBank,
+  Layers,
+  BarChart,
   FileDown,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -15,7 +17,7 @@ import { calculateMaxLoanAmount } from "../../utils/calculations";
 import LoanRequestForm from "./LoanRequestForm";
 import ContributionHistory from "./ContributionHistory";
 import FinancialReports from "./FinancialReports";
-import { fetchMemberShares, fetchPenalties } from "../../utils/api";
+import { fetchMemberShares, fetchPenalties, fetchNetContributions } from "../../utils/api";
 
 const INITIAL_POLLING_INTERVAL = 30000; // 30 seconds
 const MAX_POLLING_INTERVAL = 300000; // Max 5 minutes
@@ -89,6 +91,7 @@ const MemberDashboard: React.FC = () => {
   const { users, currentUser: rawCurrentUser, groupRules, loans } = state;
   const [memberShares, setMemberShares] = useState<any>(null);
   const [memberPenalties, setMemberPenalties] = useState<number>(0);
+  const [netContributions, setNetContributions] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true); // Consolidated loading state
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -144,14 +147,15 @@ const MemberDashboard: React.FC = () => {
   );
   const userSavings = currentUser.totalContributions;
 
+  // Compose stats - include group-level cards and ensure same size via fixed height class
   const stats = [
     {
       id: "total-savings",
       title: "Total Savings",
       value: `€${currentSavings.toLocaleString()}`,
       icon: DollarSign,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
     {
       id: "interest-received",
@@ -161,8 +165,8 @@ const MemberDashboard: React.FC = () => {
         maximumFractionDigits: 2,
       })}`,
       icon: TrendingUp,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
     ...(memberPenalties > 0
       ? [
@@ -171,8 +175,8 @@ const MemberDashboard: React.FC = () => {
             title: "Pending Penalties",
             value: `€${memberPenalties.toLocaleString()}`,
             icon: AlertTriangle,
-            color: "text-emerald-600", // Green icon
-            bg: "bg-emerald-100", // Green background
+            color: "text-emerald-600",
+            bg: "bg-emerald-100",
           },
         ]
       : []),
@@ -181,8 +185,24 @@ const MemberDashboard: React.FC = () => {
       title: "Max Loanable",
       value: `€${(maxLoanAmount ?? 0).toLocaleString()}`,
       icon: Calculator,
-      color: "text-emerald-600", // Green icon
-      bg: "bg-emerald-100", // Green background
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
+    {
+      id: "total-group-contribution",
+      title: "Gross Contribution",
+      value: `€${((netContributions?.netAvailable ?? 0)).toLocaleString()}`,
+      icon: PiggyBank,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
+    {
+      id: "future-gross-contribution",
+      title: "Future Gross Contribution",
+      value: `€${((netContributions?.bestFutureBalance ?? 0)).toLocaleString()}`,
+      icon: BarChart,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
   ];
 
@@ -252,9 +272,10 @@ const MemberDashboard: React.FC = () => {
       lastFetchTime.current = now;
       
       // Batch requests using Promise.all with request queue
-      const [sharesData] = await Promise.all([
+      const [sharesData, netData] = await Promise.all([
         requestQueue.fetch('member-shares', () => fetchMemberShares(), 15000),
-        fetchPenaltiesData(userId),
+        requestQueue.fetch('net-contributions', () => fetchNetContributions(), 15000),
+        // fetchPenaltiesData already called separately earlier
       ]);
 
       const sharesArray = Array.isArray(sharesData) ? sharesData : [];
@@ -263,7 +284,10 @@ const MemberDashboard: React.FC = () => {
         const currentShare = sharesArray.find(
           (share: any) => String(share.id || share._id) === String(userId)
         );
-        
+
+        // store net contributions
+        setNetContributions(netData || null);
+
         // Only update state and stop loading after confirming loans are ready
         if (loans !== undefined) {
           // Add slight delay for smoother transition
@@ -453,7 +477,7 @@ const MemberDashboard: React.FC = () => {
           </p>
         </div>
         <div className="rounded-lg p-3 bg-emerald-100">
-          <PiggyBank className="w-6 h-6 text-emerald-600" />
+          <Layers className="w-6 h-6 text-emerald-600" />
         </div>
       </div>
       <p className="text-sm text-gray-600">
@@ -490,7 +514,7 @@ const MemberDashboard: React.FC = () => {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(stats.length)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse min-h-[140px]">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
@@ -506,8 +530,8 @@ const MemberDashboard: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat) => (
-            <div key={stat.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between">
+            <div key={stat.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[140px]">
+              <div className="flex items-center justify-between h-full">
                 <div>
                   <p className="text-sm font-medium text-gray-600">{stat.title}</p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
