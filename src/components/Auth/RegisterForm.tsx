@@ -72,11 +72,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
   // Password strength validation function
   const isStrongPassword = (pwd: string) => {
     // At least one uppercase, one special char, min 9 chars
-    return (
-      /[A-Z]/.test(pwd) &&
-      /[^A-Za-z0-9]/.test(pwd) &&
-      pwd.length >= 9
-    );
+    return /[A-Z]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd) && pwd.length >= 9;
   };
 
   // Show password strength error as user types
@@ -360,7 +356,9 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
           {/* Error/Success Messages */}
           <div className="space-y-2">
             {error && <div className="text-sm text-red-600">{error}</div>}
-            {success && <div className="text-sm text-emerald-700">{success}</div>}
+            {success && (
+              <div className="text-sm text-emerald-700">{success}</div>
+            )}
           </div>
         </form>
 
@@ -376,4 +374,3 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
 };
 
 export default RegisterForm;
-

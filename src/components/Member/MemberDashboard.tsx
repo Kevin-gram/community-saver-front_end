@@ -17,7 +17,11 @@ import { calculateMaxLoanAmount } from "../../utils/calculations";
 import LoanRequestForm from "./LoanRequestForm";
 import ContributionHistory from "./ContributionHistory";
 import FinancialReports from "./FinancialReports";
-import { fetchMemberShares, fetchPenalties, fetchNetContributions } from "../../utils/api";
+import {
+  fetchMemberShares,
+  fetchPenalties,
+  fetchNetContributions,
+} from "../../utils/api";
 
 const INITIAL_POLLING_INTERVAL = 30000; // 30 seconds
 const MAX_POLLING_INTERVAL = 300000; // Max 5 minutes
@@ -26,22 +30,23 @@ const LOADING_DELAY = 300; // 300ms delay for smoother transition
 
 // Request Queue for deduplication
 class RequestQueue {
-  private queue: Map<string, { promise: Promise<any>; timestamp: number }> = new Map();
-  
+  private queue: Map<string, { promise: Promise<any>; timestamp: number }> =
+    new Map();
+
   async fetch(key: string, fetchFn: () => Promise<any>, ttl: number = 10000) {
     const cached = this.queue.get(key);
     const now = Date.now();
-    
+
     // Return cached promise if still valid
-    if (cached && (now - cached.timestamp) < ttl) {
+    if (cached && now - cached.timestamp < ttl) {
       return cached.promise;
     }
-    
+
     // Create new request
     const promise = fetchFn().finally(() => {
       setTimeout(() => this.queue.delete(key), ttl);
     });
-    
+
     this.queue.set(key, { promise, timestamp: now });
     return promise;
   }
@@ -96,9 +101,11 @@ const MemberDashboard: React.FC = () => {
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showReportsPopup, setShowReportsPopup] = useState(false);
-  const [pollingInterval, setPollingInterval] = useState(INITIAL_POLLING_INTERVAL);
+  const [pollingInterval, setPollingInterval] = useState(
+    INITIAL_POLLING_INTERVAL
+  );
   const [errorCount, setErrorCount] = useState(0);
-  
+
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastSuccessfulFetch = useRef<number>(Date.now());
@@ -114,7 +121,8 @@ const MemberDashboard: React.FC = () => {
   }
 
   // Find current user with null check
-  const currentUser = users?.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
+  const currentUser =
+    users?.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
 
   // Early return if not a member
   if (!currentUser || currentUser.role !== "member") {
@@ -125,18 +133,19 @@ const MemberDashboard: React.FC = () => {
     );
   }
 
-  const groupKey = currentUser.branch?.toLowerCase() || '';
+  const groupKey = currentUser.branch?.toLowerCase() || "";
   const rules = groupRules[groupKey] || {};
-  
+
   // Use displayData for calculations to reflect updated values
   const displayData = memberShares || currentUser;
-  
+
   // Recalculate maxLoanAmount based on the latest displayData
-  const currentSavings = displayData?.totalContribution ?? displayData?.totalContributions ?? 0;
+  const currentSavings =
+    displayData?.totalContribution ?? displayData?.totalContributions ?? 0;
   const maxLoanAmount = rules
     ? calculateMaxLoanAmount(
-        { ...currentUser, totalContributions: currentSavings }, 
-        rules.maxLoanMultiplier, 
+        { ...currentUser, totalContributions: currentSavings },
+        rules.maxLoanMultiplier,
         rules.maxLoanAmount
       )
     : 0;
@@ -160,7 +169,11 @@ const MemberDashboard: React.FC = () => {
     {
       id: "interest-received",
       title: "Interest Received",
-      value: `€${(displayData?.interestEarned ?? displayData?.interestReceived ?? 0).toLocaleString(undefined, {
+      value: `€${(
+        displayData?.interestEarned ??
+        displayData?.interestReceived ??
+        0
+      ).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`,
@@ -191,7 +204,7 @@ const MemberDashboard: React.FC = () => {
     {
       id: "total-group-contribution",
       title: "Gross Contribution",
-      value: `€${((netContributions?.netAvailable ?? 0)).toLocaleString()}`,
+      value: `€${(netContributions?.netAvailable ?? 0).toLocaleString()}`,
       icon: PiggyBank,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
@@ -199,35 +212,39 @@ const MemberDashboard: React.FC = () => {
     {
       id: "future-gross-contribution",
       title: "Future Gross Contribution",
-      value: `€${((netContributions?.bestFutureBalance ?? 0)).toLocaleString()}`,
+      value: `€${(netContributions?.bestFutureBalance ?? 0).toLocaleString()}`,
       icon: BarChart,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
   ];
 
-  const userLoans = loans?.filter((loan) => {
-    if (!loan || !currentUser) return false;
-    if (typeof loan.member === "object") {
-      return loan.member?._id === currentUser._id;
-    }
-    return loan.member === currentUser._id;
-  }) || [];
+  const userLoans =
+    loans?.filter((loan) => {
+      if (!loan || !currentUser) return false;
+      if (typeof loan.member === "object") {
+        return loan.member?._id === currentUser._id;
+      }
+      return loan.member === currentUser._id;
+    }) || [];
 
   const latestLoan = userLoans[0];
-  const eligible = !latestLoan || (latestLoan.status && ["repaid", "rejected"].includes(latestLoan.status));
+  const eligible =
+    !latestLoan ||
+    (latestLoan.status && ["repaid", "rejected"].includes(latestLoan.status));
 
   // Fetch penalties - stable function with no state dependencies in callback
   const fetchPenaltiesData = useCallback(async (userId: string) => {
     try {
       const penaltiesArray = await requestQueue.fetch(
-        'penalties',
+        "penalties",
         () => fetchPenalties(),
         15000 // Cache for 15 seconds
       );
-      
+
       const userPendingPenalties = penaltiesArray.filter((penalty: any) => {
-        const penaltyMemberId = penalty.member?._id || penalty.member?.id || penalty.member;
+        const penaltyMemberId =
+          penalty.member?._id || penalty.member?.id || penalty.member;
         const isPending = penalty.status === "pending";
         return isPending && String(penaltyMemberId) === String(userId);
       });
@@ -244,13 +261,13 @@ const MemberDashboard: React.FC = () => {
       return totalPendingAmount;
     } catch (error: any) {
       console.error("Failed to fetch penalties:", error?.message || error);
-      
+
       if (error?.response?.status === 429) {
-        console.warn('Rate limit hit on penalties - backing off');
-        setErrorCount(prev => prev + 1);
-        setPollingInterval(prev => Math.min(prev * 2, MAX_POLLING_INTERVAL));
+        console.warn("Rate limit hit on penalties - backing off");
+        setErrorCount((prev) => prev + 1);
+        setPollingInterval((prev) => Math.min(prev * 2, MAX_POLLING_INTERVAL));
       }
-      
+
       if (isMountedRef.current) {
         setMemberPenalties(0);
       }
@@ -259,81 +276,92 @@ const MemberDashboard: React.FC = () => {
   }, []); // No dependencies - userId passed as parameter
 
   // Fetch member data - stable function with no state dependencies in callback
-  const fetchMemberData = useCallback(async (userId: string, isInitialLoad = false) => {
-    const now = Date.now();
-    const timeSinceLastFetch = now - lastFetchTime.current;
-    
-    // Prevent fetching if last fetch was too recent (unless initial load)
-    if (!isInitialLoad && timeSinceLastFetch < 10000) {
-      return;
-    }
+  const fetchMemberData = useCallback(
+    async (userId: string, isInitialLoad = false) => {
+      const now = Date.now();
+      const timeSinceLastFetch = now - lastFetchTime.current;
 
-    try {
-      lastFetchTime.current = now;
-      
-      // Batch requests using Promise.all with request queue
-      const [sharesData, netData] = await Promise.all([
-        requestQueue.fetch('member-shares', () => fetchMemberShares(), 15000),
-        requestQueue.fetch('net-contributions', () => fetchNetContributions(), 15000),
-        // fetchPenaltiesData already called separately earlier
-      ]);
+      // Prevent fetching if last fetch was too recent (unless initial load)
+      if (!isInitialLoad && timeSinceLastFetch < 10000) {
+        return;
+      }
 
-      const sharesArray = Array.isArray(sharesData) ? sharesData : [];
+      try {
+        lastFetchTime.current = now;
 
-      if (isMountedRef.current) {
-        const currentShare = sharesArray.find(
-          (share: any) => String(share.id || share._id) === String(userId)
-        );
+        // Batch requests using Promise.all with request queue
+        const [sharesData, netData] = await Promise.all([
+          requestQueue.fetch("member-shares", () => fetchMemberShares(), 15000),
+          requestQueue.fetch(
+            "net-contributions",
+            () => fetchNetContributions(),
+            15000
+          ),
+          // fetchPenaltiesData already called separately earlier
+        ]);
 
-        // store net contributions
-        setNetContributions(netData || null);
+        const sharesArray = Array.isArray(sharesData) ? sharesData : [];
 
-        // Only update state and stop loading after confirming loans are ready
-        if (loans !== undefined) {
-          // Add slight delay for smoother transition
+        if (isMountedRef.current) {
+          const currentShare = sharesArray.find(
+            (share: any) => String(share.id || share._id) === String(userId)
+          );
+
+          // store net contributions
+          setNetContributions(netData || null);
+
+          // Only update state and stop loading after confirming loans are ready
+          if (loans !== undefined) {
+            // Add slight delay for smoother transition
+            setTimeout(() => {
+              if (isMountedRef.current) {
+                setMemberShares(currentShare);
+                setIsLoading(false);
+              }
+            }, LOADING_DELAY);
+          } else {
+            setMemberShares(currentShare);
+            // Keep isLoading true until loans are ready
+          }
+
+          // Success - gradually decrease interval but not below minimum
+          setErrorCount(0);
+          setPollingInterval((prev) => {
+            if (prev > MIN_POLLING_INTERVAL) {
+              return Math.max(prev * 0.8, MIN_POLLING_INTERVAL);
+            }
+            return MIN_POLLING_INTERVAL;
+          });
+          lastSuccessfulFetch.current = now;
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch member data:", error?.message || error);
+
+        // Handle errors with exponential backoff
+        if (error?.response?.status === 429) {
+          console.warn("Rate limit hit - backing off");
+          setErrorCount((prev) => prev + 1);
+          setPollingInterval((prev) =>
+            Math.min(prev * 2, MAX_POLLING_INTERVAL)
+          );
+        } else {
+          setPollingInterval((prev) =>
+            Math.min(prev * 1.5, MAX_POLLING_INTERVAL)
+          );
+        }
+
+        if (isMountedRef.current) {
+          setMemberShares(null);
           setTimeout(() => {
             if (isMountedRef.current) {
-              setMemberShares(currentShare);
               setIsLoading(false);
             }
           }, LOADING_DELAY);
-        } else {
-          setMemberShares(currentShare);
-          // Keep isLoading true until loans are ready
         }
-
-        // Success - gradually decrease interval but not below minimum
-        setErrorCount(0);
-        setPollingInterval(prev => {
-          if (prev > MIN_POLLING_INTERVAL) {
-            return Math.max(prev * 0.8, MIN_POLLING_INTERVAL);
-          }
-          return MIN_POLLING_INTERVAL;
-        });
-        lastSuccessfulFetch.current = now;
       }
-    } catch (error: any) {
-      console.error("Failed to fetch member data:", error?.message || error);
-      
-      // Handle errors with exponential backoff
-      if (error?.response?.status === 429) {
-        console.warn('Rate limit hit - backing off');
-        setErrorCount(prev => prev + 1);
-        setPollingInterval(prev => Math.min(prev * 2, MAX_POLLING_INTERVAL));
-      } else {
-        setPollingInterval(prev => Math.min(prev * 1.5, MAX_POLLING_INTERVAL));
-      }
-      
-      if (isMountedRef.current) {
-        setMemberShares(null);
-        setTimeout(() => {
-          if (isMountedRef.current) {
-            setIsLoading(false);
-          }
-        }, LOADING_DELAY);
-      }
-    }
-  }, [fetchPenaltiesData, loans]); // Depend on loans to recheck readiness
+    },
+    [fetchPenaltiesData, loans]
+  ); // Depend on loans to recheck readiness
 
   // Manual refresh
   const handleManualRefresh = useCallback(() => {
@@ -346,7 +374,7 @@ const MemberDashboard: React.FC = () => {
   useEffect(() => {
     isMountedRef.current = true;
     const userId = currentUser._id || currentUser.id;
-    
+
     // Initial fetch
     fetchMemberData(userId, true);
 
@@ -388,7 +416,14 @@ const MemberDashboard: React.FC = () => {
         pollingIntervalRef.current = null;
       }
     };
-  }, [pollingInterval, currentUser._id, currentUser.id, fetchMemberData, loans, memberShares]);
+  }, [
+    pollingInterval,
+    currentUser._id,
+    currentUser.id,
+    fetchMemberData,
+    loans,
+    memberShares,
+  ]);
 
   const loanInfoCard = latestLoan ? (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
@@ -406,7 +441,8 @@ const MemberDashboard: React.FC = () => {
                 : "text-gray-900"
             }`}
           >
-            {latestLoan.status.charAt(0).toUpperCase() + latestLoan.status.slice(1)}
+            {latestLoan.status.charAt(0).toUpperCase() +
+              latestLoan.status.slice(1)}
           </p>
         </div>
         <div
@@ -435,28 +471,39 @@ const MemberDashboard: React.FC = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
         <p>
-          <span className="font-medium text-gray-900">Amount:</span> €{latestLoan.amount?.toLocaleString() || "N/A"}
+          <span className="font-medium text-gray-900">Amount:</span> €
+          {latestLoan.amount?.toLocaleString() || "N/A"}
         </p>
         <p>
-          <span className="font-medium text-gray-900">Repayment:</span> €{latestLoan.repaymentAmount?.toLocaleString() || latestLoan.totalAmount?.toLocaleString() || "N/A"}
+          <span className="font-medium text-gray-900">Repayment:</span> €
+          {latestLoan.repaymentAmount?.toLocaleString() ||
+            latestLoan.totalAmount?.toLocaleString() ||
+            "N/A"}
         </p>
         <p>
-          <span className="font-medium text-gray-900">Rate per month:</span> {latestLoan.interestRate || 0}%
+          <span className="font-medium text-gray-900">Rate per month:</span>{" "}
+          {latestLoan.interestRate || 0}%
         </p>
         <p>
-          <span className="font-medium text-gray-900">Duration:</span> {latestLoan.duration || "N/A"} months
+          <span className="font-medium text-gray-900">Duration:</span>{" "}
+          {latestLoan.duration || "N/A"} months
         </p>
         <p>
-          <span className="font-medium text-gray-900">Due Date:</span> {latestLoan.dueDate ? new Date(latestLoan.dueDate).toLocaleDateString() : "N/A"}
+          <span className="font-medium text-gray-900">Due Date:</span>{" "}
+          {latestLoan.dueDate
+            ? new Date(latestLoan.dueDate).toLocaleDateString()
+            : "N/A"}
         </p>
         {latestLoan.approvedDate && (
           <p>
-            <span className="font-medium text-gray-900">Approved Date:</span> {new Date(latestLoan.approvedDate).toLocaleDateString()}
+            <span className="font-medium text-gray-900">Approved Date:</span>{" "}
+            {new Date(latestLoan.approvedDate).toLocaleDateString()}
           </p>
         )}
         {latestLoan.requestDate && (
           <p>
-            <span className="font-medium text-gray-900">Request Date:</span> {new Date(latestLoan.requestDate).toLocaleDateString()}
+            <span className="font-medium text-gray-900">Request Date:</span>{" "}
+            {new Date(latestLoan.requestDate).toLocaleDateString()}
           </p>
         )}
       </div>
@@ -470,7 +517,8 @@ const MemberDashboard: React.FC = () => {
         <div>
           <p className="text-sm font-medium text-gray-600">Future Interest</p>
           <p className="text-lg font-semibold mt-1 text-emerald-600">
-            €{(displayData?.interestToBeEarned ?? 0).toLocaleString(undefined, {
+            €
+            {(displayData?.interestToBeEarned ?? 0).toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
@@ -495,7 +543,12 @@ const MemberDashboard: React.FC = () => {
             Member Dashboard
           </h1>
           <p className="text-gray-600">
-            Welcome back, {displayData?.name || `${displayData?.firstName || ""} ${displayData?.lastName || ""}`.trim() || "Member"}
+            Welcome back,{" "}
+            {displayData?.name ||
+              `${displayData?.firstName || ""} ${
+                displayData?.lastName || ""
+              }`.trim() ||
+              "Member"}
           </p>
         </div>
         <div className="flex items-center space-x-3">
@@ -514,7 +567,10 @@ const MemberDashboard: React.FC = () => {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(stats.length)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse min-h-[140px]">
+            <div
+              key={i}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse min-h-[140px]"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
@@ -530,11 +586,18 @@ const MemberDashboard: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat) => (
-            <div key={stat.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[140px]">
+            <div
+              key={stat.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[140px]"
+            >
               <div className="flex items-center justify-between h-full">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                    {stat.value}
+                  </p>
                 </div>
                 <div className={`${stat.bg} rounded-lg p-3`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -585,13 +648,19 @@ const MemberDashboard: React.FC = () => {
         <LoanInfoSkeleton />
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Loan Information</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Loan Information
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium text-gray-700 mb-2">Eligibility Status</h4>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Eligibility Status
+              </h4>
               <div
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  eligible ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+                  eligible
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-red-100 text-red-800"
                 }`}
               >
                 {eligible ? "Eligible" : "Not Eligible"}
@@ -604,13 +673,23 @@ const MemberDashboard: React.FC = () => {
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-700 mb-2">Loan Calculation</h4>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Loan Calculation
+              </h4>
               <div className="space-y-1 text-sm text-gray-600">
                 <p>Savings: €{currentSavings?.toLocaleString() || "N/A"}</p>
                 <p>Multiplier: {rules ? rules.maxLoanMultiplier : "N/A"}x</p>
-                <p>Maximum: €{rules && rules.maxLoanAmount !== undefined ? rules.maxLoanAmount.toLocaleString() : "N/A"}</p>
+                <p>
+                  Maximum: €
+                  {rules && rules.maxLoanAmount !== undefined
+                    ? rules.maxLoanAmount.toLocaleString()
+                    : "N/A"}
+                </p>
                 <p className="font-medium text-gray-900">
-                  Your Max: €{maxLoanAmount !== undefined && maxLoanAmount !== null ? maxLoanAmount.toLocaleString() : "N/A"}
+                  Your Max: €
+                  {maxLoanAmount !== undefined && maxLoanAmount !== null
+                    ? maxLoanAmount.toLocaleString()
+                    : "N/A"}
                 </p>
               </div>
             </div>
@@ -633,7 +712,10 @@ const MemberDashboard: React.FC = () => {
       )}
 
       {showReportsPopup && (
-        <FinancialReports open={showReportsPopup} onClose={() => setShowReportsPopup(false)} />
+        <FinancialReports
+          open={showReportsPopup}
+          onClose={() => setShowReportsPopup(false)}
+        />
       )}
     </div>
   );

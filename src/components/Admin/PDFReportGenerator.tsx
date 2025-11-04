@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FileDown, Loader2, Calendar, Upload, Mail, X } from "lucide-react";
-import { fetchUsers, fetchLoans, fetchMemberShares, fetchPenalties, API_BASE, fetchNetContributions } from "../../utils/api";
+import {
+  fetchUsers,
+  fetchLoans,
+  fetchMemberShares,
+  fetchPenalties,
+  API_BASE,
+  fetchNetContributions,
+} from "../../utils/api";
 import { User, Loan, MemberShare } from "../../types";
 
 type ReportPeriod = "week" | "month" | "quarter" | "year" | "all";
@@ -21,10 +28,10 @@ type ReportData = {
   };
 };
 
-const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) => void }> = ({
-  loading: externalLoading,
-  setLoading: setExternalLoading,
-}) => {
+const FinancialReport: React.FC<{
+  loading?: boolean;
+  setLoading?: (v: boolean) => void;
+}> = ({ loading: externalLoading, setLoading: setExternalLoading }) => {
   const [data, setData] = useState<ReportData | null>(null);
   const [internalLoading, setInternalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,35 +39,48 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
   const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>("month");
   const [hoveredPeriod, setHoveredPeriod] = useState<ReportPeriod | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [loadingButton, setLoadingButton] = useState<"download" | "publish" | "send" | null>(null);
+  const [loadingButton, setLoadingButton] = useState<
+    "download" | "publish" | "send" | null
+  >(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const periods: { value: ReportPeriod; label: string; description: string }[] = [
-    { value: "week", label: "Last 7 Days", description: "Weekly Report" },
-    { value: "month", label: "Last 30 Days", description: "Monthly Report" },
-    { value: "quarter", label: "Last 90 Days", description: "Quarterly Report" },
-    { value: "year", label: "Last 365 Days", description: "Annual Report" },
-    { value: "all", label: "All Time", description: "Complete History" },
-  ];
+  const periods: { value: ReportPeriod; label: string; description: string }[] =
+    [
+      { value: "week", label: "Last 7 Days", description: "Weekly Report" },
+      { value: "month", label: "Last 30 Days", description: "Monthly Report" },
+      {
+        value: "quarter",
+        label: "Last 90 Days",
+        description: "Quarterly Report",
+      },
+      { value: "year", label: "Last 365 Days", description: "Annual Report" },
+      { value: "all", label: "All Time", description: "Complete History" },
+    ];
 
-  const loading = typeof externalLoading === "boolean" ? externalLoading : internalLoading;
+  const loading =
+    typeof externalLoading === "boolean" ? externalLoading : internalLoading;
 
   const fetchData = async () => {
     try {
       setInternalLoading(true);
       if (setExternalLoading) setExternalLoading(true);
       setError(null);
-      
-      const [users, loansResponse, shares, penaltiesResponse, netData] = await Promise.all([
-        fetchUsers(),
-        fetchLoans(),
-        fetchMemberShares(),
-        fetchPenalties(),
-        fetchNetContributions(),
-      ]);
 
-      const loans = Array.isArray(loansResponse) ? loansResponse : loansResponse?.loans || [];
-      const penalties = Array.isArray(penaltiesResponse) ? penaltiesResponse : penaltiesResponse?.penalties || [];
+      const [users, loansResponse, shares, penaltiesResponse, netData] =
+        await Promise.all([
+          fetchUsers(),
+          fetchLoans(),
+          fetchMemberShares(),
+          fetchPenalties(),
+          fetchNetContributions(),
+        ]);
+
+      const loans = Array.isArray(loansResponse)
+        ? loansResponse
+        : loansResponse?.loans || [];
+      const penalties = Array.isArray(penaltiesResponse)
+        ? penaltiesResponse
+        : penaltiesResponse?.penalties || [];
 
       const reportData: ReportData = {
         users,
@@ -70,10 +90,10 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         timestamp: new Date().toISOString(),
         netContributions: netData || undefined,
       };
-      
+
       setData(reportData);
     } catch (err) {
-      console.error('Fetch Error:', err);
+      console.error("Fetch Error:", err);
       setError("Failed to fetch report data.");
     } finally {
       setInternalLoading(false);
@@ -85,7 +105,10 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
     fetchData();
   }, []);
 
-  const filterDataByPeriod = (data: ReportData, period: ReportPeriod): ReportData => {
+  const filterDataByPeriod = (
+    data: ReportData,
+    period: ReportPeriod
+  ): ReportData => {
     if (period === "all") {
       // Exclude admin users from the users array
       return {
@@ -101,7 +124,9 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       ...data,
       users: data.users.filter((user: any) => user.role !== "admin"),
       loans: data.loans.filter((loan) => {
-        const loanDate = new Date(loan.requestDate || loan.createdAt || loan.date);
+        const loanDate = new Date(
+          loan.requestDate || loan.createdAt || loan.date
+        );
         return loanDate >= cutoffDate;
       }),
       penalties: data.penalties.filter((penalty) => {
@@ -113,8 +138,10 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
 
   const matchMemberId = (id1: any, id2: any): boolean => {
     if (!id1 || !id2) return false;
-    const str1 = typeof id1 === 'object' ? id1._id || id1.toString() : id1.toString();
-    const str2 = typeof id2 === 'object' ? id2._id || id2.toString() : id2.toString();
+    const str1 =
+      typeof id1 === "object" ? id1._id || id1.toString() : id1.toString();
+    const str2 =
+      typeof id2 === "object" ? id2._id || id2.toString() : id2.toString();
     return str1 === str2;
   };
 
@@ -137,9 +164,16 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       yPos += 10;
       doc.setFontSize(10);
       doc.setTextColor(100);
-      doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, yPos, { align: "center" });
       doc.text(
-        `Period: ${periods.find((p) => p.value === selectedPeriod)?.description}`,
+        `Generated: ${new Date().toLocaleString()}`,
+        pageWidth / 2,
+        yPos,
+        { align: "center" }
+      );
+      doc.text(
+        `Period: ${
+          periods.find((p) => p.value === selectedPeriod)?.description
+        }`,
         pageWidth / 2,
         yPos + 5,
         { align: "center" }
@@ -148,27 +182,43 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
 
       const totalMembers = filteredData.users.length;
       const totalLoans = filteredData.loans.length;
-      const activeLoans = filteredData.loans.filter(l => 
-        l.status === 'approved' || l.status === 'active'
+      const activeLoans = filteredData.loans.filter(
+        (l) => l.status === "approved" || l.status === "active"
       ).length;
-      const totalLoanAmount = filteredData.loans.reduce((sum, loan) => sum + (loan.amount || 0), 0);
-      const totalSavings = filteredData.shares.reduce((sum, share) => sum + (share.totalContribution || 0), 0);
-      const totalInterest = filteredData.shares.reduce((sum, share) => sum + (share.interestEarned || 0), 0);
+      const totalLoanAmount = filteredData.loans.reduce(
+        (sum, loan) => sum + (loan.amount || 0),
+        0
+      );
+      const totalSavings = filteredData.shares.reduce(
+        (sum, share) => sum + (share.totalContribution || 0),
+        0
+      );
+      const totalInterest = filteredData.shares.reduce(
+        (sum, share) => sum + (share.interestEarned || 0),
+        0
+      );
       const pendingPenalties = filteredData.penalties
-        .filter(p => p.status === 'pending')
+        .filter((p) => p.status === "pending")
         .reduce((sum, p) => sum + (p.amount || 0), 0);
 
       // Net contributions from backend (fallback to computed totalSavings if missing)
       const net = filteredData.netContributions || {};
-      const totalBalance = typeof net.netAvailable === "number" ? net.netAvailable : totalSavings;
-      const futureBalance = typeof net.bestFutureBalance === "number" ? net.bestFutureBalance : 0;
+      const totalBalance =
+        typeof net.netAvailable === "number" ? net.netAvailable : totalSavings;
+      const futureBalance =
+        typeof net.bestFutureBalance === "number" ? net.bestFutureBalance : 0;
 
       // Render important balances above the summary (bold, dark green)
       doc.setFontSize(12);
       doc.setFont(undefined, "bold");
       doc.setTextColor(darkGreen[0], darkGreen[1], darkGreen[2]);
       doc.text(`Total Balance: €${totalBalance.toLocaleString()}`, 14, yPos);
-      doc.text(`Future Balance: €${futureBalance.toLocaleString()}`, pageWidth - 14, yPos, { align: "right" });
+      doc.text(
+        `Future Balance: €${futureBalance.toLocaleString()}`,
+        pageWidth - 14,
+        yPos,
+        { align: "right" }
+      );
       yPos += 12;
       doc.setFont(undefined, "normal");
       doc.setTextColor(100);
@@ -179,7 +229,12 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         ["Active/Approved Loans", activeLoans.toString()],
         ["Total Loan Amount", `€${totalLoanAmount.toLocaleString()}`],
         ["Total Member Savings", `€${totalSavings.toLocaleString()}`],
-        ["Total Interest Distributed", `€${totalInterest.toLocaleString(undefined, { maximumFractionDigits: 2 })}`],
+        [
+          "Total Interest Distributed",
+          `€${totalInterest.toLocaleString(undefined, {
+            maximumFractionDigits: 2,
+          })}`,
+        ],
         ["Outstanding Penalties", `€${pendingPenalties.toLocaleString()}`],
       ];
 
@@ -208,36 +263,65 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
           const memberId = share._id || share.id;
 
           const memberLoans = filteredData.loans.filter((loan) => {
-            const loanMemberId = loan.member?._id || loan.member?.id || loan.memberId || loan.member;
+            const loanMemberId =
+              loan.member?._id ||
+              loan.member?.id ||
+              loan.memberId ||
+              loan.member;
             return matchMemberId(loanMemberId, memberId);
           });
 
           const unpaidLoanAmount = memberLoans
-            .filter(loan => loan.status === 'approved' || loan.status === 'active')
-            .reduce((sum, loan) => sum + (loan.totalAmount || loan.amount || 0), 0);
+            .filter(
+              (loan) => loan.status === "approved" || loan.status === "active"
+            )
+            .reduce(
+              (sum, loan) => sum + (loan.totalAmount || loan.amount || 0),
+              0
+            );
 
           const memberPenalties = filteredData.penalties.filter((penalty) => {
-            const penaltyMemberId = penalty.member?._id || penalty.member?.id || penalty.memberId || penalty.member;
+            const penaltyMemberId =
+              penalty.member?._id ||
+              penalty.member?.id ||
+              penalty.memberId ||
+              penalty.member;
             return matchMemberId(penaltyMemberId, memberId);
           });
-          
+
           const pendingPenaltiesAmount = memberPenalties
-            .filter(penalty => penalty.status === 'pending')
+            .filter((penalty) => penalty.status === "pending")
             .reduce((sum, penalty) => sum + (penalty.amount || 0), 0);
           return [
-            share.name || 'N/A',
-            share.branch || 'N/A',
+            share.name || "N/A",
+            share.branch || "N/A",
             `€${(share.totalContribution || 0).toLocaleString()}`,
             `${(share.sharePercentage || 0).toFixed(2)}%`,
-            `€${(share.interestEarned || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
-            unpaidLoanAmount > 0 ? `€${unpaidLoanAmount.toLocaleString()}` : 'No Active Loan',
-            pendingPenaltiesAmount > 0 ? `€${pendingPenaltiesAmount.toLocaleString()}` : 'No Penalties'
+            `€${(share.interestEarned || 0).toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+            })}`,
+            unpaidLoanAmount > 0
+              ? `€${unpaidLoanAmount.toLocaleString()}`
+              : "No Active Loan",
+            pendingPenaltiesAmount > 0
+              ? `€${pendingPenaltiesAmount.toLocaleString()}`
+              : "No Penalties",
           ];
         });
 
         autoTablePlugin(doc, {
           startY: yPos,
-          head: [["Name", "Branch", "Contributions", "Share %", "Interest", "Outstanding Loan", "Unpaid Penalties"]],
+          head: [
+            [
+              "Name",
+              "Branch",
+              "Contributions",
+              "Share %",
+              "Interest",
+              "Outstanding Loan",
+              "Unpaid Penalties",
+            ],
+          ],
           body: sharesBody,
           theme: "striped",
           headStyles: { fillColor: darkGreen, textColor: 255 },
@@ -249,7 +333,7 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
       }
 
       const unpaidLoans = filteredData.loans.filter(
-        loan => loan.status === 'approved' || loan.status === 'active'
+        (loan) => loan.status === "approved" || loan.status === "active"
       );
 
       if (unpaidLoans.length > 0) {
@@ -263,29 +347,48 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         yPos += 10;
 
         const loansBody = unpaidLoans.map((loan) => {
-          const loanMemberId = loan.member?._id || loan.member?.id || loan.memberId || loan.member;
-          
+          const loanMemberId =
+            loan.member?._id || loan.member?.id || loan.memberId || loan.member;
+
           const memberPendingPenalties = filteredData.penalties
-            .filter(p => {
-              const penaltyMemberId = p.member?._id || p.member?.id || p.memberId || p.member;
-              return p.status === 'pending' && matchMemberId(penaltyMemberId, loanMemberId);
+            .filter((p) => {
+              const penaltyMemberId =
+                p.member?._id || p.member?.id || p.memberId || p.member;
+              return (
+                p.status === "pending" &&
+                matchMemberId(penaltyMemberId, loanMemberId)
+              );
             })
             .reduce((sum, p) => sum + (p.amount || 0), 0);
 
           return [
-            `${loan.member?.firstName || loan.member?.name || "Unknown"} ${loan.member?.lastName || ""}`.trim(),
+            `${loan.member?.firstName || loan.member?.name || "Unknown"} ${
+              loan.member?.lastName || ""
+            }`.trim(),
             loan.member?.branch || "Unknown",
             `€${(loan.amount || 0).toLocaleString()}`,
             `€${(loan.totalAmount || loan.amount || 0).toLocaleString()}`,
-            (loan.status || 'unknown').toUpperCase(),
+            (loan.status || "unknown").toUpperCase(),
             new Date(loan.dueDate || loan.date).toLocaleDateString(),
-            memberPendingPenalties > 0 ? `€${memberPendingPenalties.toLocaleString()}` : 'None'
+            memberPendingPenalties > 0
+              ? `€${memberPendingPenalties.toLocaleString()}`
+              : "None",
           ];
         });
 
         autoTablePlugin(doc, {
           startY: yPos,
-          head: [["Member", "Branch", "Principal", "Total Due", "Status", "Due Date", "Penalties"]],
+          head: [
+            [
+              "Member",
+              "Branch",
+              "Principal",
+              "Total Due",
+              "Status",
+              "Due Date",
+              "Penalties",
+            ],
+          ],
           body: loansBody,
           theme: "striped",
           headStyles: { fillColor: darkGreen, textColor: 255 },
@@ -301,9 +404,14 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(150);
-        doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.height - 10, {
-          align: "center",
-        });
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          pageWidth / 2,
+          doc.internal.pageSize.height - 10,
+          {
+            align: "center",
+          }
+        );
       }
       return doc;
     } catch (error) {
@@ -312,19 +420,19 @@ const FinancialReport: React.FC<{ loading?: boolean; setLoading?: (v: boolean) =
     }
   };
 
-// Helper to format the report name in CamelCase with each part capitalized
-const getReportFileName = (period: ReportPeriod) => {
-  const periodMap: Record<ReportPeriod, string> = {
-    week: "Weekly",
-    month: "Monthly",
-    quarter: "Quarterly",
-    year: "Annual",
-    all: "AllTime",
+  // Helper to format the report name in CamelCase with each part capitalized
+  const getReportFileName = (period: ReportPeriod) => {
+    const periodMap: Record<ReportPeriod, string> = {
+      week: "Weekly",
+      month: "Monthly",
+      quarter: "Quarterly",
+      year: "Annual",
+      all: "AllTime",
+    };
+    const dateStr = new Date().toISOString().split("T")[0];
+    // Example: FinancialReport_Monthly_2024-06-10.pdf
+    return `FinancialReport_${periodMap[period] || "Report"}_${dateStr}.pdf`;
   };
-  const dateStr = new Date().toISOString().split("T")[0];
-  // Example: FinancialReport_Monthly_2024-06-10.pdf
-  return `FinancialReport_${periodMap[period] || "Report"}_${dateStr}.pdf`;
-};
 
   const uploadReport = async (pdfBlob: Blob, description: string = "") => {
     const formData = new FormData();
@@ -378,7 +486,10 @@ const getReportFileName = (period: ReportPeriod) => {
       const filtered = filterDataByPeriod(data, selectedPeriod);
       const doc = await generatePDFWithJsPDF(filtered);
       const pdfBlob = doc.output("blob");
-      await uploadReport(pdfBlob, `Financial report for period: ${selectedPeriod}`);
+      await uploadReport(
+        pdfBlob,
+        `Financial report for period: ${selectedPeriod}`
+      );
       setToast("Report published successfully!");
       setTimeout(() => setToast(null), 2000);
       // alert("Report published successfully!");
@@ -407,7 +518,10 @@ const getReportFileName = (period: ReportPeriod) => {
       }
       const formData = new FormData();
       formData.append("pdf", pdfBlob, getReportFileName(selectedPeriod));
-      formData.append("description", `Financial report for period: ${selectedPeriod}`);
+      formData.append(
+        "description",
+        `Financial report for period: ${selectedPeriod}`
+      );
 
       const response = await fetch(`${API_BASE}/reports/send-pdf`, {
         method: "POST",
@@ -481,7 +595,10 @@ const getReportFileName = (period: ReportPeriod) => {
 
       {isExpanded && (
         <>
-          <div className="fixed inset-0 bg-black bg-opacity-30 z-40" onClick={() => setIsExpanded(false)} />
+          <div
+            className="fixed inset-0 bg-black bg-opacity-30 z-40"
+            onClick={() => setIsExpanded(false)}
+          />
           <div className="absolute right-0 top-12 bg-white rounded-xl shadow-xl border border-gray-200 p-6 w-[500px] max-w-[95vw] z-50">
             {/* X Cancel Button */}
             <button
@@ -514,11 +631,18 @@ const getReportFileName = (period: ReportPeriod) => {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{period.label}</span>
-                      {selectedPeriod === period.value && <div className="w-2 h-2 bg-white rounded-full" />}
+                      <span className="text-sm font-medium">
+                        {period.label}
+                      </span>
+                      {selectedPeriod === period.value && (
+                        <div className="w-2 h-2 bg-white rounded-full" />
+                      )}
                     </div>
-                    {(hoveredPeriod === period.value || selectedPeriod === period.value) && (
-                      <div className="text-xs mt-1 opacity-90">{period.description}</div>
+                    {(hoveredPeriod === period.value ||
+                      selectedPeriod === period.value) && (
+                      <div className="text-xs mt-1 opacity-90">
+                        {period.description}
+                      </div>
                     )}
                   </button>
                 ))}
@@ -533,7 +657,6 @@ const getReportFileName = (period: ReportPeriod) => {
                   isGenerating && loadingButton === "download"
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
-                    
                 } text-white`}
               >
                 {loadingButton === "download" ? (

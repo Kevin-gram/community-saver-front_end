@@ -91,7 +91,9 @@ const ContributionHistory: React.FC<ContributionHistoryProps> = ({
                       </div>
                       <div className="flex items-center text-sm text-gray-500 mt-1">
                         <Calendar className="w-4 h-4 mr-1" />
-                        {new Date(contribution.contributionDate).toLocaleDateString()}
+                        {new Date(
+                          contribution.contributionDate
+                        ).toLocaleDateString()}
                       </div>
                     </div>
                   </div>

@@ -30,21 +30,19 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   // Calculate total savings including recent contributions
   const totalSavings = contributions
     .filter((c) => {
-      const cMemberId = typeof c.memberId === "object" ? c.memberId._id : c.memberId;
+      const cMemberId =
+        typeof c.memberId === "object" ? c.memberId._id : c.memberId;
       return cMemberId === (member?._id || member?.id);
     })
-    .reduce(
-      (total, contribution) => {
-        if (
-          contribution.amount > 0 &&
-          (contribution.type === "regular" || contribution.type === "adjustment")
-        ) {
-          return total + contribution.amount;
-        }
-        return total;
-      },
-      member?.totalContributions || 0
-    );
+    .reduce((total, contribution) => {
+      if (
+        contribution.amount > 0 &&
+        (contribution.type === "regular" || contribution.type === "adjustment")
+      ) {
+        return total + contribution.amount;
+      }
+      return total;
+    }, member?.totalContributions || 0);
 
   const [isEditing, setIsEditing] = useState(false);
   const [addMoneyModalOpen, setAddMoneyModalOpen] = useState(false);
@@ -55,9 +53,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   });
 
   const [addAmount, setAddAmount] = useState(200);
-  const [addDate, setAddDate] = useState(
-    new Date().toISOString().slice(0, 10)
-  );
+  const [addDate, setAddDate] = useState(new Date().toISOString().slice(0, 10));
   const [addError, setAddError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -81,11 +77,12 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   };
 
   const handleSave = async () => {
-    const adjustmentAmount = editData.totalSavings - (member.totalContributions || 0);
+    const adjustmentAmount =
+      editData.totalSavings - (member.totalContributions || 0);
 
     if (adjustmentAmount !== 0) {
       setIsSavingEdit(true);
-      
+
       const adjustmentContribution = {
         id: `adj-${Date.now()}`,
         userId: actualMemberId,
@@ -97,8 +94,14 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
       };
 
       try {
-        const backendContribution = await addContribution(adjustmentContribution);
-        if (backendContribution && (backendContribution.contribution.memberId || backendContribution.contribution.userId)) {
+        const backendContribution = await addContribution(
+          adjustmentContribution
+        );
+        if (
+          backendContribution &&
+          (backendContribution.contribution.memberId ||
+            backendContribution.contribution.userId)
+        ) {
           dispatch({
             type: "ADD_CONTRIBUTION",
             payload: backendContribution.contribution,
@@ -126,7 +129,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
 
     try {
       const dateObj = new Date(addDate);
-      
+
       // Just create the contribution - backend will handle penalty if needed
       const contributionData = {
         id: `contrib-${Date.now()}`,

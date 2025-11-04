@@ -46,11 +46,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
 
   // Password strength validation function
   const isStrongPassword = (pwd: string) => {
-    return (
-      /[A-Z]/.test(pwd) &&
-      /[^A-Za-z0-9]/.test(pwd) &&
-      pwd.length >= 9
-    );
+    return /[A-Z]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd) && pwd.length >= 9;
   };
 
   useEffect(() => {
@@ -201,7 +197,6 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
     };
 
     try {
-      
       if (user) {
         const backendUser = await updateUser(userData);
         if (backendUser) {
@@ -214,7 +209,6 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
           dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
         }
       } else {
-       
         const backendUser = await addUser(userData);
         if (backendUser) {
           // Map branch to group for frontend
@@ -225,9 +219,8 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
           const backendLoan = await addLoan(activeLoan);
           dispatch({ type: "ADD_LOAN", payload: backendLoan });
         }
-       }
+      }
     } catch (error) {
-      
       console.error("Failed to update/add user/loan in backend", error);
     }
 
@@ -392,10 +385,14 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                     </button>
                   </div>
                   {passwordStrengthError && (
-                    <p className="text-xs text-green-800 mt-1">{passwordStrengthError}</p>
+                    <p className="text-xs text-green-800 mt-1">
+                      {passwordStrengthError}
+                    </p>
                   )}
                   {errors.password && (
-                    <p className="text-xs text-green-800 mt-1">{errors.password}</p>
+                    <p className="text-xs text-green-800 mt-1">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -424,7 +421,9 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                     </button>
                   </div>
                   {passwordMatchError && (
-                    <p className="text-xs text-green-800 mt-1">{passwordMatchError}</p>
+                    <p className="text-xs text-green-800 mt-1">
+                      {passwordMatchError}
+                    </p>
                   )}
                 </div>
               </>

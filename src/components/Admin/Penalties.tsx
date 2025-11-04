@@ -42,7 +42,9 @@ const Penalties: React.FC = () => {
   const [penalties, setPenalties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [processingPenaltyId, setProcessingPenaltyId] = useState<string | null>(null);
+  const [processingPenaltyId, setProcessingPenaltyId] = useState<string | null>(
+    null
+  );
   const [filter, setFilter] = useState<"all" | "unpaid" | "paid">("all"); // Filter state
 
   useEffect(() => {
@@ -91,7 +93,7 @@ const Penalties: React.FC = () => {
       if (!c.member || !c.member.firstName) {
         return false; // Exclude penalties with missing member data
       }
-      
+
       // Then apply status filter
       if (filter === "unpaid") return c.status !== "paid";
       if (filter === "paid") return c.status === "paid";
@@ -105,11 +107,14 @@ const Penalties: React.FC = () => {
       }
       return 0; // Keep original order for other filters
     });
-  
+
   // Calculate pagination values using valid penalties
   const totalPages = Math.ceil(filteredPenalties.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredPenalties.length);
+  const endIndex = Math.min(
+    startIndex + ITEMS_PER_PAGE,
+    filteredPenalties.length
+  );
   const currentPenalties = filteredPenalties.slice(startIndex, endIndex);
 
   return (
@@ -139,7 +144,9 @@ const Penalties: React.FC = () => {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="py-2 px-4 text-left w-1/4">Member</th>
-                    <th className="py-2 px-4 text-left w-1/4">Contribution Date</th>
+                    <th className="py-2 px-4 text-left w-1/4">
+                      Contribution Date
+                    </th>
                     <th className="py-2 px-4 text-left w-1/4">Penalty</th>
                     <th className="py-2 px-4 text-left w-1/4">Action</th>
                   </tr>
@@ -149,9 +156,11 @@ const Penalties: React.FC = () => {
                     const isPenalty = c.createdAt;
                     const penaltyId = c.id || c._id;
                     // Add null check for member
-                    const memberName = c.member 
-                      ? `${c.member.firstName || ''} ${c.member.lastName || ''}`.trim() 
-                      : 'Unknown Member';
+                    const memberName = c.member
+                      ? `${c.member.firstName || ""} ${
+                          c.member.lastName || ""
+                        }`.trim()
+                      : "Unknown Member";
 
                     return (
                       <tr key={penaltyId}>
@@ -163,15 +172,20 @@ const Penalties: React.FC = () => {
                         </td>
                         <td
                           className={`py-2 px-4 font-bold ${
-                            isPenalty && c.status !== "paid" ? "text-red-600" : "text-green-600"
+                            isPenalty && c.status !== "paid"
+                              ? "text-red-600"
+                              : "text-green-600"
                           }`}
                         >
                           {isPenalty ? `€25` : "No Penalty"}
                         </td>
                         <td className="py-2 px-4">
                           {isPenalty ? (
-                            c.status === "paid" || paidPenalties.includes(penaltyId) ? (
-                              <span className="text-green-600 font-semibold">Repaid</span>
+                            c.status === "paid" ||
+                            paidPenalties.includes(penaltyId) ? (
+                              <span className="text-green-600 font-semibold">
+                                Repaid
+                              </span>
                             ) : (
                               <button
                                 className={`px-3 py-1 rounded text-white ${
@@ -186,7 +200,9 @@ const Penalties: React.FC = () => {
                                   paidPenalties.includes(penaltyId)
                                 }
                               >
-                                {processingPenaltyId === penaltyId ? "Processing..." : "Pay Penalty"}
+                                {processingPenaltyId === penaltyId
+                                  ? "Processing..."
+                                  : "Pay Penalty"}
                               </button>
                             )
                           ) : (
@@ -203,11 +219,14 @@ const Penalties: React.FC = () => {
               {totalPages > 1 && filteredPenalties.length > ITEMS_PER_PAGE && (
                 <div className="flex items-center justify-between mt-6">
                   <div className="text-sm text-gray-500">
-                    Showing {startIndex + 1} to {endIndex} of {filteredPenalties.length} penalties
+                    Showing {startIndex + 1} to {endIndex} of{" "}
+                    {filteredPenalties.length} penalties
                   </div>
                   <div className="flex items-center space-x-4">
                     <button
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(1, prev - 1))
+                      }
                       disabled={currentPage === 1}
                       className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
@@ -215,8 +234,13 @@ const Penalties: React.FC = () => {
                       Previous
                     </button>
                     <button
-                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages || endIndex >= filteredPenalties.length}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                      }
+                      disabled={
+                        currentPage === totalPages ||
+                        endIndex >= filteredPenalties.length
+                      }
                       className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Next

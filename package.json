@@ -5,9 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "type-check": "tsc --noEmit",
+    "build": "npm run type-check && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+
+
+    "docker:build": "docker build -t community-saver-front:latest .",
+    "docker:rebuild": "docker build --no-cache -t community-saver-front:latest .",
+    "docker:run": "docker run -d -p 3000:80 --name community-saver-container community-saver-front:latest",
+    "docker:stop": "docker rm -f community-saver-container || true",
+    "docker:logs": "docker logs -f community-saver-container",
+
+
+    "docker:up": "docker-compose up -d --build",
+    "docker:redeploy": "docker-compose up -d --build --force-recreate",
+    "docker:down": "docker-compose down"
   },
   "dependencies": {
     "@types/gapi": "^0.0.47",

@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Search, Filter, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
+  Filter,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { User } from "../../types";
 import { getGroupTheme } from "../../utils/calculations";
@@ -31,7 +40,9 @@ const UserManagement: React.FC = () => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [userPendingPenalties, setUserPendingPenalties] = useState<Record<string, boolean>>({});
+  const [userPendingPenalties, setUserPendingPenalties] = useState<
+    Record<string, boolean>
+  >({});
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -64,14 +75,19 @@ const UserManagement: React.FC = () => {
     const loadPenalties = async () => {
       try {
         const response = await fetchPenalties();
-        const penalties = response.data?.penalties || response.penalties || response;
-        
+        const penalties =
+          response.data?.penalties || response.penalties || response;
+
         // Create a map of userId -> hasPendingPenalties (only count pending penalties)
         const penaltyMap: Record<string, boolean> = {};
         penalties.forEach((penalty: any) => {
           // Only count pending penalties
           if (penalty.status === "pending") {
-            const userId = penalty.member?.id || penalty.member?._id || penalty.userId || penalty.user;
+            const userId =
+              penalty.member?.id ||
+              penalty.member?._id ||
+              penalty.userId ||
+              penalty.user;
             if (userId) {
               penaltyMap[userId] = true;
             }
@@ -116,7 +132,7 @@ const UserManagement: React.FC = () => {
 
   const handleDeleteUser = (user: User) => {
     const hasPendingPenalties = userPendingPenalties[user.id];
-    
+
     // Check if user has contributions or pending penalties
     if ((user.totalContributions || 0) > 0 || hasPendingPenalties) {
       // Don't allow deletion if user has contributions or pending penalties
@@ -357,9 +373,13 @@ const UserManagement: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user)}
-                          disabled={(user.totalContributions || 0) > 0 || hasPendingPenalties}
+                          disabled={
+                            (user.totalContributions || 0) > 0 ||
+                            hasPendingPenalties
+                          }
                           className={`p-1 ${
-                            (user.totalContributions || 0) > 0 || hasPendingPenalties
+                            (user.totalContributions || 0) > 0 ||
+                            hasPendingPenalties
                               ? "text-gray-400 cursor-not-allowed"
                               : "text-red-600 hover:text-red-900"
                           }`}
@@ -393,7 +413,7 @@ const UserManagement: React.FC = () => {
         {totalPages > 1 && (
           <div className="flex items-center justify-end space-x-4 p-4 border-t border-gray-200">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
               className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
@@ -401,7 +421,9 @@ const UserManagement: React.FC = () => {
               Previous
             </button>
             <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+              }
               disabled={currentPage === totalPages}
               className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
@@ -413,7 +435,9 @@ const UserManagement: React.FC = () => {
       </div>
 
       {/* Modals */}
-      {showUserForm && <UserForm user={editingUser} onClose={handleFormClose} />}
+      {showUserForm && (
+        <UserForm user={editingUser} onClose={handleFormClose} />
+      )}
       {deletingUser && (
         <ConfirmDialog
           title="Delete User"
@@ -429,17 +453,22 @@ const UserManagement: React.FC = () => {
               : `Are you sure you want to delete ${deletingUser.firstName}? This action cannot be undone.`
           }
           confirmText={
-            (deletingUser.totalContributions || 0) > 0 || userPendingPenalties[deletingUser.id]
-              ? "OK" 
-              : isConfirming 
-                ? "Deleting..." 
-                : "Delete"
+            (deletingUser.totalContributions || 0) > 0 ||
+            userPendingPenalties[deletingUser.id]
+              ? "OK"
+              : isConfirming
+              ? "Deleting..."
+              : "Delete"
           }
           confirmVariant={
-            (deletingUser.totalContributions || 0) > 0 || userPendingPenalties[deletingUser.id] ? "primary" : "danger"
+            (deletingUser.totalContributions || 0) > 0 ||
+            userPendingPenalties[deletingUser.id]
+              ? "primary"
+              : "danger"
           }
           onConfirm={
-            (deletingUser.totalContributions || 0) > 0 || userPendingPenalties[deletingUser.id]
+            (deletingUser.totalContributions || 0) > 0 ||
+            userPendingPenalties[deletingUser.id]
               ? () => setDeletingUser(null)
               : confirmDelete
           }

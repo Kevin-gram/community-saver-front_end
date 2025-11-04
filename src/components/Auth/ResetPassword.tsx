@@ -9,11 +9,11 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   // ✅ FIXED: Get BOTH token and email from URL
   const token = searchParams.get("token") || "";
-  const email = searchParams.get("email") || "";  // ← ADDED THIS!
-  
+  const email = searchParams.get("email") || ""; // ← ADDED THIS!
+
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -24,7 +24,6 @@ const ResetPassword: React.FC = () => {
 
   // Log for debugging
   React.useEffect(() => {
-    
     if (!token || !email) {
       setError("Invalid reset link. Please request a new password reset.");
     }
@@ -34,47 +33,45 @@ const ResetPassword: React.FC = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    
+
     if (!token) {
       setError("Invalid or missing token.");
       return;
     }
-    
+
     if (!email) {
       setError("Invalid or missing email.");
       return;
     }
-    
-    if (!password || password.length < 6) {  // Changed to 6 to match backend
+
+    if (!password || password.length < 6) {
+      // Changed to 6 to match backend
       setError("Password must be at least 6 characters.");
       return;
     }
-    
+
     if (password !== confirm) {
       setError("Passwords do not match.");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      
       // ✅ FIXED: Include email in the request
       const response = await axios.post(`${API_URL}/api/auth/reset-password`, {
         token,
-        email,           // ← ADDED THIS!
+        email, // ← ADDED THIS!
         newPassword: password,
       });
-      
 
-      
       setSuccess("Password reset successful! You can now log in.");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err: any) {
       console.error("❌ Password reset error:", err);
       setError(
         err?.response?.data?.message ||
-        "Failed to reset password. Please try again or request a new link."
+          "Failed to reset password. Please try again or request a new link."
       );
     } finally {
       setIsLoading(false);
@@ -88,12 +85,10 @@ const ResetPassword: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-700 mb-2">
             Reset Your Password
           </h2>
-          <p className="text-gray-600 mb-4">
-            Enter your new password below.
-          </p>
+          <p className="text-gray-600 mb-4">Enter your new password below.</p>
           {/* Debug info - remove in production */}
         </div>
-        
+
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -117,14 +112,15 @@ const ResetPassword: React.FC = () => {
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword
-                  ? <EyeOff size={18} color="#6B7280" />
-                  : <Eye size={18} color="#6B7280" />
-                }
+                {showPassword ? (
+                  <EyeOff size={18} color="#6B7280" />
+                ) : (
+                  <Eye size={18} color="#6B7280" />
+                )}
               </button>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Confirm Password
@@ -147,26 +143,27 @@ const ResetPassword: React.FC = () => {
                 onClick={() => setShowConfirm((v) => !v)}
                 aria-label={showConfirm ? "Hide password" : "Show password"}
               >
-                {showConfirm
-                  ? <EyeOff size={18} color="#6B7280" />
-                  : <Eye size={18} color="#6B7280" />
-                }
+                {showConfirm ? (
+                  <EyeOff size={18} color="#6B7280" />
+                ) : (
+                  <Eye size={18} color="#6B7280" />
+                )}
               </button>
             </div>
           </div>
-          
+
           {error && (
             <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-3">
               {error}
             </div>
           )}
-          
+
           {success && (
             <div className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-3">
               {success}
             </div>
           )}
-          
+
           <button
             type="submit"
             disabled={isLoading || !token || !email}
@@ -182,7 +179,7 @@ const ResetPassword: React.FC = () => {
             )}
           </button>
         </form>
-        
+
         <div className="text-center">
           <button
             onClick={() => navigate("/login")}

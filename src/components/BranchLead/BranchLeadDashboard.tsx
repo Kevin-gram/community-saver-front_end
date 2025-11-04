@@ -15,11 +15,19 @@ import {
   BarChart,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
-import { getGroupTheme, calculateMaxLoanAmount } from "../../utils/calculations";
+import {
+  getGroupTheme,
+  calculateMaxLoanAmount,
+} from "../../utils/calculations";
 import MemberDetails from "./MemberDetails";
 import LoanRequestForm from "../Member/LoanRequestForm";
 import ContributionHistory from "../Member/ContributionHistory";
-import { approveOrReject, updateUser, fetchMemberShares, fetchNetContributions } from "../../utils/api";
+import {
+  approveOrReject,
+  updateUser,
+  fetchMemberShares,
+  fetchNetContributions,
+} from "../../utils/api";
 import { Loan, User, MemberShare } from "../../types";
 
 const POLLING_INTERVAL = 5000; // 5 seconds
@@ -68,7 +76,9 @@ const BranchLeadDashboard: React.FC = () => {
   const { state, dispatch } = useApp();
   const { currentUser: rawCurrentUser, users, loans, groupRules } = state;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
-  const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
+  const [actionType, setActionType] = useState<"approve" | "reject" | null>(
+    null
+  );
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -89,28 +99,28 @@ const BranchLeadDashboard: React.FC = () => {
 
   // Filter members AND admins in the same branch
   const branchMembers = users.filter(
-    (user) => 
-      (user.role === "member" || user.role === "admin") && 
+    (user) =>
+      (user.role === "member" || user.role === "admin") &&
       user.branch === currentUser.branch
   );
 
   // Get loans for branch members (excluding branch lead's own loans)
   const branchLoans = loans.filter((loan) => {
     let loanMemberId: string | null = null;
-    
+
     if (typeof loan.member === "object" && loan.member !== null) {
       loanMemberId = loan.member._id || loan.member.id;
     } else if (typeof loan.member === "string") {
       loanMemberId = loan.member;
     }
-    
+
     if (!loanMemberId) return false;
-    
+
     const currentUserId = currentUser._id || currentUser.id;
     const isCurrentUser = loanMemberId === currentUserId;
-    
+
     if (isCurrentUser) return false;
-    
+
     return branchMembers.some((member) => {
       const memberId = member.id || member._id;
       return memberId === loanMemberId || memberId === loan.memberId;
@@ -123,7 +133,7 @@ const BranchLeadDashboard: React.FC = () => {
   const activeLoans = branchLoans.filter(
     (loan) => loan.status === "active"
   ).length;
-  
+
   // Total branch savings from shares data
   const totalBranchSavings = allShares
     .filter((share) => share.branch === currentUser.branch)
@@ -149,7 +159,10 @@ const BranchLeadDashboard: React.FC = () => {
   // Get branch lead's own loans
   const userLoans = state.loans.filter((loan) => {
     if (typeof loan.member === "object" && loan.member !== null) {
-      return loan.member._id === currentUser._id || loan.member._id === currentUser.id;
+      return (
+        loan.member._id === currentUser._id ||
+        loan.member._id === currentUser.id
+      );
     }
     return loan.member === currentUser._id || loan.member === currentUser.id;
   });
@@ -209,15 +222,17 @@ const BranchLeadDashboard: React.FC = () => {
   const displayData = memberShares || currentUser;
   const personalStats = [
     {
-      id: 'total-savings',
+      id: "total-savings",
       title: "Total Savings",
-      value: `€${(displayData?.totalContribution || userSavings).toLocaleString()}`,
+      value: `€${(
+        displayData?.totalContribution || userSavings
+      ).toLocaleString()}`,
       icon: DollarSign,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
     {
-      id: 'interest-received',
+      id: "interest-received",
       title: "Interest Received",
       value: `€${(
         displayData?.interestEarned ??
@@ -232,19 +247,21 @@ const BranchLeadDashboard: React.FC = () => {
       bg: "bg-emerald-100",
     },
     ...(typeof currentUser.penalties === "object" &&
-      !currentUser.penalties.isPaid &&
-      currentUser.penalties.pending > 0
-      ? [{
-          id: 'penalties',
-          title: "Penalties",
-          value: `€${(currentUser.penalties.pending ?? 0).toLocaleString()}`,
-          icon: AlertTriangle,
-          color: "text-emerald-600",
-          bg: "bg-emerald-100",
-        }]
+    !currentUser.penalties.isPaid &&
+    currentUser.penalties.pending > 0
+      ? [
+          {
+            id: "penalties",
+            title: "Penalties",
+            value: `€${(currentUser.penalties.pending ?? 0).toLocaleString()}`,
+            icon: AlertTriangle,
+            color: "text-emerald-600",
+            bg: "bg-emerald-100",
+          },
+        ]
       : []),
     {
-      id: 'max-loanable',
+      id: "max-loanable",
       title: "Max Loanable",
       value: `€${maxLoanAmount.toLocaleString()}`,
       icon: Calculator,
@@ -299,14 +316,14 @@ const BranchLeadDashboard: React.FC = () => {
     if (showLoading) {
       setSharesLoading(true);
     }
-    
+
     try {
       const [data, netData] = await Promise.all([
         fetchMemberShares(),
         fetchNetContributions(),
       ]);
       const sharesArray = Array.isArray(data) ? data : [];
-      
+
       if (isMountedRef.current) {
         setAllShares(sharesArray);
         setNetContributions(netData || null);
@@ -352,7 +369,7 @@ const BranchLeadDashboard: React.FC = () => {
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    
+
     if (!document.hidden) {
       pollingIntervalRef.current = setInterval(() => {
         fetchSharesData(false);
@@ -389,7 +406,10 @@ const BranchLeadDashboard: React.FC = () => {
       {allCardsLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(stats.length)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+            <div
+              key={i}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
@@ -405,11 +425,18 @@ const BranchLeadDashboard: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[140px]">
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[140px]"
+            >
               <div className="flex items-center justify-between h-full">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                    {stat.value}
+                  </p>
                 </div>
                 <div className={`${stat.bg} rounded-lg p-3`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -428,7 +455,10 @@ const BranchLeadDashboard: React.FC = () => {
         {allCardsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(personalStats.length)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+              <div
+                key={i}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
@@ -476,7 +506,9 @@ const BranchLeadDashboard: React.FC = () => {
             <div className="flex items-center">
               <Clock className="w-5 h-5 text-emerald-600 mr-3" />
               <div>
-                <h3 className="font-semibold text-gray-900">Your Loan Status</h3>
+                <h3 className="font-semibold text-gray-900">
+                  Your Loan Status
+                </h3>
                 <p className="text-sm text-gray-700 mt-1">
                   Status:{" "}
                   <span className="font-semibold">{latestLoan.status}</span>
@@ -533,11 +565,16 @@ const BranchLeadDashboard: React.FC = () => {
               branchMembers.map((member) => {
                 const memberTheme = getGroupTheme("green-200");
                 const canEdit = currentUser.branch === member.branch;
-                
+
                 const memberShare = allShares.find(
-                  (share) => String(share.id || share._id) === String(member.id || member._id)
+                  (share) =>
+                    String(share.id || share._id) ===
+                    String(member.id || member._id)
                 );
-                const memberContribution = memberShare?.totalContribution || member.totalContributions || 0;
+                const memberContribution =
+                  memberShare?.totalContribution ||
+                  member.totalContributions ||
+                  0;
 
                 return (
                   <div
@@ -552,12 +589,11 @@ const BranchLeadDashboard: React.FC = () => {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">
-                          {member.firstName} {member.role === "admin" && "(Admin)"}
+                          {member.firstName}{" "}
+                          {member.role === "admin" && "(Admin)"}
                         </p>
                         <div className="flex items-center space-x-2 text-sm text-gray-500">
-                          <span>
-                            €{memberContribution.toLocaleString()}
-                          </span>
+                          <span>€{memberContribution.toLocaleString()}</span>
                           <span className="flex items-center">
                             <div
                               className={`w-2 h-2 rounded-full mr-1 ${memberTheme.primary}`}
@@ -623,12 +659,13 @@ const BranchLeadDashboard: React.FC = () => {
                   .filter((loan) => loan.status === "pending")
                   .map((loan) => {
                     const member = branchMembers.find(
-                      (m) => (m.id === loan.memberId || m._id === loan.memberId)
+                      (m) => m.id === loan.memberId || m._id === loan.memberId
                     );
                     if (!member) return null;
 
                     const memberTheme = getGroupTheme(member.branch);
-                    const isProcessing = processingLoanId === (loan.id || loan._id);
+                    const isProcessing =
+                      processingLoanId === (loan.id || loan._id);
 
                     return (
                       <div
@@ -672,8 +709,8 @@ const BranchLeadDashboard: React.FC = () => {
                             onClick={() => handleLoanAction(loan, "reject")}
                             disabled={isProcessing}
                             className={`flex-1 px-3 py-1 border border-red-300 text-red-700 rounded text-sm transition-colors ${
-                              isProcessing 
-                                ? "opacity-50 cursor-not-allowed" 
+                              isProcessing
+                                ? "opacity-50 cursor-not-allowed"
                                 : "hover:bg-red-50"
                             }`}
                           >
@@ -721,8 +758,8 @@ const BranchLeadDashboard: React.FC = () => {
                     );
                   })}
 
-                {branchLoans.filter((loan) => loan.status === "pending").length ===
-                  0 && (
+                {branchLoans.filter((loan) => loan.status === "pending")
+                  .length === 0 && (
                   <div className="text-center py-4 text-gray-500">
                     <CheckCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                     <p className="text-sm">No pending loan requests</p>

@@ -30,9 +30,14 @@ const RegistrationApproval: React.FC = () => {
   const [rejectedUsers, setRejectedUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"pending" | "approved" | "rejected">("pending");
+  const [activeTab, setActiveTab] = useState<
+    "pending" | "approved" | "rejected"
+  >("pending");
   const [currentPage, setCurrentPage] = useState(1);
-  const [processing, setProcessing] = useState<{ userId: string | null, action: "approve" | "reject" | null }>({ userId: null, action: null });
+  const [processing, setProcessing] = useState<{
+    userId: string | null;
+    action: "approve" | "reject" | null;
+  }>({ userId: null, action: null });
   const [fadingOutUserId, setFadingOutUserId] = useState<string | null>(null);
 
   const loadUsers = async () => {
@@ -40,9 +45,13 @@ const RegistrationApproval: React.FC = () => {
     setError(null);
     try {
       const allUsers: User[] = await fetchUsers();
-      setPendingUsers(allUsers.filter(u => u.status === "pending" && u._id));
-      setApprovedUsers(allUsers.filter(u => u.status === "approved" && u._id));
-      setRejectedUsers(allUsers.filter(u => u.status === "rejected" && u._id));
+      setPendingUsers(allUsers.filter((u) => u.status === "pending" && u._id));
+      setApprovedUsers(
+        allUsers.filter((u) => u.status === "approved" && u._id)
+      );
+      setRejectedUsers(
+        allUsers.filter((u) => u.status === "rejected" && u._id)
+      );
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -69,10 +78,13 @@ const RegistrationApproval: React.FC = () => {
       await updateUser({ id: userId, status: "approved" });
       setFadingOutUserId(userId);
       setTimeout(() => {
-        const user = pendingUsers.find(u => u._id === userId);
+        const user = pendingUsers.find((u) => u._id === userId);
         if (user) {
-          setPendingUsers(prev => prev.filter(u => u._id !== userId));
-          setApprovedUsers(prev => [...prev, { ...user, status: "approved" }]);
+          setPendingUsers((prev) => prev.filter((u) => u._id !== userId));
+          setApprovedUsers((prev) => [
+            ...prev,
+            { ...user, status: "approved" },
+          ]);
         }
         setProcessing({ userId: null, action: null });
         setFadingOutUserId(null);
@@ -94,10 +106,13 @@ const RegistrationApproval: React.FC = () => {
       await updateUser({ id: userId, status: "rejected" });
       setFadingOutUserId(userId);
       setTimeout(() => {
-        const user = pendingUsers.find(u => u._id === userId);
+        const user = pendingUsers.find((u) => u._id === userId);
         if (user) {
-          setPendingUsers(prev => prev.filter(u => u._id !== userId));
-          setRejectedUsers(prev => [...prev, { ...user, status: "rejected" }]);
+          setPendingUsers((prev) => prev.filter((u) => u._id !== userId));
+          setRejectedUsers((prev) => [
+            ...prev,
+            { ...user, status: "rejected" },
+          ]);
         }
         setProcessing({ userId: null, action: null });
         setFadingOutUserId(null);
@@ -135,33 +150,41 @@ const RegistrationApproval: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          {tabTitle}
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900">{tabTitle}</h3>
         <div className="flex gap-2">
           <button
-            className={`px-3 py-1 rounded ${activeTab === "pending" ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-700"}`}
+            className={`px-3 py-1 rounded ${
+              activeTab === "pending"
+                ? "bg-emerald-600 text-white"
+                : "bg-gray-100 text-gray-700"
+            }`}
             onClick={() => setActiveTab("pending")}
           >
             Pending
           </button>
           <button
-            className={`px-3 py-1 rounded ${activeTab === "approved" ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-700"}`}
+            className={`px-3 py-1 rounded ${
+              activeTab === "approved"
+                ? "bg-emerald-600 text-white"
+                : "bg-gray-100 text-gray-700"
+            }`}
             onClick={() => setActiveTab("approved")}
           >
             Approved
           </button>
           <button
-            className={`px-3 py-1 rounded ${activeTab === "rejected" ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-700"}`}
+            className={`px-3 py-1 rounded ${
+              activeTab === "rejected"
+                ? "bg-emerald-600 text-white"
+                : "bg-gray-100 text-gray-700"
+            }`}
             onClick={() => setActiveTab("rejected")}
           >
             Rejected
           </button>
         </div>
       </div>
-      {error && (
-        <div className="text-red-600 mb-2">{error}</div>
-      )}
+      {error && <div className="text-red-600 mb-2">{error}</div>}
       {loading ? (
         <RegistrationSkeleton />
       ) : usersToShow.length === 0 ? (
@@ -179,7 +202,9 @@ const RegistrationApproval: React.FC = () => {
               <div
                 key={user._id}
                 className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg transition-all duration-300 ${
-                  fadingOutUserId === user._id ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                  fadingOutUserId === user._id
+                    ? "opacity-0 scale-95"
+                    : "opacity-100 scale-100"
                 }`}
               >
                 <div>
@@ -195,7 +220,8 @@ const RegistrationApproval: React.FC = () => {
                       onClick={() => handleApprove(user._id!)}
                       disabled={processing.userId === user._id}
                     >
-                      {processing.userId === user._id && processing.action === "approve" ? (
+                      {processing.userId === user._id &&
+                      processing.action === "approve" ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
                           Approving...
@@ -209,7 +235,8 @@ const RegistrationApproval: React.FC = () => {
                       onClick={() => handleReject(user._id!)}
                       disabled={processing.userId === user._id}
                     >
-                      {processing.userId === user._id && processing.action === "reject" ? (
+                      {processing.userId === user._id &&
+                      processing.action === "reject" ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
                           Rejecting...
@@ -228,7 +255,7 @@ const RegistrationApproval: React.FC = () => {
           {totalPages > 1 && (
             <div className="flex items-center justify-end space-x-4 mt-6">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
                 className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
@@ -236,7 +263,9 @@ const RegistrationApproval: React.FC = () => {
                 Previous
               </button>
               <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
                 disabled={currentPage === totalPages}
                 className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >

@@ -43,7 +43,9 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
   const [amount, setAmount] = useState("");
   const [repaymentPeriod, setRepaymentPeriod] = useState(6);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [grossContribution, setGrossContribution] = useState<number | null>(null);
+  const [grossContribution, setGrossContribution] = useState<number | null>(
+    null
+  );
 
   // Load gross contribution (netAvailable) from backend on mount
   useEffect(() => {
@@ -53,13 +55,16 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
         const net = await fetchNetContributions();
         // Support different shapes: net.netAvailable or net.net_available
         const value = net?.netAvailable ?? net?.net_available ?? null;
-        if (mounted) setGrossContribution(typeof value === "number" ? value : null);
+        if (mounted)
+          setGrossContribution(typeof value === "number" ? value : null);
       } catch (err) {
         console.error("Failed to load gross contribution:", err);
       }
     };
     loadGross();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (!currentUser) return null;
@@ -147,7 +152,8 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               savings)
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Gross contributions: €{(grossContribution ?? totalSavings).toLocaleString()}
+              Gross contributions: €
+              {(grossContribution ?? totalSavings).toLocaleString()}
             </p>
             {loanAmount > maxLoanable && (
               <p className="text-xs text-red-500 mt-1">

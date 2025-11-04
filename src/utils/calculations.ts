@@ -5,7 +5,10 @@ export const calculateAvailableBalance = (users: User[]): number => {
     .filter((user) => user.role === "member")
     .reduce(
       (sum, user) =>
-        sum + (typeof user.totalContributions === "number" ? user.totalContributions : 0),
+        sum +
+        (typeof user.totalContributions === "number"
+          ? user.totalContributions
+          : 0),
       0
     );
 
@@ -45,7 +48,8 @@ export const calculateMaxLoanAmount = (
 export const isEligibleForLoan = (user: User): boolean => {
   return (
     !user.activeLoan ||
-    (user.activeLoan.status === "repaid" || user.activeLoan.status === "rejected")
+    user.activeLoan.status === "repaid" ||
+    user.activeLoan.status === "rejected"
   );
 };
 

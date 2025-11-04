@@ -51,18 +51,19 @@ export const deleteUser = async (userId: string) => {
   return res.data.data;
 };
 
-
-
 export const approveUser = async (userId: string) => {
-  const res = await api.post(`/users/${userId}/approve`, { status: "approved" });
+  const res = await api.post(`/users/${userId}/approve`, {
+    status: "approved",
+  });
   return res.data.data.user;
 };
 
 export const rejectUser = async (userId: string) => {
-  const res = await api.post(`/users/${userId}/approve`, { status: "rejected" });
+  const res = await api.post(`/users/${userId}/approve`, {
+    status: "rejected",
+  });
   return res.data.data.user;
 };
-
 
 export const fetchLoans = async () => {
   const res = await api.get("/loans");
@@ -76,7 +77,7 @@ export const addLoan = async (loan: Loan) => {
 
 export const approveOrReject = async (
   loanId: string,
-  status: "approved" | "rejected",
+  status: "approved" | "rejected"
 ) => {
   const body: any = { status };
 
@@ -121,8 +122,6 @@ export const fetchPenalties = async () => {
   return res.data.data.penalties;
 };
 
-
-
 // PUT (update) a penalty
 export const updatePenalty = async (penaltyId: string, updates: any) => {
   const res = await api.post(`/penalties/${penaltyId}/pay`, updates);
@@ -144,9 +143,6 @@ export const fetchNetContributions = async () => {
   const res = await api.get("/contributions/net");
   return res.data.data;
 };
-
-
-
 
 // AUTH
 export const registerUser = async (userData: {
@@ -184,10 +180,10 @@ export const createPenalty = async (penaltyData: {
   branch: string;
 }) => {
   try {
-    const res = await api.post('/penalties', penaltyData);
+    const res = await api.post("/penalties", penaltyData);
     return res.data.data.penalty;
   } catch (error) {
-    console.error('Penalty creation error:', error);
+    console.error("Penalty creation error:", error);
     throw error;
   }
 };

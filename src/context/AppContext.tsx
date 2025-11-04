@@ -6,7 +6,12 @@ import React, {
   useEffect,
 } from "react";
 import { AppState, User, Loan, Contribution, GroupRules } from "../types";
-import { fetchUsers, fetchLoans, fetchContributions, fetchMemberShares } from "../utils/api";
+import {
+  fetchUsers,
+  fetchLoans,
+  fetchContributions,
+  fetchMemberShares,
+} from "../utils/api";
 
 type AppAction =
   | { type: "LOGIN"; payload: User }
@@ -302,18 +307,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const loadData = async () => {
       dispatch({ type: "SET_LOADING", payload: true });
-      
+
       try {
-        const [users, loans, contributions, memberSharesData] = await Promise.all([
-          fetchUsers(),
-          fetchLoans(),
-          fetchContributions(),
-          fetchMemberShares(),
-        ]);
+        const [users, loans, contributions, memberSharesData] =
+          await Promise.all([
+            fetchUsers(),
+            fetchLoans(),
+            fetchContributions(),
+            fetchMemberShares(),
+          ]);
 
         // Extract shares array from response
-        const sharesArray = memberSharesData.data || memberSharesData.shares || memberSharesData;
-        
+        const sharesArray =
+          memberSharesData.data || memberSharesData.shares || memberSharesData;
+
         // Try to re-match currentUser from localStorage with loaded users
         const userStr = localStorage.getItem("currentUser");
         let matchedUser = null;
@@ -328,8 +335,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         dispatch({ type: "LOAD_USERS", payload: users });
         dispatch({ type: "LOAD_LOANS", payload: loans });
         dispatch({ type: "LOAD_CONTRIBUTIONS", payload: contributions });
-        dispatch({ type: "LOAD_MEMBER_SHARES", payload: Array.isArray(sharesArray) ? sharesArray : [] });
-        
+        dispatch({
+          type: "LOAD_MEMBER_SHARES",
+          payload: Array.isArray(sharesArray) ? sharesArray : [],
+        });
+
         if (matchedUser) {
           dispatch({ type: "LOGIN", payload: matchedUser });
         }
@@ -339,7 +349,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         dispatch({ type: "SET_LOADING", payload: false });
       }
     };
-    
+
     loadData();
   }, []);
 

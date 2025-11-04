@@ -33,9 +33,9 @@ export const useNewReportsCount = (): number => {
       const response = await fetch(`${API_BASE}/reports`, {
         method: "GET",
         headers: {
-          "Accept": "application/json",
+          Accept: "application/json",
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -43,7 +43,7 @@ export const useNewReportsCount = (): number => {
 
       const data = await response.json();
       let reportsArray: Report[] = [];
-      
+
       if (Array.isArray(data)) {
         reportsArray = data;
       } else if (data?.reports && Array.isArray(data.reports)) {
@@ -53,7 +53,7 @@ export const useNewReportsCount = (): number => {
       }
 
       const lastViewedDate = localStorage.getItem(STORAGE_KEY);
-      
+
       if (!lastViewedDate || reportsArray.length === 0) {
         setNewCount(0);
         return;
@@ -61,7 +61,7 @@ export const useNewReportsCount = (): number => {
 
       const lastViewed = new Date(lastViewedDate).getTime();
       const newReports = reportsArray.filter(
-        report => new Date(report.uploadedAt).getTime() > lastViewed
+        (report) => new Date(report.uploadedAt).getTime() > lastViewed
       );
 
       if (isMountedRef.current) {
@@ -102,12 +102,15 @@ export const useNewReportsCount = (): number => {
   return newCount;
 };
 
-const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) => {
+const FinancialReports: React.FC<FinancialReportsProps> = ({
+  open,
+  onClose,
+}) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
 
@@ -115,108 +118,122 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
     return localStorage.getItem("token");
   }, []);
 
-  const fetchReports = useCallback(async (isInitialLoad = false): Promise<Report[]> => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("Access denied. No token provided.");
-    }
-
-    const response = await fetch(`${API_BASE}/reports`, {
-      method: "GET",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch reports: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // Handle multiple response formats
-    let reportsArray: Report[] = [];
-    if (Array.isArray(data)) {
-      reportsArray = data;
-    } else if (data?.reports && Array.isArray(data.reports)) {
-      reportsArray = data.reports;
-    } else if (data?.data?.reports && Array.isArray(data.data.reports)) {
-      reportsArray = data.data.reports;
-    }
-
-    // Sort by uploadedAt (newest first)
-    return reportsArray.sort(
-      (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
-    );
-  }, [getAuthToken]);
-
-  const loadReports = useCallback(async (isInitialLoad = false) => {
-    if (!isMountedRef.current) return;
-
-    if (isInitialLoad) {
-      setLoading(true);
-    }
-    
-    setError(null);
-
-    try {
-      const fetchedReports = await fetchReports(isInitialLoad);
-      
-      if (isMountedRef.current) {
-        setReports(fetchedReports);
-      }
-    } catch (err) {
-      console.error("Error fetching reports:", err);
-      if (isMountedRef.current) {
-        setError(err instanceof Error ? err.message : "Failed to fetch reports. Please try again.");
-        setReports([]);
-      }
-    } finally {
-      if (isMountedRef.current && isInitialLoad) {
-        setLoading(false);
-      }
-    }
-  }, [fetchReports]);
-
-  const handleDownload = useCallback(async (id: string, fileName: string) => {
-    setDownloadingId(id);
-    setError(null);
-    
-    try {
+  const fetchReports = useCallback(
+    async (isInitialLoad = false): Promise<Report[]> => {
       const token = getAuthToken();
       if (!token) {
-        throw new Error("Authentication required");
+        throw new Error("Access denied. No token provided.");
       }
-      
-      const response = await fetch(`${API_BASE}/reports/${id}/download`, {
+
+      const response = await fetch(`${API_BASE}/reports`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (!response.ok) {
-        throw new Error(`Download failed: ${response.status}`);
+        throw new Error(`Failed to fetch reports: ${response.status}`);
       }
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = fileName || `financial-report-${id}.pdf`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Download error:", err);
-      setError("Failed to download report. Please try again.");
-    } finally {
-      setDownloadingId(null);
-    }
-  }, [getAuthToken]);
+
+      const data = await response.json();
+
+      // Handle multiple response formats
+      let reportsArray: Report[] = [];
+      if (Array.isArray(data)) {
+        reportsArray = data;
+      } else if (data?.reports && Array.isArray(data.reports)) {
+        reportsArray = data.reports;
+      } else if (data?.data?.reports && Array.isArray(data.data.reports)) {
+        reportsArray = data.data.reports;
+      }
+
+      // Sort by uploadedAt (newest first)
+      return reportsArray.sort(
+        (a, b) =>
+          new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+      );
+    },
+    [getAuthToken]
+  );
+
+  const loadReports = useCallback(
+    async (isInitialLoad = false) => {
+      if (!isMountedRef.current) return;
+
+      if (isInitialLoad) {
+        setLoading(true);
+      }
+
+      setError(null);
+
+      try {
+        const fetchedReports = await fetchReports(isInitialLoad);
+
+        if (isMountedRef.current) {
+          setReports(fetchedReports);
+        }
+      } catch (err) {
+        console.error("Error fetching reports:", err);
+        if (isMountedRef.current) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to fetch reports. Please try again."
+          );
+          setReports([]);
+        }
+      } finally {
+        if (isMountedRef.current && isInitialLoad) {
+          setLoading(false);
+        }
+      }
+    },
+    [fetchReports]
+  );
+
+  const handleDownload = useCallback(
+    async (id: string, fileName: string) => {
+      setDownloadingId(id);
+      setError(null);
+
+      try {
+        const token = getAuthToken();
+        if (!token) {
+          throw new Error("Authentication required");
+        }
+
+        const response = await fetch(`${API_BASE}/reports/${id}/download`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Download failed: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = fileName || `financial-report-${id}.pdf`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Download error:", err);
+        setError("Failed to download report. Please try again.");
+      } finally {
+        setDownloadingId(null);
+      }
+    },
+    [getAuthToken]
+  );
 
   const markReportsAsViewed = useCallback(() => {
     if (reports.length > 0) {
@@ -233,7 +250,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
   // Fetch reports when popup opens
   useEffect(() => {
     if (!open) return;
-    
+
     setReports([]);
     loadReports(true);
   }, [open, loadReports]);
@@ -281,16 +298,18 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-40" 
+      <div
+        className="absolute inset-0 bg-black bg-opacity-40"
         onClick={handleClose}
       />
-      
+
       <div className="relative bg-white rounded-xl shadow-2xl border border-gray-200 w-[500px] max-h-[600px] z-60 flex flex-col">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center">
             <FileDown className="w-6 h-6 text-emerald-600 mr-2" />
-            <h2 className="text-xl font-bold text-gray-900">Financial Reports</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              Financial Reports
+            </h2>
           </div>
           <button
             onClick={handleClose}
@@ -309,7 +328,9 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-              <span className="ml-2 text-emerald-700 font-medium">Loading reports...</span>
+              <span className="ml-2 text-emerald-700 font-medium">
+                Loading reports...
+              </span>
             </div>
           ) : error ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
@@ -323,8 +344,9 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
           ) : (
             <div className="space-y-3 overflow-y-auto flex-1 pr-2">
               {reports.map((report, index) => {
-                const isLatest = index === 0 && latestReport?._id === report._id;
-                
+                const isLatest =
+                  index === 0 && latestReport?._id === report._id;
+
                 return (
                   <div
                     key={report._id}
@@ -340,11 +362,13 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
                         Latest
                       </div>
                     )}
-                    
+
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-emerald-900 mb-1 truncate">
-                          {report.description || report.fileName || "Untitled Report"}
+                          {report.description ||
+                            report.fileName ||
+                            "Untitled Report"}
                         </div>
                         {report.period && (
                           <div className="text-xs text-emerald-700 mb-1">
@@ -353,25 +377,32 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({ open, onClose }) =>
                         )}
                         <div className="text-xs text-gray-600 flex items-center">
                           <Calendar className="inline w-3 h-3 mr-1" />
-                          {new Date(report.uploadedAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {new Date(report.uploadedAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
                         </div>
                       </div>
-                      
+
                       <button
-                        onClick={() => handleDownload(report._id, report.fileName)}
+                        onClick={() =>
+                          handleDownload(report._id, report.fileName)
+                        }
                         disabled={downloadingId === report._id}
                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 whitespace-nowrap ${
                           downloadingId === report._id
                             ? "bg-gray-400 cursor-not-allowed text-white"
                             : "bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md"
                         }`}
-                        aria-label={`Download ${report.description || report.fileName}`}
+                        aria-label={`Download ${
+                          report.description || report.fileName
+                        }`}
                       >
                         {downloadingId === report._id ? (
                           <>

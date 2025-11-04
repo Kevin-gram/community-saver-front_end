@@ -45,9 +45,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <div className="flex items-center space-x-3 mb-4">
           <div
             className={`p-2 rounded-full ${
-              confirmVariant === "danger"
-                ? "bg-red-100"
-                : "bg-blue-100"
+              confirmVariant === "danger" ? "bg-red-100" : "bg-blue-100"
             }`}
           >
             <AlertTriangle className={`w-6 h-6 ${getIconColor()}`} />
@@ -83,4 +81,3 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 };
 
 export default ConfirmDialog;
-

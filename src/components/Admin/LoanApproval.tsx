@@ -36,9 +36,7 @@ const LoanApproval: React.FC = () => {
   const [showRepayModal, setShowRepayModal] = useState(false);
   const [repayAmount, setRepayAmount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingLoanId, setProcessingLoanId] = useState<string | null>(
-    null
-  );
+  const [processingLoanId, setProcessingLoanId] = useState<string | null>(null);
   const [isRepaying, setIsRepaying] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true); // Track initial loading state
@@ -289,7 +287,8 @@ const LoanApproval: React.FC = () => {
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
                             <span>{member.email}</span>
                             <span className="flex items-center">
-                              <div className="w-2 h-2 rounded-full mr-1 bg-emerald-700" /> {/* Updated to dark green */}
+                              <div className="w-2 h-2 rounded-full mr-1 bg-emerald-700" />{" "}
+                              {/* Updated to dark green */}
                               {member.branch} Group
                             </span>
                             {member.branch && <span>{member.branch}</span>}
@@ -385,9 +384,7 @@ const LoanApproval: React.FC = () => {
                               Loan to Savings Ratio:
                             </span>
                             <span className="font-medium ml-2">
-                              {
-                                (loan.riskAssessment)?.toFixed(1)}
-                              %
+                              {loan.riskAssessment?.toFixed(1)}%
                             </span>
                           </div>
                           <div>
@@ -420,18 +417,18 @@ const LoanApproval: React.FC = () => {
                           <button
                             onClick={() => handleLoanAction(loan, "reject")}
                             disabled={
-                              isProcessing && processingLoanId ===
-                              (loan.id || loan._id)
+                              isProcessing &&
+                              processingLoanId === (loan.id || loan._id)
                             }
                             className={`inline-flex items-center px-3 py-1 border border-red-300 text-red-700 rounded-lg transition-colors ${
-                              isProcessing && processingLoanId ===
-                              (loan.id || loan._id)
+                              isProcessing &&
+                              processingLoanId === (loan.id || loan._id)
                                 ? "opacity-50 cursor-not-allowed"
                                 : "hover:bg-red-50"
                             }`}
                           >
-                            {isProcessing && processingLoanId ===
-                            (loan.id || loan._id) ? (
+                            {isProcessing &&
+                            processingLoanId === (loan.id || loan._id) ? (
                               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                             ) : (
                               <X className="w-4 h-4 mr-1" />
@@ -441,18 +438,18 @@ const LoanApproval: React.FC = () => {
                           <button
                             onClick={() => handleLoanAction(loan, "approve")}
                             disabled={
-                              isProcessing && processingLoanId ===
-                              (loan.id || loan._id)
+                              isProcessing &&
+                              processingLoanId === (loan.id || loan._id)
                             }
                             className={`inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg transition-colors ${
-                              isProcessing && processingLoanId ===
-                              (loan.id || loan._id)
+                              isProcessing &&
+                              processingLoanId === (loan.id || loan._id)
                                 ? "opacity-50 cursor-not-allowed"
                                 : "hover:bg-emerald-700"
                             }`}
                           >
-                            {isProcessing && processingLoanId ===
-                            (loan.id || loan._id) ? (
+                            {isProcessing &&
+                            processingLoanId === (loan.id || loan._id) ? (
                               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                             ) : (
                               <Check className="w-4 h-4 mr-1" />
@@ -503,7 +500,9 @@ const LoanApproval: React.FC = () => {
             Previous
           </button>
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
             disabled={currentPage === totalPages}
             className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
@@ -524,8 +523,10 @@ const LoanApproval: React.FC = () => {
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 {actionType === "approve" ? "Approving..." : "Rejecting..."}
               </div>
+            ) : actionType === "approve" ? (
+              "Approve"
             ) : (
-              actionType === "approve" ? "Approve" : "Reject"
+              "Reject"
             )
           }
           confirmVariant={actionType === "approve" ? "primary" : "danger"}
@@ -596,7 +597,9 @@ const LoanApproval: React.FC = () => {
                 onClick={() => setShowRepayModal(false)}
                 disabled={isRepaying}
                 className={`px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg w-1/2 
-            ${isRepaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'} 
+            ${
+              isRepaying ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+            } 
             transition-colors`}
               >
                 Cancel
@@ -605,7 +608,11 @@ const LoanApproval: React.FC = () => {
                 onClick={handleRepaySubmit}
                 disabled={isRepaying}
                 className={`inline-flex items-center justify-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg w-1/2
-            ${isRepaying ? 'opacity-75 cursor-not-allowed' : 'hover:bg-emerald-700'} 
+            ${
+              isRepaying
+                ? "opacity-75 cursor-not-allowed"
+                : "hover:bg-emerald-700"
+            } 
             transition-colors`}
               >
                 {isRepaying ? (

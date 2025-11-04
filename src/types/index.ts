@@ -1,6 +1,6 @@
 export interface User {
   id: string;
-  _id?:string;
+  _id?: string;
   email: string;
   password: string;
   role: "admin" | "member" | "branch_lead";
@@ -12,10 +12,10 @@ export interface User {
   activeLoan?: Loan;
   contributions: Contribution[];
   penalties: number | MemberPenalties;
-  totalPenalties?:number;//to be cleaned
+  totalPenalties?: number; //to be cleaned
   isActive?: boolean;
   interestReceived: number;
-  status?:string;
+  status?: string;
 }
 
 export interface Loan {
@@ -50,7 +50,7 @@ export interface Contribution {
   amount: number;
   contributionDate: string;
   month: string;
-  type: "regular" | "penalty" | "interest"| "adjustment";
+  type: "regular" | "penalty" | "interest" | "adjustment";
 }
 
 export interface GroupRules {
@@ -77,15 +77,15 @@ export interface NetContributions {
   // add other properties if your API returns more
 }
 export interface AppState {
-    currentUser: User | null;
+  currentUser: User | null;
   users: User[];
   loans: Loan[];
   contributions: Contribution[];
   groupRules: Record<string, GroupRules>;
   bankBalance: number;
   paidPenalties: string[];
-  memberShares: any[];  
-  loading: boolean;     
+  memberShares: any[];
+  loading: boolean;
 }
 export type AppError = string | null;
 export type InputValue = string | number;

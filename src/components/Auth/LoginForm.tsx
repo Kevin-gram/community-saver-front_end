@@ -16,7 +16,9 @@ const LoginForm: React.FC = () => {
   // Forgot password state
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotStatus, setForgotStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [forgotStatus, setForgotStatus] = useState<
+    "idle" | "sending" | "sent" | "error"
+  >("idle");
   const [forgotError, setForgotError] = useState("");
 
   if (showRegister) {
@@ -30,7 +32,7 @@ const LoginForm: React.FC = () => {
 
     try {
       const data = await loginUser({ email, password });
-      
+
       if (data && data.data && data.data.token) {
         localStorage.setItem("token", data.data.token);
       } else {
@@ -60,10 +62,12 @@ const LoginForm: React.FC = () => {
 
     // Get the current frontend URL (where the user is right now)
     const currentUrl = window.location.origin;
-    
+
     // Pass it as returnUrl so backend knows where to redirect
-    const googleAuthUrl = `${API_URL}/api/auth/google?returnUrl=${encodeURIComponent(currentUrl)}`;
-    
+    const googleAuthUrl = `${API_URL}/api/auth/google?returnUrl=${encodeURIComponent(
+      currentUrl
+    )}`;
+
     window.location.href = googleAuthUrl;
   };
 
@@ -114,7 +118,10 @@ const LoginForm: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Password
               </label>
               <div className="relative">
@@ -174,7 +181,9 @@ const LoginForm: React.FC = () => {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white text-gray-500">
+                  Or continue with
+                </span>
               </div>
             </div>
 
@@ -184,7 +193,11 @@ const LoginForm: React.FC = () => {
               disabled={isLoading}
               className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 mr-2" />
+              <img
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt="Google"
+                className="w-5 h-5 mr-2"
+              />
               Sign in with Google
             </button>
           </div>
@@ -219,9 +232,12 @@ const LoginForm: React.FC = () => {
             </button>
             <div className="flex flex-col items-center mb-4">
               <MailCheck className="w-10 h-10 text-emerald-700 mb-2" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">Reset your password</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                Reset your password
+              </h3>
               <p className="text-sm text-gray-500 text-center">
-                Enter your email address and we'll send you a link to reset your password.
+                Enter your email address and we'll send you a link to reset your
+                password.
               </p>
             </div>
             <form onSubmit={handleForgotPassword} className="space-y-4">
@@ -249,9 +265,24 @@ const LoginForm: React.FC = () => {
                 >
                   {forgotStatus === "sending" ? (
                     <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        ></path>
                       </svg>
                       Sending...
                     </span>

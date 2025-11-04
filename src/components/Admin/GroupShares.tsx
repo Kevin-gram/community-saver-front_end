@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { fetchMemberShares } from "../../utils/api";
-import { AlertCircle, ChevronLeft, ChevronRight, TrendingUp, PiggyBank } from "lucide-react";
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  PiggyBank,
+} from "lucide-react";
 
 type MemberShare = {
   id: string;
@@ -40,10 +46,7 @@ const SharesTableSkeleton = () => (
         </thead>
         <tbody>
           {[...Array(8)].map((_, idx) => (
-            <tr
-              key={idx}
-              className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
-            >
+            <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
               {[...Array(6)].map((_, cellIdx) => (
                 <td key={cellIdx} className="py-3 px-4">
                   <div className="h-4 w-20 bg-emerald-200 rounded"></div>
@@ -65,9 +68,12 @@ const GroupShares: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const cachedDataRef = useRef<{data: MemberShare[] | null, timestamp: number}>({
+  const cachedDataRef = useRef<{
+    data: MemberShare[] | null;
+    timestamp: number;
+  }>({
     data: null,
-    timestamp: 0
+    timestamp: 0,
   });
 
   const CACHE_DURATION = 5000; // 5 seconds cache
@@ -76,8 +82,10 @@ const GroupShares: React.FC = () => {
   const fetchData = useCallback(async () => {
     // Use cached data if available and fresh
     const now = Date.now();
-    if (cachedDataRef.current.data && 
-        (now - cachedDataRef.current.timestamp) < CACHE_DURATION) {
+    if (
+      cachedDataRef.current.data &&
+      now - cachedDataRef.current.timestamp < CACHE_DURATION
+    ) {
       setGlobalStats(cachedDataRef.current.data);
       setLoading(false);
       return;
@@ -94,13 +102,13 @@ const GroupShares: React.FC = () => {
       setError(null);
 
       const data = await fetchMemberShares();
-      
+
       // Cache the new data
       cachedDataRef.current = {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      
+
       setGlobalStats(data);
       setError(null);
     } catch (err: any) {
@@ -143,8 +151,7 @@ const GroupShares: React.FC = () => {
         </h2>
         <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-8">
           <SharesTableSkeleton />
-          <div className="mt-4 text-center text-sm text-gray-500">
-          </div>
+          <div className="mt-4 text-center text-sm text-gray-500"></div>
         </div>
       </div>
     );
@@ -162,9 +169,7 @@ const GroupShares: React.FC = () => {
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Failed to Load Data
             </h3>
-            <p className="text-gray-600 mb-6 text-center max-w-md">
-              {error}
-            </p>
+            <p className="text-gray-600 mb-6 text-center max-w-md">{error}</p>
             <button
               onClick={fetchData}
               className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
@@ -195,8 +200,14 @@ const GroupShares: React.FC = () => {
   }
 
   // Calculate totals
-  const totalSavings = globalStats.reduce((sum, member) => sum + member.totalContribution, 0);
-  const totalInterest = globalStats.reduce((sum, member) => sum + member.interestEarned, 0);
+  const totalSavings = globalStats.reduce(
+    (sum, member) => sum + member.totalContribution,
+    0
+  );
+  const totalInterest = globalStats.reduce(
+    (sum, member) => sum + member.interestEarned,
+    0
+  );
 
   // Calculate pagination values
   const totalPages = Math.ceil(globalStats.length / ITEMS_PER_PAGE);
@@ -224,7 +235,10 @@ const GroupShares: React.FC = () => {
               Total Interest Distributed
             </p>
             <div className="text-2xl font-bold text-emerald-700">
-              €{totalInterest.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              €
+              {totalInterest.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })}
             </div>
           </div>
         </div>
@@ -281,12 +295,14 @@ const GroupShares: React.FC = () => {
                       {member.sharePercentage.toFixed(2)}%
                     </td>
                     <td className="py-3 px-4 text-emerald-700 font-bold">
-                      €{member.interestEarned.toLocaleString(undefined, {
+                      €
+                      {member.interestEarned.toLocaleString(undefined, {
                         maximumFractionDigits: 2,
                       })}
                     </td>
                     <td className="py-3 px-4 text-emerald-700 font-bold">
-                      €{member.interestToBeEarned.toLocaleString(undefined, {
+                      €
+                      {member.interestToBeEarned.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
