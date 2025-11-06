@@ -210,7 +210,7 @@ const BranchLeadDashboard: React.FC = () => {
       bg: "bg-emerald-100",
     },
     {
-      title: "Future Gross Contribution (SA applies here)",
+      title: "Future Gross Contribution",
       value: `€${(netContributions?.bestFutureBalance ?? 0).toLocaleString()}`,
       icon: BarChart,
       color: "text-emerald-600",
