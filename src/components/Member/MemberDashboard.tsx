@@ -21,6 +21,7 @@ import {
   fetchMemberShares,
   fetchPenalties,
   fetchNetContributions,
+  downloadLoanAgreement,
 } from "../../utils/api";
 
 const INITIAL_POLLING_INTERVAL = 30000; // 30 seconds
@@ -105,6 +106,7 @@ const MemberDashboard: React.FC = () => {
     INITIAL_POLLING_INTERVAL
   );
   const [errorCount, setErrorCount] = useState(0);
+  const [isDownloadingAgreement, setIsDownloadingAgreement] = useState(false);
 
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -534,6 +536,38 @@ const MemberDashboard: React.FC = () => {
     </div>
   );
 
+  const handleDownloadAgreement = async () => {
+    const loanId = latestLoan?.id || latestLoan?._id;
+    if (!loanId) return;
+    setIsDownloadingAgreement(true);
+    try {
+      const res = await downloadLoanAgreement(loanId);
+      const blob = new Blob([res.data], { type: res.data.type || "application/pdf" });
+      // try to infer filename from content-disposition header
+      const cd = res.headers && (res.headers["content-disposition"] || res.headers["Content-Disposition"]);
+      let filename = `loan-agreement-${loanId}.pdf`;
+      if (cd) {
+        const match = /filename\*?=(?:UTF-8'')?["']?([^;"']+)/i.exec(cd);
+        if (match && match[1]) {
+          filename = decodeURIComponent(match[1]);
+        }
+      }
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download agreement:", err);
+      // Optionally show a toast/alert here
+    } finally {
+      setIsDownloadingAgreement(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -641,6 +675,28 @@ const MemberDashboard: React.FC = () => {
         >
           <History className="w-5 h-5 mr-2" />
           View History
+        </button>
+
+        {/* Download Agreement — enabled only when latest loan is approved */}
+        <button
+          onClick={handleDownloadAgreement}
+          disabled={
+            isLoading ||
+            !latestLoan ||
+            latestLoan.status !== "approved" ||
+            isDownloadingAgreement
+          }
+          className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
+            !isLoading &&
+            latestLoan &&
+            latestLoan.status === "approved" &&
+            !isDownloadingAgreement
+              ? `bg-white border border-gray-300 text-gray-700 hover:bg-gray-50`
+              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+          }`}
+        >
+          <FileDown className="w-5 h-5 mr-2" />
+          {isDownloadingAgreement ? "Downloading..." : "Download Agreement"}
         </button>
       </div>
 

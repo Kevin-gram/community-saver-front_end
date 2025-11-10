@@ -6,7 +6,7 @@ export const fetchBranches = async () => {
 import { User, Loan, Contribution } from "../types";
 import axios from "axios";
 
-export const API_BASE = "https://community-saver-quyb.onrender.com/api";
+export const API_BASE = "http://localhost:5000/api";
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -144,6 +144,21 @@ export const fetchNetContributions = async () => {
   return res.data.data;
 };
 
+// New: trigger approval email for a loan
+export const sendLoanApprovalEmail = async (loanId: string) => {
+  const res = await api.post(`/loans/${loanId}/send-approval-email`);
+  return res.data;
+};
+
+export const downloadLoanAgreement = async (loanId: string) => {
+  // Call backend endpoint to get the agreement as a blob.
+  // Endpoint: GET /loans/loan-agreement?loanId=...
+  const res = await api.get(`/loans/loan-agreement`, {
+    responseType: "blob",
+    params: { loanId },
+  });
+  return res; // axios response with res.data (Blob) and res.headers
+};
 // AUTH
 export const registerUser = async (userData: {
   firstName: string;

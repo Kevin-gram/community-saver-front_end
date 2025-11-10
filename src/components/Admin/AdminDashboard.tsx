@@ -63,7 +63,6 @@ const AdminDashboard: React.FC = () => {
               u.status === "approved"
           )
         : [];
-      if (showLoader) console.log("Total Members counted:", members);
       setTotalMembers(members.length);
     } catch (e) {
       setTotalMembers(0);

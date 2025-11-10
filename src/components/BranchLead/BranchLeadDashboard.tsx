@@ -13,6 +13,7 @@ import {
   Calculator,
   PiggyBank,
   BarChart,
+  FileDown,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import {
@@ -22,11 +23,13 @@ import {
 import MemberDetails from "./MemberDetails";
 import LoanRequestForm from "../Member/LoanRequestForm";
 import ContributionHistory from "../Member/ContributionHistory";
+import FinancialReports from "../Member/FinancialReports";
 import {
   approveOrReject,
   updateUser,
   fetchMemberShares,
   fetchNetContributions,
+  downloadLoanAgreement,
 } from "../../utils/api";
 import { Loan, User, MemberShare } from "../../types";
 
@@ -73,8 +76,6 @@ const LoanCardSkeleton = () => (
 );
 
 const BranchLeadDashboard: React.FC = () => {
-  const { state, dispatch } = useApp();
-  const { currentUser: rawCurrentUser, users, loans, groupRules } = state;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(
     null
@@ -87,9 +88,14 @@ const BranchLeadDashboard: React.FC = () => {
   const [sharesLoading, setSharesLoading] = useState(true);
   const [processingLoanId, setProcessingLoanId] = useState<string | null>(null);
   const [netContributions, setNetContributions] = useState<any>(null);
+  const [showReportsPopup, setShowReportsPopup] = useState(false);
+  const [isDownloadingAgreement, setIsDownloadingAgreement] = useState(false);
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyLoadedRef = useRef(false);
+
+  const { state, dispatch } = useApp();
+  const { currentUser: rawCurrentUser, users, loans, groupRules } = state;
 
   // Get current user from users array
   const currentUser =
@@ -390,16 +396,58 @@ const BranchLeadDashboard: React.FC = () => {
   // Add a single loading state for all cards
   const allCardsLoading = sharesLoading;
 
+  const handleDownloadAgreement = async () => {
+    const loanId = latestLoan?.id || latestLoan?._id;
+    if (!loanId) return;
+    setIsDownloadingAgreement(true);
+    try {
+      const res = await downloadLoanAgreement(loanId);
+      const blob = new Blob([res.data], { type: res.data.type || "application/pdf" });
+      const cd = res.headers && (res.headers["content-disposition"] || res.headers["Content-Disposition"]);
+      let filename = `loan-agreement-${loanId}.pdf`;
+      if (cd) {
+        const match = /filename\*?=(?:UTF-8'')?["']?([^;"']+)/i.exec(cd);
+        if (match && match[1]) {
+          filename = decodeURIComponent(match[1]);
+        }
+      }
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download agreement:", err);
+    } finally {
+      setIsDownloadingAgreement(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header - Always visible */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Branch Lead Dashboard
-        </h1>
-        <p className="text-gray-600">
-          Managing {currentUser.branch} - {branchMembers.length} members
-        </p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Branch Lead Dashboard
+          </h1>
+          <p className="text-gray-600">
+            Managing {currentUser.branch} - {branchMembers.length} members
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <button
+            className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            onClick={() => setShowReportsPopup(true)}
+            title="View Financial Reports"
+          >
+            <FileDown className="w-5 h-5 mr-2" />
+            <span className="text-sm font-medium">Reports</span>
+          </button>
+        </div>
       </div>
 
       {/* Branch Stats Grid - Skeleton */}
@@ -544,6 +592,27 @@ const BranchLeadDashboard: React.FC = () => {
         >
           <History className="w-5 h-5 mr-2" />
           View History
+        </button>
+
+        <button
+          onClick={handleDownloadAgreement}
+          disabled={
+            allCardsLoading ||
+            !latestLoan ||
+            latestLoan.status !== "approved" ||
+            isDownloadingAgreement
+          }
+          className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
+            !allCardsLoading &&
+            latestLoan &&
+            latestLoan.status === "approved" &&
+            !isDownloadingAgreement
+              ? `bg-white border border-gray-300 text-gray-700 hover:bg-gray-50`
+              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+          }`}
+        >
+          <FileDown className="w-5 h-5 mr-2" />
+          {isDownloadingAgreement ? "Downloading..." : "Download Agreement"}
         </button>
       </div>
 
@@ -793,6 +862,14 @@ const BranchLeadDashboard: React.FC = () => {
 
       {showHistory && (
         <ContributionHistory onClose={() => setShowHistory(false)} />
+      )}
+
+      {/* Financial Reports popup (same as Member dashboard usage) */}
+      {showReportsPopup && (
+        <FinancialReports
+          open={showReportsPopup}
+          onClose={() => setShowReportsPopup(false)}
+        />
       )}
     </div>
   );

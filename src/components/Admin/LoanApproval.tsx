@@ -20,6 +20,7 @@ import {
   fetchUsers,
   approveOrReject,
   repayLoan,
+  sendLoanApprovalEmail,
 } from "../../utils/api";
 
 const ITEMS_PER_PAGE = 2; // Set to show only 2 items per page
@@ -40,6 +41,8 @@ const LoanApproval: React.FC = () => {
   const [isRepaying, setIsRepaying] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true); // Track initial loading state
+  const [showEmailChoice, setShowEmailChoice] = useState(false);
+  const [approvedLoanId, setApprovedLoanId] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Filter and paginate loans
@@ -92,37 +95,97 @@ const LoanApproval: React.FC = () => {
   const handleLoanAction = (loan: Loan, action: "approve" | "reject") => {
     setSelectedLoan(loan);
     setActionType(action);
+    // mark which loan is being processed so UI buttons can reflect state
+    setProcessingLoanId(loan.id || loan._id || null);
   };
 
   const confirmAction = async () => {
     if (!selectedLoan || !actionType || !currentUser) return;
 
+    // If rejecting, perform reject immediately.
+    if (actionType === "reject") {
+      setIsProcessing(true);
+      setProcessingLoanId(selectedLoan.id || selectedLoan._id || null);
+      try {
+        const backendLoan = await approveOrReject(
+          selectedLoan.id || (selectedLoan._id as string),
+          "rejected"
+        );
+        dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
+      } catch (error) {
+        console.error("Failed to reject loan in backend", error);
+      } finally {
+        setIsProcessing(false);
+        setProcessingLoanId(null);
+        setSelectedLoan(null);
+        setActionType(null);
+      }
+      return;
+    }
+
+    // If approving: perform approval immediately, update state, then ask whether to send email.
+    if (actionType === "approve") {
+      setIsProcessing(true);
+      setProcessingLoanId(selectedLoan.id || selectedLoan._id || null);
+      try {
+        const backendLoan = await approveOrReject(
+          selectedLoan.id || (selectedLoan._id as string),
+          "approved"
+        );
+        dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
+
+        // Update member active loan if present
+        if (backendLoan.member) {
+          const updatedMember: User = {
+            ...backendLoan.member,
+            activeLoan: { ...backendLoan, status: "active" as const },
+          };
+          const backendUser = await updateUser(updatedMember);
+          if (backendUser) {
+            dispatch({ type: "UPDATE_USER", payload: backendUser });
+          }
+        }
+
+        // Store approved loan id and show modal that only asks about email sending.
+        const loanId = backendLoan.id || backendLoan._id;
+        setApprovedLoanId(loanId || null);
+        setShowEmailChoice(true);
+      } catch (error) {
+        console.error("Failed to approve loan in backend", error);
+      } finally {
+        setIsProcessing(false);
+        setProcessingLoanId(null);
+        // keep selectedLoan cleared to reflect approval already done
+        setSelectedLoan(null);
+        setActionType(null);
+      }
+    }
+  };
+
+  // Helper that only sends the approval email (approval already performed)
+  const handleEmailChoice = async (sendEmail: boolean) => {
+    // If admin chose not to send, just close the modal.
+    if (!approvedLoanId) {
+      setShowEmailChoice(false);
+      setApprovedLoanId(null);
+      return;
+    }
+
+    if (!sendEmail) {
+      setShowEmailChoice(false);
+      setApprovedLoanId(null);
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      const backendLoan = await approveOrReject(
-        selectedLoan.id || (selectedLoan._id as string),
-        actionType === "approve" ? "approved" : "rejected"
-      );
-      dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
-
-      // If approved, update the member's active loan (optional, if needed)
-      if (actionType === "approve" && backendLoan.member) {
-        const updatedMember: User = {
-          ...backendLoan.member,
-          activeLoan: { ...backendLoan, status: "active" as const },
-        };
-        const backendUser = await updateUser(updatedMember);
-        if (backendUser) {
-          dispatch({ type: "UPDATE_USER", payload: backendUser });
-        }
-      }
-    } catch (error) {
-      console.error("Failed to update loan/user in backend", error);
+      await sendLoanApprovalEmail(approvedLoanId);
+    } catch (err) {
+      console.error("Failed to send approval email:", err);
     } finally {
       setIsProcessing(false);
-      setProcessingLoanId(null);
-      setSelectedLoan(null);
-      setActionType(null);
+      setShowEmailChoice(false);
+      setApprovedLoanId(null);
     }
   };
 
@@ -513,7 +576,7 @@ const LoanApproval: React.FC = () => {
       )}
 
       {/* Confirmation Dialog */}
-      {selectedLoan && actionType && (
+      {selectedLoan && actionType && !showEmailChoice && (
         <ConfirmDialog
           title={`${actionType === "approve" ? "Approve" : "Reject"} Loan`}
           message={getActionMessage()}
@@ -537,6 +600,53 @@ const LoanApproval: React.FC = () => {
           }}
           isDisabled={isProcessing}
         />
+      )}
+
+      {/* Email choice modal shown only when approving and admin must choose whether to send email */}
+      {showEmailChoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Send approval email?
+            </h3>
+            <p className="text-sm text-gray-700 mb-4">
+              Do you want to send an approval notification email to the member
+              after approving the loan?
+            </p>
+
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  // Close without sending email
+                  handleEmailChoice(false);
+                }}
+                disabled={isProcessing}
+                className={`flex-1 px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg ${
+                  isProcessing ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+                }`}
+              >
+                 Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  // Send email for already approved loan
+                  handleEmailChoice(true);
+                }}
+                disabled={isProcessing}
+                className={`flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg ${
+                  isProcessing ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700"
+                }`}
+              >
+                Send email
+              </button>
+            </div>
+
+            <div className="mt-3 text-right">
+          
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Repay Modal */}
