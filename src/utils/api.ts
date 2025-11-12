@@ -105,8 +105,6 @@ export const fetchContributions = async () => {
 export const fetchContributionsByMember = async (memberId: string) => {
 	// Log entry for easier tracing
 	// eslint-disable-next-line no-console
-	console.log("fetchContributionsByMember called for memberId:", memberId);
-
 	// Helper to normalise contributions from axios response
 	const extractContributions = (res: any) => {
 		if (!res) return undefined;

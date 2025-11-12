@@ -359,13 +359,8 @@ const BranchLeadDashboard: React.FC = () => {
     try {
       setContributionsLoading(true);
       const resolvedId = memberId || currentUser?._id || currentUser?.id;
-      // eslint-disable-next-line no-console
-      console.log("BranchLeadDashboard.openHistory - requesting contributions for memberId:", resolvedId);
-
       const contributionsRaw = await fetchContributionsByMember(String(resolvedId));
       // eslint-disable-next-line no-console
-      console.log("BranchLeadDashboard.openHistory - raw contributions response:", contributionsRaw);
-
       const arr = Array.isArray(contributionsRaw) ? contributionsRaw : [];
       arr.sort((a: any, b: any) => {
         const da = new Date(a.contributionDate || a.createdAt || 0).getTime();
