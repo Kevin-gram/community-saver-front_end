@@ -21,6 +21,7 @@ import {
   fetchMemberShares,
   fetchPenalties,
   fetchNetContributions,
+  fetchContributionsByMember,
   downloadLoanAgreement,
 } from "../../utils/api";
 
@@ -107,6 +108,8 @@ const MemberDashboard: React.FC = () => {
   );
   const [errorCount, setErrorCount] = useState(0);
   const [isDownloadingAgreement, setIsDownloadingAgreement] = useState(false);
+  const [memberContributions, setMemberContributions] = useState<any[] | null>(null);
+  const [contributionsLoading, setContributionsLoading] = useState(false);
 
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -568,6 +571,30 @@ const MemberDashboard: React.FC = () => {
     }
   };
 
+  // Fetch this user's contributions then open history modal (show up to 10 recent)
+  const openHistory = async () => {
+    try {
+      setContributionsLoading(true);
+      const userId = currentUser._id || currentUser.id;
+      const contributions = await fetchContributionsByMember(String(userId));
+      const arr = Array.isArray(contributions) ? contributions : [];
+      // sort descending by contributionDate / createdAt and limit to 10
+      arr.sort((a: any, b: any) => {
+        const da = new Date(a.contributionDate || a.createdAt || 0).getTime();
+        const db = new Date(b.contributionDate || b.createdAt || 0).getTime();
+        return db - da;
+      });
+      setMemberContributions(arr.slice(0, 10));
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to fetch member contributions:", err);
+      setMemberContributions([]);
+    } finally {
+      setContributionsLoading(false);
+      setShowHistory(true);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -670,7 +697,7 @@ const MemberDashboard: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setShowHistory(true)}
+          onClick={openHistory}
           className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
         >
           <History className="w-5 h-5 mr-2" />
@@ -764,7 +791,11 @@ const MemberDashboard: React.FC = () => {
       )}
 
       {showHistory && (
-        <ContributionHistory onClose={() => setShowHistory(false)} />
+        <ContributionHistory
+          onClose={() => setShowHistory(false)}
+          contributions={memberContributions}
+          contributionsLoading={contributionsLoading}
+        />
       )}
 
       {showReportsPopup && (

@@ -30,6 +30,7 @@ import {
   fetchMemberShares,
   fetchNetContributions,
   downloadLoanAgreement,
+  fetchContributionsByMember,
 } from "../../utils/api";
 import { Loan, User, MemberShare } from "../../types";
 
@@ -90,6 +91,10 @@ const BranchLeadDashboard: React.FC = () => {
   const [netContributions, setNetContributions] = useState<any>(null);
   const [showReportsPopup, setShowReportsPopup] = useState(false);
   const [isDownloadingAgreement, setIsDownloadingAgreement] = useState(false);
+  const [memberContributions, setMemberContributions] = useState<any[] | null>(
+    null
+  );
+  const [contributionsLoading, setContributionsLoading] = useState(false);
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyLoadedRef = useRef(false);
@@ -349,6 +354,35 @@ const BranchLeadDashboard: React.FC = () => {
     }
   };
 
+  // Fetch branch lead's contributions then open history modal (show up to 10 recent)
+  const openHistory = async (memberId?: string) => {
+    try {
+      setContributionsLoading(true);
+      const resolvedId = memberId || currentUser?._id || currentUser?.id;
+      // eslint-disable-next-line no-console
+      console.log("BranchLeadDashboard.openHistory - requesting contributions for memberId:", resolvedId);
+
+      const contributionsRaw = await fetchContributionsByMember(String(resolvedId));
+      // eslint-disable-next-line no-console
+      console.log("BranchLeadDashboard.openHistory - raw contributions response:", contributionsRaw);
+
+      const arr = Array.isArray(contributionsRaw) ? contributionsRaw : [];
+      arr.sort((a: any, b: any) => {
+        const da = new Date(a.contributionDate || a.createdAt || 0).getTime();
+        const db = new Date(b.contributionDate || b.createdAt || 0).getTime();
+        return db - da;
+      });
+      setMemberContributions(arr.slice(0, 10));
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to fetch branch lead contributions:", err);
+      setMemberContributions([]);
+    } finally {
+      setContributionsLoading(false);
+      setShowHistory(true);
+    }
+  };
+
   // Setup polling effect - ONLY RUNS ONCE
   useEffect(() => {
     isMountedRef.current = true;
@@ -402,8 +436,13 @@ const BranchLeadDashboard: React.FC = () => {
     setIsDownloadingAgreement(true);
     try {
       const res = await downloadLoanAgreement(loanId);
-      const blob = new Blob([res.data], { type: res.data.type || "application/pdf" });
-      const cd = res.headers && (res.headers["content-disposition"] || res.headers["Content-Disposition"]);
+      const blob = new Blob([res.data], {
+        type: res.data.type || "application/pdf",
+      });
+      const cd =
+        res.headers &&
+        (res.headers["content-disposition"] ||
+          res.headers["Content-Disposition"]);
       let filename = `loan-agreement-${loanId}.pdf`;
       if (cd) {
         const match = /filename\*?=(?:UTF-8'')?["']?([^;"']+)/i.exec(cd);
@@ -587,7 +626,7 @@ const BranchLeadDashboard: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setShowHistory(true)}
+          onClick={() => openHistory()}
           className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
         >
           <History className="w-5 h-5 mr-2" />
@@ -698,6 +737,14 @@ const BranchLeadDashboard: React.FC = () => {
                           </button>
                         </>
                       )}
+                      {/* per-member history (uses same ContributionHistory component as MemberDashboard) */}
+                      <button
+                        onClick={() => openHistory(member.id || member._id)}
+                        className="p-1 rounded text-gray-700 hover:bg-gray-100 ml-1"
+                        title="View member history"
+                      >
+                        <History className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 );
@@ -861,7 +908,11 @@ const BranchLeadDashboard: React.FC = () => {
       )}
 
       {showHistory && (
-        <ContributionHistory onClose={() => setShowHistory(false)} />
+        <ContributionHistory
+          onClose={() => setShowHistory(false)}
+          contributions={memberContributions}
+          contributionsLoading={contributionsLoading}
+        />
       )}
 
       {/* Financial Reports popup (same as Member dashboard usage) */}

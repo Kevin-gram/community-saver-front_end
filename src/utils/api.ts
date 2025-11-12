@@ -101,6 +101,84 @@ export const fetchContributions = async () => {
   return res.data.data.contributions;
 };
 
+// New: fetch contributions for a single member via query param ?memberId=...
+export const fetchContributionsByMember = async (memberId: string) => {
+	// Log entry for easier tracing
+	// eslint-disable-next-line no-console
+	console.log("fetchContributionsByMember called for memberId:", memberId);
+
+	// Helper to normalise contributions from axios response
+	const extractContributions = (res: any) => {
+		if (!res) return undefined;
+		// Backend may return { data: { contributions: [...] } } or { contributions: [...] } or array directly
+		return res.data?.data?.contributions ?? res.data?.contributions ?? res.data;
+	};
+
+	// First, try the canonical single query (server should support this)
+	try {
+		const res = await api.get("/contributions", { params: { memberId } });
+		const contributions = extractContributions(res);
+
+		// eslint-disable-next-line no-console
+		console.debug("fetchContributionsByMember primary attempt:", {
+			memberId,
+			contribPreview: Array.isArray(contributions) ? contributions.length : typeof contributions,
+			raw: res?.data,
+		});
+
+		if (contributions !== undefined) {
+			// Normalize to array
+			if (Array.isArray(contributions)) return contributions;
+			if (typeof contributions === "object" && contributions !== null) {
+				if (Array.isArray((contributions as any).contributions)) {
+					return (contributions as any).contributions;
+				}
+				return [contributions];
+			}
+			return [];
+		}
+	} catch (err) {
+		// eslint-disable-next-line no-console
+		console.warn("fetchContributionsByMember primary attempt failed for memberId:", memberId, err?.message || err);
+	}
+
+	// Fallback: fetch all contributions and filter client-side.
+	// This is defensive and should be rare.
+	try {
+		const allRes = await api.get("/contributions");
+		const all = allRes.data?.data?.contributions ?? allRes.data;
+		// eslint-disable-next-line no-console
+		console.debug("fetchContributionsByMember fallback: total contributions fetched:", Array.isArray(all) ? all.length : typeof all);
+
+		if (!Array.isArray(all)) return [];
+
+		const filtered = all.filter((c: any) => {
+			// match any common nested id fields
+			const ids: string[] = [];
+			const push = (v: any) => {
+				if (v === undefined || v === null) return;
+				if (Array.isArray(v)) return v.forEach(push);
+				ids.push(String(v));
+			};
+			push(c.memberId?._id);
+			push(c.memberId?.id);
+			push(c.member?._id);
+			push(c.member?.id);
+			push(c.memberId);
+			push(c.member);
+			return ids.includes(String(memberId));
+		});
+
+		// eslint-disable-next-line no-console
+		console.debug(`fetchContributionsByMember: client-side filtered ${filtered.length} of ${all.length} for id=${memberId}`);
+		return filtered;
+	} catch (err) {
+		// eslint-disable-next-line no-console
+		console.error("fetchContributionsByMember final fallback failed:", err?.message || err);
+		return [];
+	}
+};
+
 export const addContribution = async (contribution: Contribution) => {
   const res = await api.post("/contributions", contribution);
   return res.data.data;
