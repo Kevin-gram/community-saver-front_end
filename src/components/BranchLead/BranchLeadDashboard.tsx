@@ -30,6 +30,7 @@ import {
   fetchMemberShares,
   fetchNetContributions,
   downloadLoanAgreement,
+  sendLoanApprovalEmail,
   fetchContributionsByMember,
 } from "../../utils/api";
 import { Loan, User, MemberShare } from "../../types";
@@ -95,6 +96,9 @@ const BranchLeadDashboard: React.FC = () => {
     null
   );
   const [contributionsLoading, setContributionsLoading] = useState(false);
+  const [showEmailChoice, setShowEmailChoice] = useState(false);
+  const [approvedLoanId, setApprovedLoanId] = useState<string | null>(null);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const isMountedRef = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyLoadedRef = useRef(false);
@@ -305,6 +309,11 @@ const BranchLeadDashboard: React.FC = () => {
         if (backendUser) {
           dispatch({ type: "UPDATE_USER", payload: backendUser });
         }
+
+        // Show popup asking whether to send approval email (approval already performed)
+        const loanId = backendLoan.id || backendLoan._id;
+        setApprovedLoanId(loanId || null);
+        setShowEmailChoice(true);
       }
     } catch (error) {
       console.error("Failed to update loan/user in backend", error);
@@ -916,6 +925,59 @@ const BranchLeadDashboard: React.FC = () => {
           open={showReportsPopup}
           onClose={() => setShowReportsPopup(false)}
         />
+      )}
+
+      {/* Email choice modal (after approving a loan) */}
+      {showEmailChoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Send approval email?
+            </h3>
+            <p className="text-sm text-gray-700 mb-4">
+              Do you want to send an approval notification email to the member now?
+            </p>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  // Close without sending email
+                  setShowEmailChoice(false);
+                  setApprovedLoanId(null);
+                }}
+                disabled={isSendingEmail}
+                className={`flex-1 px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg ${
+                  isSendingEmail ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!approvedLoanId) {
+                    setShowEmailChoice(false);
+                    return;
+                  }
+                  setIsSendingEmail(true);
+                  try {
+                    await sendLoanApprovalEmail(approvedLoanId);
+                  } catch (err) {
+                    console.error("Failed to send approval email:", err);
+                  } finally {
+                    setIsSendingEmail(false);
+                    setShowEmailChoice(false);
+                    setApprovedLoanId(null);
+                  }
+                }}
+                disabled={isSendingEmail}
+                className={`flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg ${
+                  isSendingEmail ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700"
+                }`}
+              >
+                {isSendingEmail ? "Sending..." : "Send email"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
