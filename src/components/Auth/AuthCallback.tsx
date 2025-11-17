@@ -20,7 +20,7 @@ const AuthCallback: React.FC = () => {
         setError("Google authentication failed. Please try again.");
         setTimeout(() => {
           navigate("/login");
-        }, 3000);
+        }, 5000);
         return;
       }
 
@@ -29,7 +29,7 @@ const AuthCallback: React.FC = () => {
         setError("Authentication failed. No token received.");
         setTimeout(() => {
           navigate("/login");
-        }, 3000);
+        }, 5000);
         return;
       }
 
@@ -82,7 +82,7 @@ const AuthCallback: React.FC = () => {
         localStorage.removeItem("token");
         setTimeout(() => {
           navigate("/login");
-        }, 3000);
+        }, 5000);
       }
     };
 

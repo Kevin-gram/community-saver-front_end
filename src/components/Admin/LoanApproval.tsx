@@ -23,8 +23,8 @@ import {
   sendLoanApprovalEmail,
 } from "../../utils/api";
 
-const ITEMS_PER_PAGE = 2; // Set to show only 2 items per page
-const POLLING_INTERVAL = 5000; // Poll every 5 seconds
+const ITEMS_PER_PAGE = 2;
+const POLLING_INTERVAL = 5000;
 
 const LoanApproval: React.FC = () => {
   const { state, dispatch } = useApp();
@@ -40,17 +40,15 @@ const LoanApproval: React.FC = () => {
   const [processingLoanId, setProcessingLoanId] = useState<string | null>(null);
   const [isRepaying, setIsRepaying] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true); // Track initial loading state
+  const [isLoading, setIsLoading] = useState(true);
   const [showEmailChoice, setShowEmailChoice] = useState(false);
   const [approvedLoanId, setApprovedLoanId] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Filter and paginate loans
   const filteredLoans = loans.filter((loan) => {
     return !filterStatus || loan.status === filterStatus;
   });
 
-  // Pagination calculations
   const totalPages = Math.ceil(filteredLoans.length / ITEMS_PER_PAGE);
   const paginatedLoans = filteredLoans.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -78,11 +76,10 @@ const LoanApproval: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchData(true); // Initial fetch with loading skeleton
+    fetchData(true);
 
-    // Setup polling interval
     pollingIntervalRef.current = setInterval(() => {
-      fetchData(false); // Subsequent fetches without loading skeleton
+      fetchData(false);
     }, POLLING_INTERVAL);
 
     return () => {
@@ -95,14 +92,12 @@ const LoanApproval: React.FC = () => {
   const handleLoanAction = (loan: Loan, action: "approve" | "reject") => {
     setSelectedLoan(loan);
     setActionType(action);
-    // mark which loan is being processed so UI buttons can reflect state
     setProcessingLoanId(loan.id || loan._id || null);
   };
 
   const confirmAction = async () => {
     if (!selectedLoan || !actionType || !currentUser) return;
 
-    // If rejecting, perform reject immediately.
     if (actionType === "reject") {
       setIsProcessing(true);
       setProcessingLoanId(selectedLoan.id || selectedLoan._id || null);
@@ -123,7 +118,6 @@ const LoanApproval: React.FC = () => {
       return;
     }
 
-    // If approving: perform approval immediately, update state, then ask whether to send email.
     if (actionType === "approve") {
       setIsProcessing(true);
       setProcessingLoanId(selectedLoan.id || selectedLoan._id || null);
@@ -134,7 +128,6 @@ const LoanApproval: React.FC = () => {
         );
         dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
 
-        // Update member active loan if present
         if (backendLoan.member) {
           const updatedMember: User = {
             ...backendLoan.member,
@@ -146,7 +139,6 @@ const LoanApproval: React.FC = () => {
           }
         }
 
-        // Store approved loan id and show modal that only asks about email sending.
         const loanId = backendLoan.id || backendLoan._id;
         setApprovedLoanId(loanId || null);
         setShowEmailChoice(true);
@@ -155,16 +147,13 @@ const LoanApproval: React.FC = () => {
       } finally {
         setIsProcessing(false);
         setProcessingLoanId(null);
-        // keep selectedLoan cleared to reflect approval already done
         setSelectedLoan(null);
         setActionType(null);
       }
     }
   };
 
-  // Helper that only sends the approval email (approval already performed)
   const handleEmailChoice = async (sendEmail: boolean) => {
-    // If admin chose not to send, just close the modal.
     if (!approvedLoanId) {
       setShowEmailChoice(false);
       setApprovedLoanId(null);
@@ -240,7 +229,7 @@ const LoanApproval: React.FC = () => {
     const newPaid = paidSoFar + repayAmount;
     const isFullyPaid = newPaid >= repaymentTotal;
 
-    setIsRepaying(true); // Set loading state
+    setIsRepaying(true);
     try {
       const backendLoan = await repayLoan(loanId, repayAmount);
       dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
@@ -259,12 +248,12 @@ const LoanApproval: React.FC = () => {
     } catch (error) {
       console.error("Failed to update loan/user in backend", error);
     } finally {
-      setIsRepaying(false); // Reset loading state
+      setIsRepaying(false);
     }
   };
 
   const LoanSkeleton = () => (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 animate-pulse">
       <div className="flex items-center space-x-4 mb-4">
         <div className="w-10 h-10 bg-emerald-200 rounded-full"></div>
         <div className="flex-1">
@@ -272,13 +261,11 @@ const LoanApproval: React.FC = () => {
           <div className="h-3 bg-emerald-200 rounded w-24"></div>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 gap-4 mb-4">
         <div className="h-16 bg-emerald-200 rounded"></div>
         <div className="h-16 bg-emerald-200 rounded"></div>
         <div className="h-16 bg-emerald-200 rounded"></div>
       </div>
-      <div className="h-4 bg-emerald-200 rounded w-40 mb-2"></div>
-      <div className="h-4 bg-emerald-200 rounded w-32"></div>
     </div>
   );
 
@@ -334,156 +321,160 @@ const LoanApproval: React.FC = () => {
                 key={loan.id || loan._id}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
               >
-                <div className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div
-                          className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center" // Updated to dark green
-                        >
+                <div className="p-4 sm:p-6">
+                  {/* Mobile: Stack everything vertically */}
+                  <div className="flex flex-col space-y-4">
+                    {/* Header Section - Member Info and Status */}
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center flex-shrink-0">
                           <UserIcon className="w-5 h-5 text-white" />
                         </div>
-                        <div>
-                          <h3 className="text-lg font-medium text-gray-900">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate">
                             {`${member.firstName} ${member.lastName}`}
                           </h3>
-                          <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            <span>{member.email}</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs sm:text-sm text-gray-500 gap-1 sm:gap-0">
+                            <span className="truncate">{member.email}</span>
                             <span className="flex items-center">
-                              <div className="w-2 h-2 rounded-full mr-1 bg-emerald-700" />{" "}
-                              {/* Updated to dark green */}
+                              <div className="w-2 h-2 rounded-full mr-1 bg-emerald-700" />
                               {member.branch} Group
                             </span>
-                            {member.branch && <span>{member.branch}</span>}
                           </div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">
-                              Loan Amount
-                            </span>
-                            <DollarSign className="w-4 h-4 text-gray-400" />
-                          </div>
-                          <p className="text-xl font-bold text-gray-900 mt-1">
-                            €{loan.amount.toLocaleString()}
-                          </p>
-                        </div>
-
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">
-                              Repayment Amount
-                            </span>
-                            <DollarSign className="w-4 h-4 text-gray-400" />
-                          </div>
-                          <p className="text-xl font-bold text-gray-900 mt-1">
-                            €{(loan.totalAmount ?? 0).toLocaleString()}
-                          </p>
-                        </div>
-
-                        {/* <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Member Savings
-                          </span>
-                          <DollarSign className="w-4 h-4 text-gray-400" />
-                        </div>
-                        <p className="text-xl font-bold text-gray-900 mt-1">
-                          ${(member?.totalContributions ?? 0).toLocaleString()}
-                        </p>
-                      </div> */}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                        <div className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          <span>
-                            Requested:{" "}
-                            {loan.requestDate
-                              ? new Date(loan.requestDate).toLocaleDateString()
-                              : "-"}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          <span>
-                            Due:{" "}
-                            {loan.dueDate
-                              ? new Date(loan.dueDate).toLocaleDateString()
-                              : "-"}
-                          </span>
-                        </div>
-                        {loan.approvedDate && (
-                          <div className="flex items-center">
-                            <Check className="w-4 h-4 mr-2 text-emerald-500" />
-                            <span>
-                              Approved:{" "}
-                              {new Date(loan.approvedDate).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
-                        {approver && (
-                          <div className="flex items-center">
-                            <UserIcon className="w-4 h-4 mr-2" />
-                            <span>
-                              Approved by:{" "}
-                              {`${approver.firstName} ${approver.lastName}`}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Risk Assessment */}
-                      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                        <h4 className="font-medium text-emerald-900 mb-2">
-                          Risk Assessment
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-emerald-700">
-                              Loan to Savings Ratio:
-                            </span>
-                            <span className="font-medium ml-2">
-                              {loan.riskAssessment?.toFixed(1)}%
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-emerald-700">
-                              Interest Amount:
-                            </span>
-                            <span className="font-medium ml-2">
-                              €
-                              {(
-                                (loan.totalAmount ?? 0) - loan.amount
-                              ).toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end space-y-3">
+                      {/* Status Badge */}
                       <span
-                        className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadgeColor(
+                        className={`inline-flex px-3 py-1 text-xs sm:text-sm font-semibold rounded-full self-start ${getStatusBadgeColor(
                           loan.status
                         )}`}
                       >
                         {loan.status.charAt(0).toUpperCase() +
                           loan.status.slice(1)}
                       </span>
+                    </div>
 
+                    {/* Amount Cards - Stack on mobile, grid on larger screens */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs sm:text-sm text-gray-600">
+                            Loan Amount
+                          </span>
+                          <DollarSign className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1">
+                          €{loan.amount.toLocaleString()}
+                        </p>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs sm:text-sm text-gray-600">
+                            Repayment Amount
+                          </span>
+                          <DollarSign className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1">
+                          €{(loan.totalAmount ?? 0).toLocaleString()}
+                        </p>
+                      </div>
+
+                      {loan.paidAmount > 0 && (
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-gray-600">
+                              Already Paid
+                            </span>
+                            <DollarSign className="w-4 h-4 text-gray-400" />
+                          </div>
+                          <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1">
+                            €{(loan.paidAmount || 0).toLocaleString()}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Dates - Stack on mobile */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span>
+                          Requested:{" "}
+                          {loan.requestDate
+                            ? new Date(loan.requestDate).toLocaleDateString()
+                            : "-"}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span>
+                          Due:{" "}
+                          {loan.dueDate
+                            ? new Date(loan.dueDate).toLocaleDateString()
+                            : "-"}
+                        </span>
+                      </div>
+                      {loan.approvedDate && (
+                        <div className="flex items-center">
+                          <Check className="w-4 h-4 mr-2 text-emerald-500 flex-shrink-0" />
+                          <span>
+                            Approved:{" "}
+                            {new Date(loan.approvedDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      {approver && (
+                        <div className="flex items-center">
+                          <UserIcon className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <span className="truncate">
+                            Approved by:{" "}
+                            {`${approver.firstName} ${approver.lastName}`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Risk Assessment */}
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <h4 className="font-medium text-emerald-900 mb-2 text-sm sm:text-base">
+                        Risk Assessment
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                        <div>
+                          <span className="text-emerald-700">
+                            Loan to Savings Ratio:
+                          </span>
+                          <span className="font-medium ml-2">
+                            {loan.riskAssessment?.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-emerald-700">
+                            Interest Amount:
+                          </span>
+                          <span className="font-medium ml-2">
+                            €
+                            {(
+                              (loan.totalAmount ?? 0) - loan.amount
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons - Full width on mobile, side by side on larger screens */}
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
                       {loan.status === "pending" && (
-                        <div className="flex space-x-2">
+                        <>
                           <button
                             onClick={() => handleLoanAction(loan, "reject")}
                             disabled={
                               isProcessing &&
                               processingLoanId === (loan.id || loan._id)
                             }
-                            className={`inline-flex items-center px-3 py-1 border border-red-300 text-red-700 rounded-lg transition-colors ${
+                            className={`flex items-center justify-center px-4 py-2 border border-red-300 text-red-700 rounded-lg transition-colors ${
                               isProcessing &&
                               processingLoanId === (loan.id || loan._id)
                                 ? "opacity-50 cursor-not-allowed"
@@ -492,9 +483,9 @@ const LoanApproval: React.FC = () => {
                           >
                             {isProcessing &&
                             processingLoanId === (loan.id || loan._id) ? (
-                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                             ) : (
-                              <X className="w-4 h-4 mr-1" />
+                              <X className="w-4 h-4 mr-2" />
                             )}
                             Reject
                           </button>
@@ -504,7 +495,7 @@ const LoanApproval: React.FC = () => {
                               isProcessing &&
                               processingLoanId === (loan.id || loan._id)
                             }
-                            className={`inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg transition-colors ${
+                            className={`flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg transition-colors ${
                               isProcessing &&
                               processingLoanId === (loan.id || loan._id)
                                 ? "opacity-50 cursor-not-allowed"
@@ -513,21 +504,21 @@ const LoanApproval: React.FC = () => {
                           >
                             {isProcessing &&
                             processingLoanId === (loan.id || loan._id) ? (
-                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                             ) : (
-                              <Check className="w-4 h-4 mr-1" />
+                              <Check className="w-4 h-4 mr-2" />
                             )}
                             Approve
                           </button>
-                        </div>
+                        </>
                       )}
                       {(loan.status === "approved" ||
                         loan.status === "active") && (
                         <button
                           onClick={() => handleRepayClick(loan)}
-                          className="inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                          className="flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                         >
-                          <DollarSign className="w-4 h-4 mr-1" />
+                          <DollarSign className="w-4 h-4 mr-2" />
                           Repay Loan
                         </button>
                       )}
@@ -553,24 +544,27 @@ const LoanApproval: React.FC = () => {
 
       {/* Pagination Controls */}
       {filteredLoans.length > 0 && (
-        <div className="flex items-center justify-end space-x-4 mt-6">
+        <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-4 mt-6">
           <button
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
-            className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
+            <ChevronLeft className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">Previous</span>
           </button>
+          <span className="text-xs sm:text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
           <button
             onClick={() =>
               setCurrentPage((prev) => Math.min(totalPages, prev + 1))
             }
             disabled={currentPage === totalPages}
-            className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Next
-            <ChevronRight className="w-4 h-4 ml-1" />
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="w-4 h-4 sm:ml-1" />
           </button>
         </div>
       )}
@@ -602,11 +596,11 @@ const LoanApproval: React.FC = () => {
         />
       )}
 
-      {/* Email choice modal shown only when approving and admin must choose whether to send email */}
+      {/* Email choice modal */}
       {showEmailChoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-sm mx-auto">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
               Send approval email?
             </h3>
             <p className="text-sm text-gray-700 mb-4">
@@ -614,36 +608,30 @@ const LoanApproval: React.FC = () => {
               after approving the loan?
             </p>
 
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
-                onClick={() => {
-                  // Close without sending email
-                  handleEmailChoice(false);
-                }}
+                onClick={() => handleEmailChoice(false)}
                 disabled={isProcessing}
-                className={`flex-1 px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg ${
-                  isProcessing ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+                className={`flex-1 px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg ${
+                  isProcessing
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-gray-50"
                 }`}
               >
-                 Cancel
+                Cancel
               </button>
 
               <button
-                onClick={() => {
-                  // Send email for already approved loan
-                  handleEmailChoice(true);
-                }}
+                onClick={() => handleEmailChoice(true)}
                 disabled={isProcessing}
-                className={`flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg ${
-                  isProcessing ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700"
+                className={`flex-1 px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg ${
+                  isProcessing
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-emerald-700"
                 }`}
               >
                 Send email
               </button>
-            </div>
-
-            <div className="mt-3 text-right">
-          
             </div>
           </div>
         </div>
@@ -651,45 +639,42 @@ const LoanApproval: React.FC = () => {
 
       {/* Repay Modal */}
       {showRepayModal && selectedLoan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-sm mx-auto">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
               Repay Loan
             </h3>
-            <p className="mb-2 text-sm text-gray-700">
-              Member:{" "}
-              <span className="font-bold">
-                {(() => {
-                  const member = selectedLoan.member;
-                  // typeof selectedLoan.member === "object"
-                  //   ? selectedLoan.member
-                  //   : users.find(
-                  //       (u) =>
-                  //         u.id === selectedLoan.member ||
-                  //         u._id === selectedLoan.member
-                  //     );
-                  return member ? `${member.firstName} ${member.lastName}` : "";
-                })()}
-              </span>
-            </p>
-            <p className="mb-2 text-sm text-gray-700">
-              Total Repayment:{" "}
-              <span className="font-bold">
-                €
-                {(
-                  selectedLoan.repaymentAmount ??
-                  selectedLoan.totalAmount ??
-                  0
-                ).toLocaleString()}
-              </span>
-            </p>
-            <p className="mb-2 text-sm text-gray-700">
-              Already Paid:{" "}
-              <span className="font-bold">
-                €{(selectedLoan.paidAmount || 0).toLocaleString()}
-              </span>
-            </p>
-            <label className="text-sm font-medium text-gray-700">
+            <div className="space-y-2 mb-4">
+              <p className="text-sm text-gray-700">
+                Member:{" "}
+                <span className="font-bold">
+                  {(() => {
+                    const member = selectedLoan.member;
+                    return member
+                      ? `${member.firstName} ${member.lastName}`
+                      : "";
+                  })()}
+                </span>
+              </p>
+              <p className="text-sm text-gray-700">
+                Total Repayment:{" "}
+                <span className="font-bold">
+                  €
+                  {(
+                    selectedLoan.repaymentAmount ??
+                    selectedLoan.totalAmount ??
+                    0
+                  ).toLocaleString()}
+                </span>
+              </p>
+              <p className="text-sm text-gray-700">
+                Already Paid:{" "}
+                <span className="font-bold">
+                  €{(selectedLoan.paidAmount || 0).toLocaleString()}
+                </span>
+              </p>
+            </div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">
               Amount to Repay
             </label>
             <input
@@ -700,13 +685,13 @@ const LoanApproval: React.FC = () => {
                   selectedLoan.totalAmount ??
                   0) - (selectedLoan.paidAmount || 0)
               }
-              className="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-sm"
             />
-            <div className="flex space-x-2 mt-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => setShowRepayModal(false)}
                 disabled={isRepaying}
-                className={`px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg w-1/2 
+                className={`flex-1 px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg 
             ${
               isRepaying ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
             } 
@@ -717,7 +702,7 @@ const LoanApproval: React.FC = () => {
               <button
                 onClick={handleRepaySubmit}
                 disabled={isRepaying}
-                className={`inline-flex items-center justify-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg w-1/2
+                className={`flex-1 flex items-center justify-center px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg
             ${
               isRepaying
                 ? "opacity-75 cursor-not-allowed"

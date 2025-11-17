@@ -176,7 +176,7 @@ const UserManagement: React.FC = () => {
       case "admin":
         return "bg-purple-100 text-purple-800";
       case "branch_lead":
-        return "bg-emerald-100 text-emarald-800";
+        return "bg-emerald-100 text-emerald-800";
       case "member":
         return "bg-emerald-100 text-emerald-800";
       default:

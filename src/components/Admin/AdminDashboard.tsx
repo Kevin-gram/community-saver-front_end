@@ -142,14 +142,13 @@ const AdminDashboard: React.FC = () => {
       // Only update state if component is still mounted
       if (isMountedRef.current) {
         setNetContributions(net);
-        setError(null);
+        // keep any UI error state untouched (don't show retry banner)
       }
     } catch (err) {
       console.error("Failed to fetch net contributions:", err);
       
       if (isMountedRef.current) {
-        setError("Failed to load financial data. Retrying...");
-        // Don't clear existing data on subsequent failures
+        // Do not surface a retry banner to the user. Optionally clear loader-only state.
         if (showLoader) {
           setNetContributions(null);
         }
@@ -288,12 +287,7 @@ const AdminDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-700 mb-2">
             Admin Dashboard
           </h1>
-          {error && (
-            <div className="mt-2 text-sm text-amber-600 flex items-center">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {error}
-            </div>
-          )}
+          {/* Errors are logged to console but not shown as a persistent banner */}
         </div>
         
         {/* PDF Report Generator - Top Right Corner */}
