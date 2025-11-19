@@ -689,68 +689,71 @@ const BranchLeadDashboard: React.FC = () => {
                   0;
 
                 return (
-                  <div
-                    key={member.id || member._id || `member-${member.email}`}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-8 h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-200`}
-                      >
-                        <Users className="w-4 h-4 text-emerald-700 " />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {member.firstName}{" "}
-                          {member.role === "admin" && "(Admin)"}
-                        </p>
-                        <div className="flex items-center space-x-2 text-sm text-gray-500">
-                          <span>€{memberContribution.toLocaleString()}</span>
-                          <span className="flex items-center">
-                            <div
-                              className={`w-2 h-2 rounded-full mr-1 ${memberTheme.primary}`}
-                            />
-                            {member.branch}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+  <div
+    key={member.id || member._id || `member-${member.email}`}
+    className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg gap-2"
+  >
+    <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+      <div
+        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-200 flex-shrink-0`}
+      >
+        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-medium text-gray-900 text-sm sm:text-base truncate">
+          {member.firstName}{" "}
+          {member.role === "admin" && (
+            <span className="text-xs">(Admin)</span>
+          )}
+        </p>
+        <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-500">
+          <span className="whitespace-nowrap">
+            €{memberContribution.toLocaleString()}
+          </span>
+          <span className="flex items-center whitespace-nowrap">
+            <div
+              className={`w-2 h-2 rounded-full mr-1 ${memberTheme.primary}`}
+            />
+            {member.branch}
+          </span>
+        </div>
+      </div>
+    </div>
 
-                    <div className="flex items-center space-x-2">
-                      {canEdit && (
-                        <>
-                          <span className="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-800">
-                            Add Member Contribution
-                          </span>
-                          <button
-                            onClick={() => {
-                              const memberId = member.id || member._id;
-                              if (memberId) {
-                                setSelectedMember(memberId);
-                              } else {
-                                console.error(
-                                  "No valid member ID found:",
-                                  member
-                                );
-                              }
-                            }}
-                            className="p-1 rounded text-emerald-600 hover:bg-blue-100 cursor-pointer"
-                            disabled={!member.id && !member._id}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
-                      {/* per-member history (uses same ContributionHistory component as MemberDashboard) */}
-                      <button
-                        onClick={() => openHistory(member.id || member._id)}
-                        className="p-1 rounded text-gray-700 hover:bg-gray-100 ml-1"
-                        title="View member history"
-                      >
-                        <History className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+    <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+      {canEdit && (
+        <>
+          <span className="hidden md:inline-block px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-800 whitespace-nowrap">
+            Add
+          </span>
+          <button
+            onClick={() => {
+              const memberId = member.id || member._id;
+              if (memberId) {
+                setSelectedMember(memberId);
+              } else {
+                console.error(
+                  "No valid member ID found:",
+                  member
+                );
+              }
+            }}
+            className="p-1.5 sm:p-1 rounded text-emerald-600 hover:bg-blue-100 cursor-pointer"
+            disabled={!member.id && !member._id}
+          >
+            <Edit className="w-5 h-5 sm:w-4 sm:h-4" />
+          </button>
+        </>
+      )}
+      <button
+        onClick={() => openHistory(member.id || member._id)}
+        className="p-1.5 sm:p-1 rounded text-gray-700 hover:bg-gray-100"
+        title="View member history"
+      >
+        <History className="w-5 h-5 sm:w-4 sm:h-4" />
+      </button>
+    </div>
+  </div>
                 );
               })
             ) : (
