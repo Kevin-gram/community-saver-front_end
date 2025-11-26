@@ -17,10 +17,12 @@ import ConfirmDialog from "../Common/ConfirmDialog";
 import MemberDetails from "../BranchLead/MemberDetails";
 import { deleteUser, fetchUsers, fetchPenalties } from "../../utils/api";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const ITEMS_PER_PAGE = 5; // Set to display 5 users per page
 
 const UserManagement: React.FC = () => {
+  const { t } = useLanguage();
   const { state, dispatch } = useApp();
   // Only show users whose status is "approved" and role is "member" or "branch_lead"
   const users = state.users.filter(
@@ -187,11 +189,11 @@ const UserManagement: React.FC = () => {
   const getRoleDisplay = (role: string) => {
     switch (role) {
       case "admin":
-        return "Administrator";
+        return t("userManagement.administrator");
       case "branch_lead":
-        return "Branch Lead";
+        return t("userManagement.branchLead");
       case "member":
-        return "Member";
+        return t("userManagement.member");
       default:
         return role;
     }
@@ -208,18 +210,16 @@ const UserManagement: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">
-            User Management
+            {t("userManagement.title")}
           </h2>
-          <p className="text-sm text-gray-600">
-            Manage system users and their permissions
-          </p>
+        
         </div>
         <button
           onClick={() => setShowUserForm(true)}
           className="inline-flex items-center px-4 py-2 bg-emerald-700 text-white rounded-lg hover:text-emerald-700 hover:bg-white hover:border border-emerald-600 transition-colors"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add User
+          {t("userManagement.addUser")}
         </button>
       </div>
 
@@ -230,7 +230,7 @@ const UserManagement: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder={t("userManagement.searchUsers")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
@@ -242,10 +242,10 @@ const UserManagement: React.FC = () => {
             onChange={(e) => setFilterRole(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
           >
-            <option value="">All Roles</option>
-            <option value="admin">Administrator</option>
-            <option value="branch_lead">Branch Lead</option>
-            <option value="member">Member</option>
+            <option value="">{t("userManagement.allRoles")}</option>
+            <option value="admin">{t("userManagement.administrator")}</option>
+            <option value="branch_lead">{t("userManagement.branchLead")}</option>
+            <option value="member">{t("userManagement.member")}</option>
           </select>
 
           <select
@@ -253,11 +253,11 @@ const UserManagement: React.FC = () => {
             onChange={(e) => setFilterGroup(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
           >
-            <option value="">All Groups</option>
-            <option value="blue">Blue Group</option>
-            <option value="yellow">Yellow Group</option>
-            <option value="red">Red Group</option>
-            <option value="purple">Purple Group</option>
+            <option value="">{t("userManagement.allGroups")}</option>
+            <option value="blue">{t("userManagement.blueGroup")}</option>
+            <option value="yellow">{t("userManagement.yellowGroup")}</option>
+            <option value="red">{t("userManagement.redGroup")}</option>
+            <option value="purple">{t("userManagement.purpleGroup")}</option>
           </select>
         </div>
       </div>
@@ -269,25 +269,25 @@ const UserManagement: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
+                  {t("userManagement.tableUser")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
+                  {t("userManagement.tableRole")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Group
+                  {t("userManagement.tableGroup")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Savings
+                  {t("userManagement.tableSavings")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Penalties
+                  {t("userManagement.tablePenalties")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t("userManagement.tableStatus")}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t("userManagement.tableActions")}
                 </th>
               </tr>
             </thead>
@@ -367,7 +367,7 @@ const UserManagement: React.FC = () => {
                         <button
                           onClick={() => handleEditUser(user)}
                           className="text-emerald-600 hover:text-emerald-900 p-1"
-                          title="Edit user"
+                          title={t("userManagement.editUser")}
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -385,10 +385,10 @@ const UserManagement: React.FC = () => {
                           }`}
                           title={
                             (user.totalContributions || 0) > 0
-                              ? "Cannot delete user with contributions"
+                              ? t("userManagement.cannotDeleteWithContributions")
                               : hasPendingPenalties
-                              ? "Cannot delete user with pending penalties"
-                              : "Delete user"
+                              ? t("userManagement.cannotDeleteWithPenalties")
+                              : t("userManagement.deleteUser")
                           }
                         >
                           <Trash2 className="w-4 h-4" />
@@ -396,7 +396,7 @@ const UserManagement: React.FC = () => {
                         <button
                           onClick={() => handleAddMoney(user)}
                           className="text-blue-600 hover:text-blue-900 p-1"
-                          title="Add Money"
+                          title={t("userManagement.addMoney")}
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -418,7 +418,7 @@ const UserManagement: React.FC = () => {
               className="flex items-center px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
+              {t("userManagement.previous")}
             </button>
             <button
               onClick={() =>
@@ -427,38 +427,91 @@ const UserManagement: React.FC = () => {
               disabled={currentPage === totalPages}
               className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Next
+              {t("userManagement.next")}
               <ChevronRight className="w-4 h-4 ml-1" />
             </button>
           </div>
         )}
       </div>
 
-      {/* Modals */}
+      {/* Delete Confirmation Dialog */}
+      {deletingUser && (
+        <ConfirmDialog
+          title={t("userManagement.confirmDeleteTitle")}
+          message={
+            (deletingUser.totalContributions || 0) > 0
+              ? t("userManagement.cannotDeleteMessage")
+                  .replace("{name}", deletingUser.firstName)
+                  .replace(
+                    "${amount}",
+                    (deletingUser.totalContributions || 0).toLocaleString()
+                  )
+              : userPendingPenalties[deletingUser.id]
+              ? t("userManagement.cannotDeletePenaltiesMessage").replace(
+                  "{name}",
+                  deletingUser.firstName
+                )
+              : t("userManagement.confirmDeleteMessage").replace(
+                  "{name}",
+                  deletingUser.firstName
+                )
+          }
+          confirmText={
+            (deletingUser.totalContributions || 0) > 0 ||
+            userPendingPenalties[deletingUser.id]
+              ? t("userManagement.okText")
+              : isConfirming
+              ? t("userManagement.deletingText")
+              : t("userManagement.deleteConfirmText")
+          }
+          confirmVariant={
+            (deletingUser.totalContributions || 0) > 0 ||
+            userPendingPenalties[deletingUser.id]
+              ? "primary"
+              : "danger"
+          }
+          onConfirm={
+            (deletingUser.totalContributions || 0) > 0 ||
+            userPendingPenalties[deletingUser.id]
+              ? () => setDeletingUser(null)
+              : confirmDelete
+          }
+          onCancel={() => !isConfirming && setDeletingUser(null)}
+          disabled={isConfirming}
+        />
+      )}
+
       {showUserForm && (
         <UserForm user={editingUser} onClose={handleFormClose} />
       )}
       {deletingUser && (
         <ConfirmDialog
-          title="Delete User"
+          title={t("userManagement.confirmDeleteTitle")}
           message={
             (deletingUser.totalContributions || 0) > 0
-              ? `Cannot delete ${
-                  deletingUser.firstName
-                } because they have contributions of $${(
-                  deletingUser.totalContributions || 0
-                ).toLocaleString()}. Users with contributions cannot be deleted.`
+              ? t("userManagement.cannotDeleteMessage")
+                  .replace("{name}", deletingUser.firstName)
+                  .replace(
+                    "${amount}",
+                    (deletingUser.totalContributions || 0).toLocaleString()
+                  )
               : userPendingPenalties[deletingUser.id]
-              ? `Cannot delete ${deletingUser.firstName} because they have pending penalties. Users with pending penalties cannot be deleted.`
-              : `Are you sure you want to delete ${deletingUser.firstName}? This action cannot be undone.`
+              ? t("userManagement.cannotDeletePenaltiesMessage").replace(
+                  "{name}",
+                  deletingUser.firstName
+                )
+              : t("userManagement.confirmDeleteMessage").replace(
+                  "{name}",
+                  deletingUser.firstName
+                )
           }
           confirmText={
             (deletingUser.totalContributions || 0) > 0 ||
             userPendingPenalties[deletingUser.id]
-              ? "OK"
+              ? t("userManagement.okText")
               : isConfirming
-              ? "Deleting..."
-              : "Delete"
+              ? t("userManagement.deletingText")
+              : t("userManagement.deleteConfirmText")
           }
           confirmVariant={
             (deletingUser.totalContributions || 0) > 0 ||

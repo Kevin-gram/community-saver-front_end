@@ -29,13 +29,14 @@ import {
   getOverviewLoans,
   getOverviewUsers,
   getStats,
-  tabs,
   getValidLoans,
 } from "../../utils/adminDashboardLogic";
+import { useLanguage } from "../../context/LanguageContext";
 
 const AdminDashboard: React.FC = () => {
   const { state } = useApp();
   const { users, loans } = state;
+  const { t } = useLanguage();
 
   // State management - SEPARATED LOADING STATES
   const [activeTab, setActiveTab] = useState("overview");
@@ -138,15 +139,31 @@ const AdminDashboard: React.FC = () => {
   // Stats configuration - EACH STAT NOW HAS ITS OWN LOADING STATE
   const stats = getStats(totalMembers, netContributions, pendingLoans, financialDataLoading, netContributionsLoading);
 
+  // Translate stats
+  const translatedStats = stats.map(stat => ({
+    ...stat,
+    title: stat.key ? t(`admin.${stat.key}`) : stat.title
+  }));
+
   // Filter out loans with invalid members or null values - NOW USING DIRECT FETCH
   const validLoans = getValidLoans(overviewLoans, overviewUsers);
+
+  // Translated tabs
+  const translatedTabs = [
+    { id: "overview", label: t("admin.overview"), icon: "TrendingUp" },
+    { id: "users", label: t("admin.users"), icon: "Users" },
+    { id: "loans", label: t("admin.loans"), icon: "CheckCircle" },
+    { id: "groupshares", label: t("admin.groupShares"), icon: "DollarSign" },
+    { id: "penalties", label: t("admin.penalties"), icon: "AlertCircle" },
+    { id: "registrations", label: t("admin.registrations"), icon: "UserCheck" }
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 flex justify-between items-start">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-700 mb-2">
-            Admin Dashboard
+            {t("admin.title")}
           </h1>
           {/* Errors are logged to console but not shown as a persistent banner */}
         </div>
@@ -164,7 +181,7 @@ const AdminDashboard: React.FC = () => {
 
       {/* Stats Grid - EACH STAT LOADS INDEPENDENTLY */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => (
+        {translatedStats.map((stat) => (
           <div
             key={stat.title}
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 transition-shadow hover:shadow-md"
@@ -198,7 +215,7 @@ const AdminDashboard: React.FC = () => {
       {/* Navigation Tabs */}
       <div className="border-b border-gray-200 mb-8">
         <nav className="-mb-px flex space-x-8 overflow-x-auto">
-          {tabs.map((tab) => (
+          {translatedTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -228,7 +245,7 @@ const AdminDashboard: React.FC = () => {
             {/* Recent Loans - NOW USES DIRECT FETCH */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Recent Loan Requests
+                {t("admin.recentLoans")}
               </h3>
               <div className="space-y-4">
                 {overviewLoansLoading ? (
@@ -249,7 +266,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 ) : validLoans.length === 0 ? (
                   <div className="text-gray-500 text-center py-4">
-                    No valid loan requests available
+                    {t("admin.noValidLoans")}
                   </div>
                 ) : (
                   validLoans
@@ -292,7 +309,7 @@ const AdminDashboard: React.FC = () => {
                                   : "bg-red-100 text-red-800"
                               }`}
                             >
-                              {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                              {t(`admin.${loan.status}`)}
                             </span>
                           </div>
                         </div>
@@ -306,7 +323,7 @@ const AdminDashboard: React.FC = () => {
             {/* Branch Overview - NOW USES DIRECT FETCH */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Branch Distribution
+                {t("admin.branchDistribution")}
               </h3>
               <div className="space-y-4">
                 {overviewUsersLoading ? (
@@ -349,12 +366,12 @@ const AdminDashboard: React.FC = () => {
                             aria-hidden="true"
                           />
                           <span className="font-medium text-gray-900 capitalize">
-                            {branch} Branch
+                            {branch} {t("admin.branchLabel")}
                           </span>
                         </div>
                         <div className="text-right">
                           <p className="font-medium text-gray-900">
-                            {groupMembers.length} {groupMembers.length === 1 ? "member" : "members"}
+                            {groupMembers.length} {groupMembers.length === 1 ? t("admin.member") : t("admin.members")}
                           </p>
                           <p className="text-sm text-gray-500">
                             €{totalSavings.toLocaleString()}

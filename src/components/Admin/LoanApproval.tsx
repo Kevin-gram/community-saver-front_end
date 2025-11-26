@@ -30,11 +30,13 @@ import {
   EmailChoiceModal,
   RepayModal,
 } from "../../utils/loanApproval/loanApprovalLogic";
+import { useLanguage } from "../../context/LanguageContext";
 
 const ITEMS_PER_PAGE = 2;
 const POLLING_INTERVAL = 5000;
 
 const LoanApproval: React.FC = () => {
+  const { t } = useLanguage();
   const { state, dispatch } = useApp();
   const { loans, users, currentUser } = state;
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
@@ -102,10 +104,9 @@ const LoanApproval: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Loan Approval</h2>
-          <p className="text-sm text-gray-600">
-            Review and approve loan requests from members
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {t("admin.loanApproval")}
+          </h2>
         </div>
 
         <select
@@ -113,12 +114,12 @@ const LoanApproval: React.FC = () => {
           onChange={(e) => setFilterStatus(e.target.value)}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="">All</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-          <option value="active">Active</option>
-          <option value="repaid">Repaid</option>
+          <option value="">{t("admin.all")}</option>
+          <option value="pending">{t("admin.pending")}</option>
+          <option value="approved">{t("admin.approved")}</option>
+          <option value="rejected">{t("admin.rejected")}</option>
+          <option value="active">{t("admin.active")}</option>
+          <option value="repaid">{t("admin.repaid")}</option>
         </select>
       </div>
 
@@ -178,8 +179,7 @@ const LoanApproval: React.FC = () => {
                           loan.status
                         )}`}
                       >
-                        {loan.status.charAt(0).toUpperCase() +
-                          loan.status.slice(1)}
+                        {t(`admin.${loan.status}`)}
                       </span>
                     </div>
 
@@ -188,7 +188,7 @@ const LoanApproval: React.FC = () => {
                       <div className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-gray-600">
-                            Loan Amount
+                            {t("admin.loanAmount")}
                           </span>
                           <DollarSign className="w-4 h-4 text-gray-400" />
                         </div>
@@ -200,7 +200,7 @@ const LoanApproval: React.FC = () => {
                       <div className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-gray-600">
-                            Repayment Amount
+                            {t("admin.repaymentAmount")}
                           </span>
                           <DollarSign className="w-4 h-4 text-gray-400" />
                         </div>
@@ -213,7 +213,7 @@ const LoanApproval: React.FC = () => {
                         <div className="bg-gray-50 rounded-lg p-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs sm:text-sm text-gray-600">
-                              Already Paid
+                              {t("admin.alreadyPaid")}
                             </span>
                             <DollarSign className="w-4 h-4 text-gray-400" />
                           </div>
@@ -229,7 +229,7 @@ const LoanApproval: React.FC = () => {
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                         <span>
-                          Requested:{" "}
+                          {t("admin.requested")}:{" "}
                           {loan.requestDate
                             ? new Date(loan.requestDate).toLocaleDateString()
                             : "-"}
@@ -238,7 +238,7 @@ const LoanApproval: React.FC = () => {
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                         <span>
-                          Due:{" "}
+                          {t("admin.due")}:{" "}
                           {loan.dueDate
                             ? new Date(loan.dueDate).toLocaleDateString()
                             : "-"}
@@ -248,7 +248,7 @@ const LoanApproval: React.FC = () => {
                         <div className="flex items-center">
                           <Check className="w-4 h-4 mr-2 text-emerald-500 flex-shrink-0" />
                           <span>
-                            Approved:{" "}
+                            {t("admin.approved")}:{" "}
                             {new Date(loan.approvedDate).toLocaleDateString()}
                           </span>
                         </div>
@@ -257,7 +257,7 @@ const LoanApproval: React.FC = () => {
                         <div className="flex items-center">
                           <UserIcon className="w-4 h-4 mr-2 flex-shrink-0" />
                           <span className="truncate">
-                            Approved by:{" "}
+                            {t("admin.approvedBy")}:{" "}
                             {`${approver.firstName} ${approver.lastName}`}
                           </span>
                         </div>
@@ -267,12 +267,12 @@ const LoanApproval: React.FC = () => {
                     {/* Risk Assessment */}
                     <div className="p-3 bg-blue-50 rounded-lg">
                       <h4 className="font-medium text-emerald-900 mb-2 text-sm sm:text-base">
-                        Risk Assessment
+                        {t("admin.riskAssessment")}
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
                         <div>
                           <span className="text-emerald-700">
-                            Loan to Savings Ratio:
+                            {t("admin.loanToSavingsRatio")}:
                           </span>
                           <span className="font-medium ml-2">
                             {loan.riskAssessment?.toFixed(1)}%
@@ -280,7 +280,7 @@ const LoanApproval: React.FC = () => {
                         </div>
                         <div>
                           <span className="text-emerald-700">
-                            Interest Amount:
+                            {t("admin.interestAmount")}:
                           </span>
                           <span className="font-medium ml-2">
                             €
@@ -315,7 +315,7 @@ const LoanApproval: React.FC = () => {
                             ) : (
                               <X className="w-4 h-4 mr-2" />
                             )}
-                            Reject
+                            {t("admin.reject")}
                           </button>
                           <button
                             onClick={() => handleLoanAction(loan, "approve", setSelectedLoan, setActionType, setProcessingLoanId)}
@@ -336,7 +336,7 @@ const LoanApproval: React.FC = () => {
                             ) : (
                               <Check className="w-4 h-4 mr-2" />
                             )}
-                            Approve
+                            {t("admin.approve")}
                           </button>
                         </>
                       )}
@@ -347,7 +347,7 @@ const LoanApproval: React.FC = () => {
                           className="flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                         >
                           <DollarSign className="w-4 h-4 mr-2" />
-                          Repay Loan
+                          {t("admin.repayLoan")}
                         </button>
                       )}
                     </div>
@@ -364,8 +364,8 @@ const LoanApproval: React.FC = () => {
           <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500">
             {filterStatus
-              ? `No ${filterStatus} loans found`
-              : "No loan requests found"}
+              ? t("admin.noLoans")
+              : t("admin.noLoans")}
           </p>
         </div>
       )}
@@ -379,10 +379,10 @@ const LoanApproval: React.FC = () => {
             className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft className="w-4 h-4 sm:mr-1" />
-            <span className="hidden sm:inline">Previous</span>
+            <span className="hidden sm:inline">{t("admin.paginationPrevious")}</span>
           </button>
           <span className="text-xs sm:text-sm text-gray-600">
-            Page {currentPage} of {totalPages}
+            {t("admin.paginationPage")} {currentPage} {t("admin.paginationOf")} {totalPages}
           </span>
           <button
             onClick={() =>
@@ -391,7 +391,7 @@ const LoanApproval: React.FC = () => {
             disabled={currentPage === totalPages}
             className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <span className="hidden sm:inline">Next</span>
+            <span className="hidden sm:inline">{t("admin.paginationNext")}</span>
             <ChevronRight className="w-4 h-4 sm:ml-1" />
           </button>
         </div>

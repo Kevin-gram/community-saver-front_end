@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useApp } from "../../context/AppContext";
 import { fetchPenalties, updatePenalty } from "../../utils/api";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 const PenaltiesTableSkeleton = () => (
   <div className="overflow-x-auto">
@@ -41,6 +42,7 @@ const PenaltiesTableSkeleton = () => (
 const ITEMS_PER_PAGE = 6;
 
 const Penalties: React.FC = () => {
+  const { t } = useLanguage();
   const { state, dispatch } = useApp();
   const { paidPenalties = [] } = state;
   const [penalties, setPenalties] = useState<any[]>([]);
@@ -111,7 +113,7 @@ const Penalties: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <h2 className="text-xl sm:text-2xl font-semibold text-black">
-            Penalties
+            {t("admin.penalties")}
           </h2>
           <select
             value={filter}
@@ -121,9 +123,9 @@ const Penalties: React.FC = () => {
             }}
             className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            <option value="all">All</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="paid">Paid</option>
+            <option value="all">{t("admin.all")}</option>
+            <option value="unpaid">{t("admin.unpaid")}</option>
+            <option value="paid">{t("admin.paid")}</option>
           </select>
         </div>
 
@@ -207,16 +209,16 @@ const Penalties: React.FC = () => {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
-                      Member
+                      {t("admin.member")}
                     </th>
                     <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
-                      Contribution Date
+                      {t("admin.contributionDate")}
                     </th>
                     <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
-                      Penalty
+                      {t("admin.penalty")}
                     </th>
                     <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
-                      Action
+                      {t("admin.action")}
                     </th>
                   </tr>
                 </thead>
@@ -291,8 +293,8 @@ const Penalties: React.FC = () => {
               <div className="text-center py-8 px-4">
                 <p className="text-gray-500 text-sm">
                   {filter === "all"
-                    ? "No penalties found"
-                    : `No ${filter} penalties found`}
+                    ? t("admin.noPenaltiesFound")
+                    : `${t("admin.no")} ${filter} ${t("admin.penalties")}`}
                 </p>
               </div>
             )}
@@ -301,8 +303,9 @@ const Penalties: React.FC = () => {
             {totalPages > 1 && filteredPenalties.length > ITEMS_PER_PAGE && (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
                 <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
-                  Showing {startIndex + 1} to {endIndex} of{" "}
-                  {filteredPenalties.length} penalties
+                  {t("admin.showingPenalties")} {startIndex + 1} {t("admin.to")}{" "}
+                  {endIndex} {t("admin.of")} {filteredPenalties.length}{" "}
+                  {t("admin.penalties")}
                 </div>
                 <div className="flex items-center justify-center sm:justify-end space-x-2 sm:space-x-4">
                   <button

@@ -1,5 +1,35 @@
 import { ReportData, ReportPeriod, PeriodOption } from "./reportTypes";
+import { en } from "../../i18n/en";
 
+export const getPeriods = (t: (key: string) => string): PeriodOption[] => [
+  {
+    value: "week",
+    label: t("reportPeriods.week"),
+    description: t("reportPeriods.weekDescription"),
+  },
+  {
+    value: "month",
+    label: t("reportPeriods.month"),
+    description: t("reportPeriods.monthDescription"),
+  },
+  {
+    value: "quarter",
+    label: t("reportPeriods.quarter"),
+    description: t("reportPeriods.quarterDescription"),
+  },
+  {
+    value: "year",
+    label: t("reportPeriods.year"),
+    description: t("reportPeriods.yearDescription"),
+  },
+  {
+    value: "all",
+    label: t("reportPeriods.all"),
+    description: t("reportPeriods.allDescription"),
+  },
+];
+
+// Default periods for backward compatibility (English)
 export const periods: PeriodOption[] = [
   { value: "week", label: "Last 7 Days", description: "Weekly Report" },
   { value: "month", label: "Last 30 Days", description: "Monthly Report" },

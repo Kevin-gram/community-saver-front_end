@@ -109,7 +109,7 @@ export const getStats = (
   netContributionsLoading: boolean
 ) => [
   {
-    title: "Total Members",
+    key: "totalMembers",
     value: totalMembers.toString(),
     icon: "Users",
     color: "text-emerald-600",
@@ -117,7 +117,7 @@ export const getStats = (
     loading: financialDataLoading,
   },
   {
-    title: "Available Balance",
+    key: "availableBalance",
     value: netContributions
       ? `€${netContributions.netAvailable.toLocaleString()}`
       : "-",
@@ -127,7 +127,7 @@ export const getStats = (
     loading: financialDataLoading,
   },
   {
-    title: "Future Balance",
+    key: "futureBalance",
     value: netContributions
       ? `€${netContributions.bestFutureBalance.toLocaleString()}`
       : "-",
@@ -137,7 +137,7 @@ export const getStats = (
     loading: financialDataLoading,
   },
   {
-    title: "Pending Loans",
+    key: "pendingLoans",
     value: pendingLoans.toString(),
     icon: "AlertCircle",
     color: "text-emerald-600",
@@ -145,7 +145,7 @@ export const getStats = (
     loading: financialDataLoading,
   },
   {
-    title: "Total Penalties Collected",
+    key: "totalPenaltiesCollected",
     value: netContributions
       ? `€${netContributions.totalPaidPenalties.toLocaleString()}`
       : "-",
@@ -157,12 +157,12 @@ export const getStats = (
 ];
 
 export const tabs = [
-  { id: "overview", label: "Overview", icon: "TrendingUp" },
-  { id: "users", label: "User Management", icon: "Users" },
-  { id: "loans", label: "Loan Approval", icon: "CheckCircle" },
-  { id: "groupshares", label: "Group Shares & Interest", icon: "DollarSign" },
-  { id: "penalties", label: "Penalties", icon: "AlertCircle" },
-  { id: "registrations", label: "Registration Approval", icon: "UserCheck" },
+  { id: "overview", labelKey: "admin.overview", icon: "TrendingUp" },
+  { id: "users", labelKey: "admin.userManagement", icon: "Users" },
+  { id: "loans", labelKey: "admin.loanApproval", icon: "CheckCircle" },
+  { id: "groupshares", labelKey: "admin.groupShares", icon: "DollarSign" },
+  { id: "penalties", labelKey: "admin.penalties", icon: "AlertCircle" },
+  { id: "registrations", labelKey: "admin.registrationApproval", icon: "UserCheck" },
 ];
 
 // Helper functions

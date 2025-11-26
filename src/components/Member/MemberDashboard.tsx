@@ -24,6 +24,7 @@ import {
   fetchContributionsByMember,
   downloadLoanAgreement,
 } from "../../utils/api";
+import { useLanguage } from "../../context/LanguageContext";
 
 const INITIAL_POLLING_INTERVAL = 30000; // 30 seconds
 const MAX_POLLING_INTERVAL = 300000; // Max 5 minutes
@@ -94,6 +95,7 @@ const LoanInfoSkeleton = () => (
 );
 
 const MemberDashboard: React.FC = () => {
+  const { t } = useLanguage();
   const { state } = useApp();
   const { users, currentUser: rawCurrentUser, groupRules, loans } = state;
   const [memberShares, setMemberShares] = useState<any>(null);
@@ -120,7 +122,7 @@ const MemberDashboard: React.FC = () => {
   if (!rawCurrentUser) {
     return (
       <div className="p-8 text-center">
-        <p>Loading user data...</p>
+        <p>{t("member.loadingUserData")}</p>
       </div>
     );
   }
@@ -133,7 +135,7 @@ const MemberDashboard: React.FC = () => {
   if (!currentUser || currentUser.role !== "member") {
     return (
       <div className="p-8 text-center">
-        <p>Access denied. Member privileges required.</p>
+        <p>{t("member.accessDenied")}</p>
       </div>
     );
   }
@@ -165,7 +167,7 @@ const MemberDashboard: React.FC = () => {
   const stats = [
     {
       id: "total-savings",
-      title: "Total Savings",
+      title: t("member.totalSavings"),
       value: `€${currentSavings.toLocaleString()}`,
       icon: Euro,
       color: "text-emerald-600",
@@ -173,7 +175,7 @@ const MemberDashboard: React.FC = () => {
     },
     {
       id: "interest-received",
-      title: "Interest Received",
+      title: t("member.interestReceived"),
       value: `€${(
         displayData?.interestEarned ??
         displayData?.interestReceived ??
@@ -190,7 +192,7 @@ const MemberDashboard: React.FC = () => {
       ? [
           {
             id: "penalties",
-            title: "Pending Penalties",
+            title: t("member.pendingPenalties"),
             value: `€${memberPenalties.toLocaleString()}`,
             icon: AlertTriangle,
             color: "text-emerald-600",
@@ -200,7 +202,7 @@ const MemberDashboard: React.FC = () => {
       : []),
     {
       id: "max-loanable",
-      title: "Max Loanable",
+      title: t("member.maxLoanable"),
       value: `€${(maxLoanAmount ?? 0).toLocaleString()}`,
       icon: Calculator,
       color: "text-emerald-600",
@@ -208,7 +210,7 @@ const MemberDashboard: React.FC = () => {
     },
     {
       id: "total-group-contribution",
-      title: "Gross Contribution",
+      title: t("member.grossContribution"),
       value: `€${(netContributions?.netAvailable ?? 0).toLocaleString()}`,
       icon: PiggyBank,
       color: "text-emerald-600",
@@ -216,7 +218,7 @@ const MemberDashboard: React.FC = () => {
     },
     {
       id: "future-gross-contribution",
-      title: "Future Gross Contribution",
+      title: t("member.futureGrossContribution"),
       value: `€${(netContributions?.bestFutureBalance ?? 0).toLocaleString()}`,
       icon: BarChart,
       color: "text-emerald-600",
@@ -434,7 +436,7 @@ const MemberDashboard: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm font-medium text-gray-600">Loan Status</p>
+          <p className="text-sm font-medium text-gray-600">{t("member.loanStatus")}</p>
           <p
             className={`text-lg font-semibold mt-1 ${
               latestLoan.status === "repaid"
@@ -476,38 +478,38 @@ const MemberDashboard: React.FC = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
         <p>
-          <span className="font-medium text-gray-900">Amount:</span> €
-          {latestLoan.amount?.toLocaleString() || "N/A"}
+          <span className="font-medium text-gray-900">{t("member.amount")}:</span> €
+          {latestLoan.amount?.toLocaleString() || t("member.nA")}
         </p>
         <p>
-          <span className="font-medium text-gray-900">Repayment:</span> €
+          <span className="font-medium text-gray-900">{t("member.repayment")}:</span> €
           {latestLoan.repaymentAmount?.toLocaleString() ||
             latestLoan.totalAmount?.toLocaleString() ||
-            "N/A"}
+            t("member.nA")}
         </p>
         <p>
-          <span className="font-medium text-gray-900">Rate per month:</span>{" "}
+          <span className="font-medium text-gray-900">{t("member.rate")}:</span>{" "}
           {latestLoan.interestRate || 0}%
         </p>
         <p>
-          <span className="font-medium text-gray-900">Duration:</span>{" "}
-          {latestLoan.duration || "N/A"} months
+          <span className="font-medium text-gray-900">{t("member.duration")}:</span>{" "}
+          {latestLoan.duration || t("member.nA")} {t("member.months")}
         </p>
         <p>
-          <span className="font-medium text-gray-900">Due Date:</span>{" "}
+          <span className="font-medium text-gray-900">{t("member.dueDate")}:</span>{" "}
           {latestLoan.dueDate
             ? new Date(latestLoan.dueDate).toLocaleDateString()
-            : "N/A"}
+            : t("member.nA")}
         </p>
         {latestLoan.approvedDate && (
           <p>
-            <span className="font-medium text-gray-900">Approved Date:</span>{" "}
+            <span className="font-medium text-gray-900">{t("member.approvedDate")}:</span>{" "}
             {new Date(latestLoan.approvedDate).toLocaleDateString()}
           </p>
         )}
         {latestLoan.requestDate && (
           <p>
-            <span className="font-medium text-gray-900">Request Date:</span>{" "}
+            <span className="font-medium text-gray-900">{t("member.requestDate")}:</span>{" "}
             {new Date(latestLoan.requestDate).toLocaleDateString()}
           </p>
         )}
@@ -520,7 +522,7 @@ const MemberDashboard: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm font-medium text-gray-600">Future Interest</p>
+          <p className="text-sm font-medium text-gray-600">{t("member.futureInterest")}</p>
           <p className="text-lg font-semibold mt-1 text-emerald-600">
             €
             {(displayData?.interestToBeEarned ?? 0).toLocaleString(undefined, {
@@ -534,7 +536,7 @@ const MemberDashboard: React.FC = () => {
         </div>
       </div>
       <p className="text-sm text-gray-600">
-        Expected interest to be earned from active loans/Penalties
+        {t("member.expectedInterest")}
       </p>
     </div>
   );
@@ -601,25 +603,17 @@ const MemberDashboard: React.FC = () => {
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Member Dashboard
+            {t("member.title")}
           </h1>
-          <p className="text-gray-600">
-            Welcome back,{" "}
-            {displayData?.name ||
-              `${displayData?.firstName || ""} ${
-                displayData?.lastName || ""
-              }`.trim() ||
-              "Member"}
-          </p>
         </div>
         <div className="flex items-center space-x-3">
           <button
             className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
             onClick={() => setShowReportsPopup(true)}
-            title="View Financial Reports"
+            title={t("admin.reports")}
           >
             <FileDown className="w-5 h-5 mr-2" />
-            <span className="text-sm font-medium">Reports</span>
+            <span className="text-sm font-medium">{t("admin.reports")}</span>
           </button>
         </div>
       </div>
@@ -693,7 +687,7 @@ const MemberDashboard: React.FC = () => {
           }`}
         >
           <Plus className="w-5 h-5 mr-2" />
-          Request Loan
+          {t("member.requestLoan")}
         </button>
 
         <button
@@ -701,7 +695,7 @@ const MemberDashboard: React.FC = () => {
           className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
         >
           <History className="w-5 h-5 mr-2" />
-          View History
+          {t("member.viewHistory")}
         </button>
 
         {/* Download Agreement — enabled only when latest loan is approved */}
@@ -723,7 +717,7 @@ const MemberDashboard: React.FC = () => {
           }`}
         >
           <FileDown className="w-5 h-5 mr-2" />
-          {isDownloadingAgreement ? "Downloading..." : "Download Agreement"}
+          {isDownloadingAgreement ? t("member.downloading") : t("member.downloadAgreement")}
         </button>
       </div>
 
@@ -732,12 +726,12 @@ const MemberDashboard: React.FC = () => {
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Loan Information
+            {t("member.loanInformation")}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h4 className="font-medium text-gray-700 mb-2">
-                Eligibility Status
+                {t("member.eligibilityStatus")}
               </h4>
               <div
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
@@ -746,33 +740,33 @@ const MemberDashboard: React.FC = () => {
                     : "bg-red-100 text-red-800"
                 }`}
               >
-                {eligible ? "Eligible" : "Not Eligible"}
+                {eligible ? t("member.eligible") : t("member.notEligible")}
               </div>
               {!eligible && (
                 <p className="text-sm text-gray-600 mt-2">
-                  You must repay your current loan before requesting a new one.
+                  {t("member.repayCurrentLoan")}
                 </p>
               )}
             </div>
 
             <div>
               <h4 className="font-medium text-gray-700 mb-2">
-                Loan Calculation
+                {t("member.loanCalculation")}
               </h4>
               <div className="space-y-1 text-sm text-gray-600">
-                <p>Savings: €{currentSavings?.toLocaleString() || "N/A"}</p>
-                <p>Multiplier: {rules ? rules.maxLoanMultiplier : "N/A"}x</p>
+                <p>{t("member.savings")}: €{currentSavings?.toLocaleString() || t("member.nA")}</p>
+                <p>{t("member.multiplier")}: {rules ? rules.maxLoanMultiplier : t("member.nA")}x</p>
                 <p>
-                  Maximum: €
+                  {t("member.maximum")}: €
                   {rules && rules.maxLoanAmount !== undefined
                     ? rules.maxLoanAmount.toLocaleString()
-                    : "N/A"}
+                    : t("member.nA")}
                 </p>
                 <p className="font-medium text-gray-900">
-                  Your Max: €
+                  {t("member.yourMax")}: €
                   {maxLoanAmount !== undefined && maxLoanAmount !== null
                     ? maxLoanAmount.toLocaleString()
-                    : "N/A"}
+                    : t("member.nA")}
                 </p>
               </div>
             </div>

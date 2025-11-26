@@ -16,6 +16,7 @@ import {
   Euro,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   getGroupTheme,
   calculateMaxLoanAmount,
@@ -78,6 +79,7 @@ const LoanCardSkeleton = () => (
 );
 
 const BranchLeadDashboard: React.FC = () => {
+  const { t } = useLanguage();
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(
     null
@@ -189,28 +191,28 @@ const BranchLeadDashboard: React.FC = () => {
 
   const stats = [
     {
-      title: "Branch Members",
+      title: t("branchLead.branchMembers"),
       value: branchMembers.length.toString(),
       icon: Users,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
     {
-      title: "Total Branch Savings",
+      title: t("branchLead.totalSavings"),
       value: `€${totalBranchSavings.toLocaleString()}`,
       icon: Euro,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
     {
-      title: "Active Loans",
+      title: t("branchLead.activeLoans"),
       value: activeLoans.toString(),
       icon: TrendingUp,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
     {
-      title: "Pending Approvals",
+      title: t("branchLead.pendingApprovals"),
       value: pendingLoans.toString(),
       icon: AlertCircle,
       color: "text-emerald-600",
@@ -218,14 +220,14 @@ const BranchLeadDashboard: React.FC = () => {
     },
     // Add group-level cards (distinct, relevant icons)
     {
-      title: "Gross Contribution",
+      title: t("branchLead.grossContribution"),
       value: `€${(netContributions?.netAvailable ?? 0).toLocaleString()}`,
       icon: PiggyBank,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
     {
-      title: "Future Gross Contribution",
+      title: t("branchLead.futureGrossContribution"),
       value: `€${(netContributions?.bestFutureBalance ?? 0).toLocaleString()}`,
       icon: BarChart,
       color: "text-emerald-600",
@@ -238,7 +240,7 @@ const BranchLeadDashboard: React.FC = () => {
   const personalStats = [
     {
       id: "total-savings",
-      title: "Total Savings",
+      title: t("branchLead.totalSavings"),
       value: `€${(
         displayData?.totalContribution || userSavings
       ).toLocaleString()}`,
@@ -248,7 +250,7 @@ const BranchLeadDashboard: React.FC = () => {
     },
     {
       id: "interest-received",
-      title: "Interest Received",
+      title: t("branchLead.interestReceived"),
       value: `€${(
         displayData?.interestEarned ??
         displayData?.interestReceived ??
@@ -267,7 +269,7 @@ const BranchLeadDashboard: React.FC = () => {
       ? [
           {
             id: "penalties",
-            title: "Penalties",
+            title: t("branchLead.penalties"),
             value: `€${(currentUser.penalties.pending ?? 0).toLocaleString()}`,
             icon: AlertTriangle,
             color: "text-emerald-600",
@@ -277,7 +279,7 @@ const BranchLeadDashboard: React.FC = () => {
       : []),
     {
       id: "max-loanable",
-      title: "Max Loanable",
+      title: t("branchLead.maxLoanable"),
       value: `€${maxLoanAmount.toLocaleString()}`,
       icon: Calculator,
       color: "text-emerald-600",
@@ -475,18 +477,17 @@ const BranchLeadDashboard: React.FC = () => {
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Branch Lead Dashboard
+            {t("branchLead.title")}
           </h1>
-
         </div>
         <div className="flex items-center space-x-3">
           <button
             className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
             onClick={() => setShowReportsPopup(true)}
-            title="View Financial Reports"
+            title={t("admin.reports")}
           >
             <FileDown className="w-5 h-5 mr-2" />
-            <span className="text-sm font-medium">Reports</span>
+            <span className="text-sm font-medium">{t("admin.reports")}</span>
           </button>
         </div>
       </div>
@@ -539,7 +540,7 @@ const BranchLeadDashboard: React.FC = () => {
       {/* Personal Finance Section - Skeleton */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Your Personal Finance
+          {t("branchLead.personalFinance")}
         </h2>
         {allCardsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -596,15 +597,15 @@ const BranchLeadDashboard: React.FC = () => {
               <Clock className="w-5 h-5 text-emerald-600 mr-3" />
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  Your Loan Status
+                  {t("branchLead.yourLoanStatus")}
                 </h3>
                 <p className="text-sm text-gray-700 mt-1">
-                  Status:{" "}
+                  {t("branchLead.status")}:{" "}
                   <span className="font-semibold">{latestLoan.status}</span>
                   <br />
-                  Amount: €{latestLoan.amount.toLocaleString()}
+                  {t("branchLead.amount")}: €{latestLoan.amount.toLocaleString()}
                   <br />
-                  Due Date: {new Date(latestLoan.dueDate).toLocaleDateString()}
+                  {t("branchLead.dueDate")}: {new Date(latestLoan.dueDate).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -624,7 +625,7 @@ const BranchLeadDashboard: React.FC = () => {
           }`}
         >
           <Plus className="w-5 h-5 mr-2" />
-          Request Loan
+          {t("branchLead.requestLoan")}
         </button>
 
         <button
@@ -632,7 +633,7 @@ const BranchLeadDashboard: React.FC = () => {
           className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
         >
           <History className="w-5 h-5 mr-2" />
-          View History
+          {t("branchLead.viewHistory")}
         </button>
 
         <button
@@ -653,7 +654,7 @@ const BranchLeadDashboard: React.FC = () => {
           }`}
         >
           <FileDown className="w-5 h-5 mr-2" />
-          {isDownloadingAgreement ? "Downloading..." : "Download Agreement"}
+          {isDownloadingAgreement ? t("branchLead.downloading") : t("branchLead.downloadAgreement")}
         </button>
       </div>
 
@@ -662,7 +663,7 @@ const BranchLeadDashboard: React.FC = () => {
         {/* Branch Members */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Branch Members
+            {t("branchLead.branchMembers")}
           </h3>
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {allCardsLoading ? (
@@ -722,7 +723,7 @@ const BranchLeadDashboard: React.FC = () => {
       {canEdit && (
         <>
           <span className="hidden md:inline-block px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-800 whitespace-nowrap">
-            Add
+            {t("branchLead.add")}
           </span>
           <button
             onClick={() => {
@@ -746,7 +747,7 @@ const BranchLeadDashboard: React.FC = () => {
       <button
         onClick={() => openHistory(member.id || member._id)}
         className="p-1.5 sm:p-1 rounded text-gray-700 hover:bg-gray-100"
-        title="View member history"
+        title={t("branchLead.viewMemberHistory")}
       >
         <History className="w-5 h-5 sm:w-4 sm:h-4" />
       </button>
@@ -757,7 +758,7 @@ const BranchLeadDashboard: React.FC = () => {
             ) : (
               <div className="text-center py-4 text-gray-500">
                 <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm">No branch members</p>
+                <p className="text-sm">{t("branchLead.noBranchMembers")}</p>
               </div>
             )}
           </div>
@@ -766,7 +767,7 @@ const BranchLeadDashboard: React.FC = () => {
         {/* Pending Loan Requests */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Pending Loan Requests
+            {t("branchLead.pendingLoanRequests")}
           </h3>
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {allCardsLoading ? (
@@ -809,17 +810,17 @@ const BranchLeadDashboard: React.FC = () => {
                                 {member.firstName}
                               </p>
                               <p className="text-sm text-gray-500">
-                                €{loan.amount.toLocaleString()} requested
+                                €{loan.amount.toLocaleString()} {t("branchLead.requested")}
                               </p>
                             </div>
                           </div>
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                            Pending
+                            {t("branchLead.pending")}
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
                           <div>
-                            <span className="text-gray-600">Due:</span>
+                            <span className="text-gray-600">{t("branchLead.due")}:</span>
                             <span className="ml-1 font-medium">
                               {new Date(loan.dueDate).toLocaleDateString()}
                             </span>
@@ -835,7 +836,7 @@ const BranchLeadDashboard: React.FC = () => {
                                 : "hover:bg-red-50"
                             }`}
                           >
-                            Reject
+                            {t("branchLead.reject")}
                           </button>
                           <button
                             onClick={() => handleLoanAction(loan, "approve")}
@@ -868,10 +869,10 @@ const BranchLeadDashboard: React.FC = () => {
                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                   ></path>
                                 </svg>
-                                Processing...
+                                {t("branchLead.processing")}
                               </>
                             ) : (
-                              "Approve"
+                              t("branchLead.approve")
                             )}
                           </button>
                         </div>
@@ -883,7 +884,7 @@ const BranchLeadDashboard: React.FC = () => {
                   .length === 0 && (
                   <div className="text-center py-4 text-gray-500">
                     <CheckCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm">No pending loan requests</p>
+                    <p className="text-sm">{t("branchLead.noPendingLoanRequests")}</p>
                   </div>
                 )}
               </>
@@ -933,15 +934,14 @@ const BranchLeadDashboard: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Send approval email?
+              {t("branchLead.sendApprovalEmail")}
             </h3>
             <p className="text-sm text-gray-700 mb-4">
-              Do you want to send an approval notification email to the member now?
+              {t("branchLead.sendApprovalEmailDescription")}
             </p>
             <div className="flex space-x-2">
               <button
                 onClick={() => {
-                  // Close without sending email
                   setShowEmailChoice(false);
                   setApprovedLoanId(null);
                 }}
@@ -950,7 +950,7 @@ const BranchLeadDashboard: React.FC = () => {
                   isSendingEmail ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
                 }`}
               >
-                Cancel
+                {t("branchLead.cancel")}
               </button>
               <button
                 onClick={async () => {
@@ -974,7 +974,7 @@ const BranchLeadDashboard: React.FC = () => {
                   isSendingEmail ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700"
                 }`}
               >
-                {isSendingEmail ? "Sending..." : "Send email"}
+                {isSendingEmail ? t("branchLead.sending") : t("branchLead.sendEmail")}
               </button>
             </div>
           </div>

@@ -7,6 +7,7 @@ import {
   TrendingUp,
   PiggyBank,
 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 type MemberShare = {
   id: string;
@@ -76,6 +77,7 @@ const SharesTableSkeleton = () => (
 const ITEMS_PER_PAGE = 6;
 
 const GroupShares: React.FC = () => {
+  const { t } = useLanguage();
   const [globalStats, setGlobalStats] = useState<MemberShare[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,7 +155,7 @@ const GroupShares: React.FC = () => {
     return (
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-emerald-700 text-center drop-shadow">
-          Group Shares & Interest
+          {t("admin.groupSharesInterest")}
         </h2>
         <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
           <SharesTableSkeleton />
@@ -166,13 +168,13 @@ const GroupShares: React.FC = () => {
     return (
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-emerald-700 text-center drop-shadow">
-          Group Shares & Interest
+          {t("admin.groupSharesInterest")}
         </h2>
         <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
           <div className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mb-4" />
             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-              Failed to Load Data
+              {t("admin.failedToLoadData")}
             </h3>
             <p className="text-sm sm:text-base text-gray-600 mb-6 text-center max-w-md px-4">
               {error}
@@ -181,7 +183,7 @@ const GroupShares: React.FC = () => {
               onClick={fetchData}
               className="px-4 sm:px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm sm:text-base"
             >
-              Retry
+              {t("admin.retry")}
             </button>
           </div>
         </div>
@@ -193,12 +195,12 @@ const GroupShares: React.FC = () => {
     return (
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-emerald-700 text-center drop-shadow">
-          Group Shares & Interest
+          {t("admin.groupSharesInterest")}
         </h2>
         <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
           <div className="flex flex-col items-center justify-center py-12">
             <p className="text-gray-600 text-center text-sm sm:text-base">
-              No member shares data available yet.
+              {t("admin.noMembersSharesData")}
             </p>
           </div>
         </div>
@@ -223,14 +225,14 @@ const GroupShares: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
       <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-emerald-700 text-center drop-shadow">
-        Group Shares & Interest
+        {t("admin.groupSharesInterest")}
       </h2>
       <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
         {/* Stats Section - Responsive */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <p className="text-sm sm:text-base font-medium text-gray-700 mb-2">
-              Total Member Savings
+              {t("admin.totalMemberSavings")}
             </p>
             <div className="text-xl sm:text-2xl font-bold text-emerald-700">
               €{totalSavings.toLocaleString()}
@@ -238,7 +240,7 @@ const GroupShares: React.FC = () => {
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <p className="text-sm sm:text-base font-medium text-gray-700 mb-2">
-              Total Interest Distributed
+              {t("admin.totalInterestDistributed")}
             </p>
             <div className="text-xl sm:text-2xl font-bold text-emerald-700">
               €
@@ -251,7 +253,8 @@ const GroupShares: React.FC = () => {
 
         <div className="mt-6">
           <h4 className="text-lg sm:text-xl font-semibold mb-4 text-emerald-700">
-            Member Shares ({globalStats.length} members)
+            {t("admin.memberShares")} ({globalStats.length}{" "}
+            {t("admin.members")})
           </h4>
 
           {/* Mobile Card View */}
@@ -277,7 +280,7 @@ const GroupShares: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <p className="text-gray-600 mb-1">Shares</p>
+                    <p className="text-gray-600 mb-1">{t("admin.shares")}</p>
                     <p className="font-semibold text-gray-900">
                       €{member.totalContribution.toLocaleString()}
                     </p>
@@ -285,7 +288,7 @@ const GroupShares: React.FC = () => {
                   <div>
                     <p className="text-gray-600 mb-1 flex items-center gap-1">
                       <TrendingUp className="w-3 h-3" />
-                      Interest
+                      {t("admin.interest")}
                     </p>
                     <p className="font-bold text-emerald-700">
                       €
@@ -297,7 +300,7 @@ const GroupShares: React.FC = () => {
                   <div className="col-span-2">
                     <p className="text-gray-600 mb-1 flex items-center gap-1">
                       <PiggyBank className="w-3 h-3" />
-                      Future Interest
+                      {t("admin.futureInterest")}
                     </p>
                     <p className="font-bold text-emerald-700">
                       €
@@ -318,26 +321,26 @@ const GroupShares: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Name
+                    {t("admin.member")}
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Group
+                    {t("admin.branchMembers")}
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Shares
+                    {t("admin.shares")}
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Percent
+                    {t("admin.percent")}
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
                     <div className="flex items-center gap-1">
-                      Interest
+                      {t("admin.interest")}
                       <TrendingUp className="w-4 h-4 text-emerald-600" />
                     </div>
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
                     <div className="flex items-center gap-1">
-                      Future Interest
+                      {t("admin.futureInterest")}
                       <PiggyBank className="w-4 h-4 text-emerald-600" />
                     </div>
                   </th>
@@ -384,7 +387,7 @@ const GroupShares: React.FC = () => {
           {totalPages > 1 && (
             <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 mt-6">
               <span className="text-xs sm:text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
+                {t("admin.paginationPage")} {currentPage} {t("admin.paginationOf")} {totalPages}
               </span>
               <div className="flex space-x-2">
                 <button
@@ -393,14 +396,14 @@ const GroupShares: React.FC = () => {
                   className="flex items-center px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
-                  <span className="hidden sm:inline">Previous</span>
+                  <span className="hidden sm:inline">{t("admin.paginationPrevious")}</span>
                 </button>
                 <button
                   onClick={() => setCurrentPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
                   className="flex items-center px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  <span className="hidden sm:inline">Next</span>
+                  <span className="hidden sm:inline">{t("admin.paginationNext")}</span>
                   <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 sm:ml-1" />
                 </button>
               </div>

@@ -9,6 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { getGroupTheme } from "../../utils/calculations";
 import { addContribution } from "../../utils/api";
 
@@ -23,6 +24,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   canEdit,
   onClose,
 }) => {
+  const { t } = useLanguage();
   const { state, dispatch } = useApp();
   const { users, contributions } = state;
   const member = users.find((u) => u.id === memberId || u._id === memberId);
@@ -198,12 +200,12 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         <div className="p-6 space-y-6">
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Member Information
+              {t("memberDetails.memberInformation")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Group
+                  {t("memberDetails.group")}
                 </label>
                 <div className="flex items-center">
                   <div
@@ -216,7 +218,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Branch
+                  {t("memberDetails.branch")}
                 </label>
                 <span className="text-gray-900">{member.branch}</span>
               </div>
@@ -227,7 +229,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                Financial Information
+                {t("memberDetails.financialInformation")}
               </h3>
               {canEdit && !isEditing && state.currentUser?.role === "admin" && (
                 <button
@@ -242,7 +244,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                   className="inline-flex items-center px-3 py-1 text-sm bg-emerald-700 text-white rounded-lg hover:bg-emerald-200 hover:text-emerald-700 transition-colors"
                 >
                   <Edit className="w-4 h-4 mr-1" />
-                  Edit
+                  {t("memberDetails.edit")}
                 </button>
               )}
               {canEdit && !isEditing && (
@@ -251,7 +253,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                   className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg ml-2 hover:bg-emerald-200 hover:text-emerald-700 transition-colors"
                 >
                   <DollarSign className="w-4 h-4 mr-1" />
-                  Add Money
+                  {t("memberDetails.addMoney")}
                 </button>
               )}
               {isEditing && (
@@ -261,7 +263,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     disabled={isSavingEdit}
                     className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    {t("memberDetails.cancel")}
                   </button>
                   <button
                     onClick={handleSave}
@@ -271,12 +273,12 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     {isSavingEdit ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        Processing...
+                        {t("memberDetails.processing")}
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4 mr-1" />
-                        Save
+                        {t("memberDetails.save")}
                       </>
                     )}
                   </button>
@@ -287,10 +289,10 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                   <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Add Money
+                      {t("memberDetails.addMoneyModal")}
                     </h3>
                     <label className="text-sm font-medium text-gray-700">
-                      Amount
+                      {t("memberDetails.amount")}
                     </label>
                     <select
                       value={addAmount}
@@ -303,7 +305,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     </select>
 
                     <label className="text-sm font-medium text-gray-700">
-                      Date
+                      {t("memberDetails.date")}
                     </label>
                     <input
                       type="date"
@@ -318,7 +320,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     )}
                     {addDate && new Date(addDate).getDate() > 10 && (
                       <span className="text-yellow-700 text-xs block mb-2">
-                        Contribution after 10th: Penalty of €25 will be applied
+                        {t("memberDetails.penaltyWarning")}
                       </span>
                     )}
                     <div className="flex space-x-2 mt-2">
@@ -329,7 +331,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                         }}
                         className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors w-1/2"
                       >
-                        Cancel
+                        {t("memberDetails.cancel")}
                       </button>
                       <button
                         onClick={handleAddMoney}
@@ -345,10 +347,10 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                         {isSubmitting ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin text-white" />
-                            Adding...
+                            {t("memberDetails.processing")}
                           </>
                         ) : (
-                          "Confirm"
+                          t("memberDetails.confirm")
                         )}
                       </button>
                     </div>
@@ -360,7 +362,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Total Savings
+                  {t("memberDetails.totalSavings")}
                 </label>
                 {isEditing ? (
                   <div className="relative">
@@ -391,7 +393,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
           {/* Recent Contributions */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Recent Contributions
+              {t("memberDetails.recentContributions")}
             </h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {memberContributions.slice(0, 5).map((contribution, index) => (
@@ -419,7 +421,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                           : "bg-blue-100 text-blue-800"
                       }`}
                     >
-                      {contribution.type}
+                      {t(`memberDetails.${contribution.type}`)}
                     </span>
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
@@ -435,7 +437,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
               ))}
               {memberContributions.length === 0 && (
                 <p className="text-sm text-gray-500 text-center py-2">
-                  No contributions recorded
+                  {t("memberDetails.noContributions")}
                 </p>
               )}
             </div>

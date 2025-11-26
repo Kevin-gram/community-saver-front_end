@@ -1,5 +1,6 @@
 import React from "react";
 import { AppProvider, useApp } from "./context/AppContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import LoginForm from "./components/Auth/LoginForm";
 import Header from "./components/Layout/Header";
 import MemberDashboard from "./components/Member/MemberDashboard";
@@ -81,7 +82,9 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <AppProvider>
-      <AppContent />
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
     </AppProvider>
   );
 }

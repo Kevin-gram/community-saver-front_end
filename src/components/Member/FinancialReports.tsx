@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { FileDown, Loader2, Calendar, X, Sparkles } from "lucide-react";
 import { API_BASE } from "../../utils/api";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface Report {
   _id: string;
@@ -106,6 +107,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
   open,
   onClose,
 }) => {
+  const { t } = useLanguage();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -308,7 +310,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
           <div className="flex items-center">
             <FileDown className="w-6 h-6 text-emerald-600 mr-2" />
             <h2 className="text-xl font-bold text-gray-900">
-              Financial Reports
+              {t("financialReports.title")}
             </h2>
           </div>
           <button
@@ -322,14 +324,14 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
 
         <div className="p-6 flex-1 overflow-hidden flex flex-col">
           <p className="text-gray-600 mb-4 text-sm">
-            View and download published financial reports. Sorted by latest.
+            {t("financialReports.description")}
           </p>
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
               <span className="ml-2 text-emerald-700 font-medium">
-                Loading reports...
+                {t("financialReports.loading")}
               </span>
             </div>
           ) : error ? (
@@ -339,7 +341,9 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
           ) : reports.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileDown className="w-12 h-12 text-gray-300 mb-3" />
-              <p className="text-gray-500 text-sm">No reports available.</p>
+              <p className="text-gray-500 text-sm">
+                {t("financialReports.noReports")}
+              </p>
             </div>
           ) : (
             <div className="space-y-3 overflow-y-auto flex-1 pr-2">
@@ -359,7 +363,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
                     {isLatest && (
                       <div className="absolute -top-2 -right-2 bg-emerald-600 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center shadow-md">
                         <Sparkles className="w-3 h-3 mr-1" />
-                        Latest
+                        {t("financialReports.latest")}
                       </div>
                     )}
 
@@ -372,7 +376,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
                         </div>
                         {report.period && (
                           <div className="text-xs text-emerald-700 mb-1">
-                            Period: {report.period}
+                            {t("financialReports.period")}: {report.period}
                           </div>
                         )}
                         <div className="text-xs text-gray-600 flex items-center">
@@ -407,12 +411,12 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
                         {downloadingId === report._id ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Downloading...</span>
+                            <span>{t("financialReports.downloading")}</span>
                           </>
                         ) : (
                           <>
                             <FileDown className="w-4 h-4" />
-                            <span>Download</span>
+                            <span>{t("financialReports.download")}</span>
                           </>
                         )}
                       </button>
@@ -429,7 +433,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
             onClick={handleClose}
             className="w-full py-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
           >
-            Close
+            {t("contributionHistory.close")}
           </button>
         </div>
       </div>

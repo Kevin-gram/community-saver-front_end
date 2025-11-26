@@ -3,6 +3,7 @@ import { X, Calculator } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { Loan } from "../../types";
 import { addLoan, fetchNetContributions } from "../../utils/api";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface LoanRequestFormProps {
   onClose: () => void;
@@ -18,6 +19,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
   maxAmount,
   userSavings,
 }) => {
+  const { t } = useLanguage();
   const { state, dispatch } = useApp();
   const { users, loans, currentUser } = state;
 
@@ -114,7 +116,9 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Request Loan</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {t("loanRequestForm.title")}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -129,11 +133,11 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               htmlFor="amount"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Loan Amount
+              {t("loanRequestForm.loanAmount")}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                $
+                €
               </span>
               <input
                 id="amount"
@@ -148,21 +152,21 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Maximum loanable: ${maxLoanable.toLocaleString()} (3x your
-              savings)
+              {t("loanRequestForm.maximumLoanable")}: €
+              {maxLoanable.toLocaleString()}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Gross contributions: €
+              {t("loanRequestForm.grossContributions")}: €
               {(grossContribution ?? totalSavings).toLocaleString()}
             </p>
             {loanAmount > maxLoanable && (
               <p className="text-xs text-red-500 mt-1">
-                Loan amount exceeds your maximum loanable limit.
+                {t("loanRequestForm.exceedsLimit")}
               </p>
             )}
             {loanAmount > maxLoanable && (
               <p className="text-xs text-red-500 mt-1">
-                Loan amount exceeds 3 times your savings balance.
+                {t("loanRequestForm.exceedsSavings")}
               </p>
             )}
           </div>
@@ -171,7 +175,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               htmlFor="repaymentPeriod"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Repayment Period (in months)
+              {t("loanRequestForm.repaymentPeriod")}
             </label>
             <input
               id="repaymentPeriod"
@@ -185,7 +189,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Default is 6 months. Maximum is 24 months.
+              {t("loanRequestForm.defaultSixMonths")}
             </p>
           </div>
 
@@ -194,30 +198,34 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               <div className="flex items-center mb-3">
                 <Calculator className="w-5 h-5 text-emerald-600 mr-2" />
                 <h3 className="font-medium text-emerald-900">
-                  Loan Calculation
+                  {t("loanRequestForm.loanCalculation")}
                 </h3>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Principal Amount:</span>
+                  <span className="text-gray-600">
+                    {t("loanRequestForm.principalAmount")}
+                  </span>
                   <span className="font-medium">
-                    ${loanAmount.toLocaleString()}
+                    €{loanAmount.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">
-                    Interest (1.25% per month x {repaymentPeriod} months):
+                    {t("loanRequestForm.interest")} (1.25%{" "}
+                    {t("loanRequestForm.perMonth")} x {repaymentPeriod}{" "}
+                    {t("member.months")}):
                   </span>
                   <span className="font-medium">
-                    ${interestAmount.toLocaleString()}
+                    €{interestAmount.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between border-t border-emerald-200 pt-2">
                   <span className="font-medium text-gray-900">
-                    Total Repayment:
+                    {t("loanRequestForm.totalRepayment")}:
                   </span>
                   <span className="font-bold text-emerald-900">
-                    ${repaymentAmount.toLocaleString()}
+                    €{repaymentAmount.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -230,7 +238,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              {t("loanRequestForm.cancel")}
             </button>
             <button
               type="submit"
@@ -243,7 +251,9 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               }
               className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isSubmitting ? "Submitting..." : "Submit Request"}
+              {isSubmitting
+                ? t("loanRequestForm.submitting")
+                : t("loanRequestForm.submitRequest")}
             </button>
           </div>
         </form>

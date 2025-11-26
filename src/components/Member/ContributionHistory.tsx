@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 type Contribution = any;
 
@@ -40,25 +41,31 @@ const ContributionHistory: React.FC<Props> = ({
   contributions,
   contributionsLoading,
 }) => {
+  const { t } = useLanguage();
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black bg-opacity-40">
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            Contribution History
+            {t("contributionHistory.title")}
           </h3>
           <button
             onClick={onClose}
             className="text-sm text-gray-600 hover:text-gray-900"
           >
-            Close
+            {t("contributionHistory.close")}
           </button>
         </div>
 
         {contributionsLoading ? (
-          <div className="text-sm text-gray-600">Loading contributions...</div>
+          <div className="text-sm text-gray-600">
+            {t("contributionHistory.loading")}
+          </div>
         ) : !contributions || contributions.length === 0 ? (
-          <div className="text-sm text-gray-600">No contributions found.</div>
+          <div className="text-sm text-gray-600">
+            {t("contributionHistory.noContributions")}
+          </div>
         ) : (
           <div className="divide-y divide-gray-100">
             {contributions.map((c, idx) => (
