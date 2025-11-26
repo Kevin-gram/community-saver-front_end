@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
-  DollarSign,
   TrendingUp,
   AlertTriangle,
   Clock,
@@ -11,6 +10,7 @@ import {
   Layers,
   BarChart,
   FileDown,
+  Euro,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { calculateMaxLoanAmount } from "../../utils/calculations";
@@ -167,7 +167,7 @@ const MemberDashboard: React.FC = () => {
       id: "total-savings",
       title: "Total Savings",
       value: `€${currentSavings.toLocaleString()}`,
-      icon: DollarSign,
+      icon: Euro,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },

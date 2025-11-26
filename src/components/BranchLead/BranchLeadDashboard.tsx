@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Users,
-  DollarSign,
   TrendingUp,
   CheckCircle,
   AlertCircle,
@@ -14,6 +13,7 @@ import {
   PiggyBank,
   BarChart,
   FileDown,
+  Euro,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import {
@@ -198,7 +198,7 @@ const BranchLeadDashboard: React.FC = () => {
     {
       title: "Total Branch Savings",
       value: `€${totalBranchSavings.toLocaleString()}`,
-      icon: DollarSign,
+      icon: Euro,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
@@ -242,7 +242,7 @@ const BranchLeadDashboard: React.FC = () => {
       value: `€${(
         displayData?.totalContribution || userSavings
       ).toLocaleString()}`,
-      icon: DollarSign,
+      icon: Euro,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
@@ -804,7 +804,7 @@ const BranchLeadDashboard: React.FC = () => {
                             <div
                               className={`w-8 h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-100`}
                             >
-                              <DollarSign className="w-4 h-4 text-emerald-700 " />
+                              <Euro className="w-4 h-4 text-emerald-700 " />
                             </div>
                             <div>
                               <p className="font-medium text-gray-900">

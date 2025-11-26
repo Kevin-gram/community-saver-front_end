@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   Users,
-  DollarSign,
+  Euro,
   TrendingUp,
   AlertCircle,
   CheckCircle,
@@ -19,11 +19,19 @@ import Penalties from "./Penalties";
 import { fetchNetContributions, fetchUsers, fetchLoans } from "../../utils/api";
 import RegistrationApproval from "./RegistrationApproval";
 import PDFReportGenerator from "./PDFReportGenerator";
-
-// Constants
-const POLLING_INTERVAL = 10000; // 10 seconds
-const MAX_RECENT_LOANS = 5;
-const BRANCHES = ["blue", "yellow", "red", "purple"] as const;
+import {
+  POLLING_INTERVAL,
+  MAX_RECENT_LOANS,
+  BRANCHES,
+  getBranchColorClass,
+  fetchTotalMembers,
+  fetchNetData,
+  getOverviewLoans,
+  getOverviewUsers,
+  getStats,
+  tabs,
+  getValidLoans,
+} from "../../utils/adminDashboardLogic";
 
 const AdminDashboard: React.FC = () => {
   const { state } = useApp();
@@ -51,35 +59,15 @@ const AdminDashboard: React.FC = () => {
   // Memoized calculations - THESE DON'T NEED API CALLS, THEY USE CONTEXT DATA
   const pendingLoans = loans.filter((loan) => loan.status === "pending").length;
   
-  // Fetch total members (members + branch_leads, status: approved)
-  const fetchTotalMembers = async (showLoader = false) => {
-    try {
-      if (showLoader) setTotalMembersLoading(true);
-      const fetchedUsers = await fetchUsers();
-      const members = Array.isArray(fetchedUsers)
-        ? fetchedUsers.filter(
-            (u: any) =>
-              (u.role === "member" || u.role === "branch_lead") &&
-              u.status === "approved"
-          )
-        : [];
-      setTotalMembers(members.length);
-    } catch (e) {
-      setTotalMembers(0);
-    } finally {
-      if (showLoader) setTotalMembersLoading(false);
-    }
-  };
-
   // Initial load (show skeletons)
   useEffect(() => {
-    fetchTotalMembers(true);
+    fetchTotalMembers(true, setTotalMembers, setTotalMembersLoading);
   }, []);
 
   // Polling for total members (no skeletons, just update)
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchTotalMembers(false);
+      fetchTotalMembers(false, setTotalMembers, setTotalMembersLoading);
     }, POLLING_INTERVAL);
     return () => clearInterval(interval);
   }, []);
@@ -87,21 +75,7 @@ const AdminDashboard: React.FC = () => {
   // NEW: Fetch loans directly for Overview section
   useEffect(() => {
     let mounted = true;
-    const getOverviewLoans = async () => {
-      try {
-        setOverviewLoansLoading(true);
-        const fetchedLoans = await fetchLoans();
-        if (mounted && Array.isArray(fetchedLoans)) {
-          setOverviewLoans(fetchedLoans);
-        }
-      } catch (e) {
-        console.error("Failed to fetch overview loans:", e);
-        if (mounted) setOverviewLoans([]);
-      } finally {
-        if (mounted) setOverviewLoansLoading(false);
-      }
-    };
-    getOverviewLoans();
+    getOverviewLoans(setOverviewLoans, setOverviewLoansLoading, mounted);
     return () => {
       mounted = false;
     };
@@ -110,54 +84,15 @@ const AdminDashboard: React.FC = () => {
   // NEW: Fetch users directly for Overview section (Branch Distribution)
   useEffect(() => {
     let mounted = true;
-    const getOverviewUsers = async () => {
-      try {
-        setOverviewUsersLoading(true);
-        const fetchedUsers = await fetchUsers();
-        if (mounted && Array.isArray(fetchedUsers)) {
-          setOverviewUsers(fetchedUsers);
-        }
-      } catch (e) {
-        console.error("Failed to fetch overview users:", e);
-        if (mounted) setOverviewUsers([]);
-      } finally {
-        if (mounted) setOverviewUsersLoading(false);
-      }
-    };
-    getOverviewUsers();
+    getOverviewUsers(setOverviewUsers, setOverviewUsersLoading, mounted);
     return () => {
       mounted = false;
     };
   }, []);
 
   // Fetch net contributions with error handling
-  const fetchNetData = useCallback(async (showLoader = false) => {
-    try {
-      if (showLoader) {
-        setNetContributionsLoading(true);
-      }
-      
-      const net = await fetchNetContributions();
-      
-      // Only update state if component is still mounted
-      if (isMountedRef.current) {
-        setNetContributions(net);
-        // keep any UI error state untouched (don't show retry banner)
-      }
-    } catch (err) {
-      console.error("Failed to fetch net contributions:", err);
-      
-      if (isMountedRef.current) {
-        // Do not surface a retry banner to the user. Optionally clear loader-only state.
-        if (showLoader) {
-          setNetContributions(null);
-        }
-      }
-    } finally {
-      if (isMountedRef.current && showLoader) {
-        setNetContributionsLoading(false);
-      }
-    }
+  const fetchNetDataCallback = useCallback(async (showLoader = false) => {
+    await fetchNetData(showLoader, setNetContributionsLoading, setNetContributions, isMountedRef);
   }, []);
 
   // Setup polling effect
@@ -165,7 +100,7 @@ const AdminDashboard: React.FC = () => {
     isMountedRef.current = true;
 
     // Initial fetch with loading spinner
-    fetchNetData(true);
+    fetchNetDataCallback(true);
 
     // Setup polling interval for background updates - only if tab is visible
     const handleVisibilityChange = () => {
@@ -174,7 +109,7 @@ const AdminDashboard: React.FC = () => {
         pollingIntervalRef.current = null;
       } else if (!document.hidden && !pollingIntervalRef.current) {
         pollingIntervalRef.current = setInterval(() => {
-          fetchNetData(false);
+          fetchNetDataCallback(false);
         }, POLLING_INTERVAL);
       }
     };
@@ -183,7 +118,7 @@ const AdminDashboard: React.FC = () => {
     
     if (!document.hidden) {
       pollingIntervalRef.current = setInterval(() => {
-        fetchNetData(false);
+        fetchNetDataCallback(false);
       }, POLLING_INTERVAL);
     }
 
@@ -195,90 +130,16 @@ const AdminDashboard: React.FC = () => {
         pollingIntervalRef.current = null;
       }
     };
-  }, [fetchNetData]);
+  }, [fetchNetDataCallback]);
 
   // COMBINED LOADING STATE: All financial cards wait for all data to finish loading
   const financialDataLoading = netContributionsLoading || totalMembersLoading;
 
   // Stats configuration - EACH STAT NOW HAS ITS OWN LOADING STATE
-  const stats = [
-    {
-      title: "Total Members",
-      value: totalMembers.toString(),
-      icon: Users,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
-      loading: financialDataLoading, // FIXED: Now waits for both to complete
-    },
-    {
-      title: "Available Balance",
-      value: netContributions
-        ? `€${netContributions.netAvailable.toLocaleString()}`
-        : "-",
-      icon: DollarSign,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
-      loading: financialDataLoading,
-    },
-    {
-      title: "Future Balance",
-      value: netContributions
-        ? `€${netContributions.bestFutureBalance.toLocaleString()}`
-        : "-",
-      icon: TrendingUp,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
-      loading: financialDataLoading,
-    },
-    {
-      title: "Pending Loans",
-      value: pendingLoans.toString(),
-      icon: AlertCircle,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
-      loading: financialDataLoading,
-    },
-    {
-      title: "Total Penalties Collected",
-      value: netContributions
-        ? `€${netContributions.totalPaidPenalties.toLocaleString()}`
-        : "-",
-      icon: AlertCircle,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
-      loading: netContributionsLoading,
-    },
-  ];
-
-  // Tabs configuration
-  const tabs = [
-    { id: "overview", label: "Overview", icon: TrendingUp },
-    { id: "users", label: "User Management", icon: Users },
-    { id: "loans", label: "Loan Approval", icon: CheckCircle },
-    { id: "groupshares", label: "Group Shares & Interest", icon: DollarSign },
-    { id: "penalties", label: "Penalties", icon: AlertCircle },
-    { id: "registrations", label: "Registration Approval", icon: UserCheck },
-  ];
-
-  // Get branch color classes
-  const getBranchColorClass = (branch: string): string => {
-    const colorMap: Record<string, string> = {
-      blue: "bg-blue-500",
-      yellow: "bg-yellow-500",
-      red: "bg-red-500",
-      purple: "bg-purple-500",
-    };
-    return colorMap[branch] || "bg-gray-500";
-  };
+  const stats = getStats(totalMembers, netContributions, pendingLoans, financialDataLoading, netContributionsLoading);
 
   // Filter out loans with invalid members or null values - NOW USING DIRECT FETCH
-  const validLoans = overviewLoans.filter(loan => {
-    return loan.member && 
-           loan.member._id && 
-           loan.amount && 
-           loan.status &&
-           overviewUsers.some(user => user._id === loan.member?._id);
-  });
+  const validLoans = getValidLoans(overviewLoans, overviewUsers);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -324,7 +185,10 @@ const AdminDashboard: React.FC = () => {
                 )}
               </div>
               <div className={`${stat.bg} rounded-lg p-3`}>
-                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                {stat.icon === "Users" && <Users className={`w-6 h-6 ${stat.color}`} />}
+                {stat.icon === "DollarSign" && <Euro className={`w-6 h-6 ${stat.color}`} />}
+                {stat.icon === "TrendingUp" && <TrendingUp className={`w-6 h-6 ${stat.color}`} />}
+                {stat.icon === "AlertCircle" && <AlertCircle className={`w-6 h-6 ${stat.color}`} />}
               </div>
             </div>
           </div>
@@ -345,7 +209,12 @@ const AdminDashboard: React.FC = () => {
               }`}
               aria-current={activeTab === tab.id ? "page" : undefined}
             >
-              <tab.icon className="w-5 h-5 mr-2" />
+              {tab.icon === "TrendingUp" && <TrendingUp className="w-5 h-5 mr-2" />}
+              {tab.icon === "Users" && <Users className="w-5 h-5 mr-2" />}
+              {tab.icon === "CheckCircle" && <CheckCircle className="w-5 h-5 mr-2" />}
+              {tab.icon === "DollarSign" && <Euro className="w-5 h-5 mr-2" />}
+              {tab.icon === "AlertCircle" && <AlertCircle className="w-5 h-5 mr-2" />}
+              {tab.icon === "UserCheck" && <UserCheck className="w-5 h-5 mr-2" />}
               {tab.label}
             </button>
           ))}

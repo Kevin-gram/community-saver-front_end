@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, User as UserIcon, Eye, EyeOff } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { User } from "../../types";
-import { addUser, updateUser, addLoan, updateLoan } from "../../utils/api";
+import { isStrongPassword, validateForm, handleSubmit, handleInputChange } from "../../utils/userFormLogic";
 
 interface UserFormProps {
   user?: User | null;
@@ -43,11 +43,6 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordMatchError, setPasswordMatchError] = useState("");
   const [passwordStrengthError, setPasswordStrengthError] = useState("");
-
-  // Password strength validation function
-  const isStrongPassword = (pwd: string) => {
-    return /[A-Z]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd) && pwd.length >= 9;
-  };
 
   useEffect(() => {
     if (user) {
@@ -103,161 +98,6 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
     }
   }, [formData.password, user]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
-    }
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
-    }
-
-    // Only require password if creating a new user
-    if (!user) {
-      if (!formData.password.trim()) {
-        newErrors.password = "Password is required";
-      } else if (!isStrongPassword(formData.password)) {
-        newErrors.password =
-          "Password must be at least 9 characters, include one uppercase letter and one special character.";
-      }
-      if (formData.password !== confirmPassword) {
-        newErrors.password = "Passwords do not match";
-      }
-    }
-
-    if (formData.totalSavings < 0) {
-      newErrors.totalSavings = "Savings cannot be negative";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
-    setIsSubmitting(true);
-
-    // Prepare loan data only if amount > 0
-    let activeLoan = undefined;
-    if (formData.loan.amount > 0) {
-      const repaymentAmount =
-        formData.loan.amount * (1 + formData.loan.months * 0.0125);
-      activeLoan = {
-        id: user?.activeLoan?.id || `loan-${Date.now()}`,
-        requestDate: user?.activeLoan?.requestDate || new Date(),
-        amount: formData.loan.amount,
-        status: formData.loan.status,
-        repaymentAmount,
-        paidAmount: formData.loan.paidAmount,
-        dueDate: formData.loan.dueDate
-          ? new Date(formData.loan.dueDate)
-          : new Date(),
-        memberId: user?.id || `user-${Date.now()}`,
-        approvedDate: user?.activeLoan?.approvedDate,
-        approvedBy: user?.activeLoan?.approvedBy,
-        duration: formData.loan.months,
-      };
-    }
-
-    // Calculate penalties and deduct from savings
-    const penalties = formData.penalties || 0;
-    const totalSavings = formData.totalSavings;
-
-    // Get latest interestReceived from context/state
-    let latestInterestReceived = 0;
-    if (user?.id) {
-      const latestUser = state.users.find((u) => u.id === user.id);
-      latestInterestReceived = latestUser?.interestReceived || 0;
-    }
-    // Only send branch to backend, not group
-    const userData: User = {
-      id: user?.id || `user-${Date.now()}`,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      branch: formData.branch,
-      contributionDate: formData.contributionDate,
-      totalContributions: totalSavings,
-      contributions: user?.contributions || [],
-      penalties,
-      interestReceived: latestInterestReceived,
-      activeLoan,
-    };
-
-    try {
-      if (user) {
-        const backendUser = await updateUser(userData);
-        if (backendUser) {
-          // Map branch to group for frontend
-          const userWithGroup = { ...backendUser, group: backendUser.branch };
-          dispatch({ type: "UPDATE_USER", payload: userWithGroup });
-        }
-        if (activeLoan) {
-          const backendLoan = await updateLoan(activeLoan);
-          dispatch({ type: "UPDATE_LOAN", payload: backendLoan });
-        }
-      } else {
-        const backendUser = await addUser(userData);
-        if (backendUser) {
-          // Map branch to group for frontend
-          const userWithGroup = { ...backendUser, group: backendUser.branch };
-          dispatch({ type: "ADD_USER", payload: userWithGroup });
-        }
-        if (activeLoan) {
-          const backendLoan = await addLoan(activeLoan);
-          dispatch({ type: "ADD_LOAN", payload: backendLoan });
-        }
-      }
-    } catch (error) {
-      console.error("Failed to update/add user/loan in backend", error);
-    }
-
-    setIsSubmitting(false);
-    onClose();
-  };
-
-  const handleInputChange = (field: string, value: any) => {
-    if (field.startsWith("loan.")) {
-      const loanField = field.split(".")[1];
-      setFormData((prev) => ({
-        ...prev,
-        loan: {
-          ...prev.loan,
-          [loanField]: value,
-        },
-      }));
-      if (errors[field]) {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
-      }
-    } else if (field === "group") {
-      setFormData((prev) => ({
-        ...prev,
-        group: value,
-        branch: value, // keep branch in sync
-      }));
-      if (errors[field]) {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
-      }
-    } else {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      if (errors[field]) {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
-      }
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -278,7 +118,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={(e) => handleSubmit(e, formData, user, confirmPassword, state, dispatch, setIsSubmitting, onClose)} className="p-6 space-y-6">
           <div className="grid grid-cols-1 gap-4">
             <div>
               <div className="grid grid-cols-2 gap-4">
@@ -290,7 +130,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                     type="text"
                     value={formData.firstName}
                     onChange={(e) =>
-                      handleInputChange("firstName", e.target.value)
+                      handleInputChange("firstName", e.target.value, setFormData, errors, setErrors)
                     }
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                       errors.firstName
@@ -313,7 +153,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                     type="text"
                     value={formData.lastName}
                     onChange={(e) =>
-                      handleInputChange("lastName", e.target.value)
+                      handleInputChange("lastName", e.target.value, setFormData, errors, setErrors)
                     }
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                       errors.lastName
@@ -338,7 +178,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
+                onChange={(e) => handleInputChange("email", e.target.value, setFormData, errors, setErrors)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                   errors.email
                     ? "border-red-300 focus:border-red-500"
@@ -362,7 +202,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
                       onChange={(e) =>
-                        handleInputChange("password", e.target.value)
+                        handleInputChange("password", e.target.value, setFormData, errors, setErrors)
                       }
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                         errors.password
@@ -436,7 +276,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                 </label>
                 <select
                   value={formData.role}
-                  onChange={(e) => handleInputChange("role", e.target.value)}
+                  onChange={(e) => handleInputChange("role", e.target.value, setFormData, errors, setErrors)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="member">Member</option>
@@ -451,7 +291,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                 </label>
                 <select
                   value={formData.group}
-                  onChange={(e) => handleInputChange("group", e.target.value)}
+                  onChange={(e) => handleInputChange("group", e.target.value, setFormData, errors, setErrors)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="blue">Blue</option>
@@ -462,59 +302,6 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
               </div>
             </div>
 
-            {/* <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Total Savings
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                  $
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.totalSavings}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "totalSavings",
-                      parseFloat(e.target.value) || 0
-                    )
-                  }
-                  className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    errors.totalSavings
-                      ? "border-red-300 focus:border-red-500"
-                      : "border-gray-300 focus:border-emerald-500"
-                  }`}
-                  placeholder="0"
-                  disabled={
-                    formData.role === "admin" || formData.role === "branch_lead"
-                  }
-                />
-              </div>
-              {errors.totalSavings && (
-                <p className="text-xs text-red-600 mt-1">
-                  {errors.totalSavings}
-                </p>
-              )}
-            </div> */}
-
-            {/* <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contribution Date
-              </label>
-              <input
-                type="date"
-                value={formData.contributionDate || ""}
-                onChange={(e) =>
-                  handleInputChange("contributionDate", e.target.value)
-                }
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 border-gray-300 focus:border-emerald-500"
-                required
-                disabled={
-                  formData.role === "admin" || formData.role === "branch_lead"
-                }
-              />
-            </div> */}
           </div>
 
           {user?.role === "member" &&
@@ -534,7 +321,10 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                       onChange={(e) =>
                         handleInputChange(
                           "loan.amount",
-                          parseFloat(e.target.value) || 0
+                          parseFloat(e.target.value) || 0,
+                          setFormData,
+                          errors,
+                          setErrors
                         )
                       }
                       className="w-full px-3 py-2 border rounded-lg"
@@ -552,7 +342,10 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                       onChange={(e) =>
                         handleInputChange(
                           "loan.months",
-                          Math.max(1, parseInt(e.target.value) || 1)
+                          Math.max(1, parseInt(e.target.value) || 1),
+                          setFormData,
+                          errors,
+                          setErrors
                         )
                       }
                       className="w-full px-3 py-2 border rounded-lg"
@@ -566,7 +359,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                     <select
                       value={formData.loan.status}
                       onChange={(e) =>
-                        handleInputChange("loan.status", e.target.value)
+                        handleInputChange("loan.status", e.target.value, setFormData, errors, setErrors)
                       }
                       className="w-full px-3 py-2 border rounded-lg"
                     >
@@ -588,7 +381,10 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                       onChange={(e) =>
                         handleInputChange(
                           "loan.paidAmount",
-                          parseFloat(e.target.value) || 0
+                          parseFloat(e.target.value) || 0,
+                          setFormData,
+                          errors,
+                          setErrors
                         )
                       }
                       className="w-full px-3 py-2 border rounded-lg"
