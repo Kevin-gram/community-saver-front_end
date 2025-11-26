@@ -477,9 +477,7 @@ const BranchLeadDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Branch Lead Dashboard
           </h1>
-          <p className="text-gray-600">
-            Managing {currentUser.branch} - {branchMembers.length} members
-          </p>
+
         </div>
         <div className="flex items-center space-x-3">
           <button
