@@ -7,20 +7,18 @@ import {
   fetchPenalties,
   fetchNetContributions,
 } from "../../utils/api";
-import { ReportData, ReportPeriod } from "../../utils/reports/reportTypes";
-import { getPeriods } from "../../utils/reports/reportUtils";
+import { ReportData, ReportPeriod, PeriodOption } from "../../utils/reports/reportTypes";
+import { periods } from "../../utils/reports/reportUtils";
 import {
   handleGeneratePDF,
   handlePublishPDF,
   handleSendPDF,
 } from "../../utils/reports/reportHandlers";
-import { useLanguage } from "../../context/LanguageContext";
 
 const FinancialReport: React.FC<{
   loading?: boolean;
   setLoading?: (v: boolean) => void;
 }> = ({ loading: externalLoading, setLoading: setExternalLoading }) => {
-  const { t } = useLanguage();
   const [data, setData] = useState<ReportData | null>(null);
   const [internalLoading, setInternalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,8 +79,6 @@ const FinancialReport: React.FC<{
     fetchData();
   }, []);
 
-  const periodOptions = getPeriods(t);
-
   if (error) return <p className="text-red-500">{error}</p>;
   if (!data) {
     return (
@@ -91,7 +87,7 @@ const FinancialReport: React.FC<{
         className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-400 text-white cursor-not-allowed"
       >
         <FileDown className="w-4 h-4" />
-        <span className="text-sm font-medium">{t("admin.report")}</span>
+        <span className="text-sm font-medium">Report</span>
       </button>
     );
   }
@@ -116,7 +112,7 @@ const FinancialReport: React.FC<{
         }`}
       >
         <FileDown className="w-4 h-4" />
-        <span className="text-sm font-medium">{t("admin.report")}</span>
+        <span className="text-sm font-medium">Report</span>
       </button>
 
       {isExpanded && (
@@ -139,10 +135,10 @@ const FinancialReport: React.FC<{
             <div className="space-y-4 mb-6">
               <label className="text-sm font-semibold text-gray-700 flex items-center">
                 <Calendar className="w-4 h-4 mr-2" />
-                {t("admin.reportPeriod")}
+                Report Period
               </label>
               <div className="grid grid-cols-1 gap-2">
-                {periodOptions.map((period) => (
+                {periods.map((period) => (
                   <button
                     key={period.value}
                     onClick={() => setSelectedPeriod(period.value)}
@@ -196,12 +192,12 @@ const FinancialReport: React.FC<{
                 {loadingButton === "download" ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">{t("admin.generatingReport")}</span>
+                    <span className="text-sm">Generating...</span>
                   </>
                 ) : (
                   <>
                     <FileDown className="w-4 h-4" />
-                    <span className="text-sm">{t("admin.downloadReport")}</span>
+                    <span className="text-sm">Download Report</span>
                   </>
                 )}
               </button>
@@ -221,17 +217,17 @@ const FinancialReport: React.FC<{
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
                 } text-white`}
-                title={t("admin.publishReport")}
+                title="Publish report to server"
               >
                 {loadingButton === "publish" ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">{t("admin.publishing")}</span>
+                    <span className="text-sm">Publishing...</span>
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4" />
-                    <span className="text-sm">{t("admin.publishReport")}</span>
+                    <span className="text-sm">Publish Report</span>
                   </>
                 )}
               </button>
@@ -251,17 +247,17 @@ const FinancialReport: React.FC<{
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
                 } text-white`}
-                title={t("admin.sendViaEmail")}
+                title="Send report to all users via email"
               >
                 {loadingButton === "send" ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">{t("admin.sending")}</span>
+                    <span className="text-sm">Sending...</span>
                   </>
                 ) : (
                   <>
                     <Mail className="w-4 h-4" />
-                    <span className="text-sm">{t("admin.sendViaEmail")}</span>
+                    <span className="text-sm">Send via Email</span>
                   </>
                 )}
               </button>

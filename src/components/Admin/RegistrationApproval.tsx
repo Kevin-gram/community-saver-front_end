@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { fetchUsers, updateUser } from "../../utils/api";
 import { User } from "../../types";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 const RegistrationSkeleton = () => (
   <div className="space-y-4">
@@ -25,6 +26,7 @@ const RegistrationSkeleton = () => (
 const ITEMS_PER_PAGE = 6;
 
 const RegistrationApproval: React.FC = () => {
+  const { t } = useLanguage();
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [approvedUsers, setApprovedUsers] = useState<User[]>([]);
   const [rejectedUsers, setRejectedUsers] = useState<User[]>([]);
@@ -131,13 +133,13 @@ const RegistrationApproval: React.FC = () => {
   let tabTitle = "";
   if (activeTab === "pending") {
     usersToShow = pendingUsers;
-    tabTitle = "Pending User Registrations";
+    tabTitle = t("admin.pendingUserRegistrations");
   } else if (activeTab === "approved") {
     usersToShow = approvedUsers;
-    tabTitle = "Approved Users";
+    tabTitle = t("admin.approvedUsers");
   } else {
     usersToShow = rejectedUsers;
-    tabTitle = "Rejected Users";
+    tabTitle = t("admin.rejectedUsers");
   }
 
   // Pagination calculations
@@ -162,7 +164,7 @@ const RegistrationApproval: React.FC = () => {
             }`}
             onClick={() => setActiveTab("pending")}
           >
-            Pending
+            {t("admin.pending")}
           </button>
           <button
             className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex-1 sm:flex-none ${
@@ -172,7 +174,7 @@ const RegistrationApproval: React.FC = () => {
             }`}
             onClick={() => setActiveTab("approved")}
           >
-            Approved
+            {t("admin.approved")}
           </button>
           <button
             className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex-1 sm:flex-none ${
@@ -182,7 +184,7 @@ const RegistrationApproval: React.FC = () => {
             }`}
             onClick={() => setActiveTab("rejected")}
           >
-            Rejected
+            {t("admin.rejected")}
           </button>
         </div>
       </div>
@@ -192,10 +194,10 @@ const RegistrationApproval: React.FC = () => {
       ) : usersToShow.length === 0 ? (
         <p className="text-gray-500">
           {activeTab === "pending"
-            ? "No users pending approval."
+            ? t("admin.noPendingApprovals")
             : activeTab === "approved"
-            ? "No approved users."
-            : "No rejected users."}
+            ? t("admin.noApprovedUsers")
+            : t("admin.noRejectedUsers")}
         </p>
       ) : (
         <>
@@ -228,11 +230,13 @@ const RegistrationApproval: React.FC = () => {
                       processing.action === "approve" ? (
                         <>
                           <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
-                          <span className="hidden sm:inline">Approving...</span>
+                          <span className="hidden sm:inline">
+                            {t("admin.approving")}
+                          </span>
                           <span className="sm:hidden">...</span>
                         </>
                       ) : (
-                        "Approve"
+                        t("admin.approve")
                       )}
                     </button>
                     <button
@@ -244,11 +248,13 @@ const RegistrationApproval: React.FC = () => {
                       processing.action === "reject" ? (
                         <>
                           <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
-                          <span className="hidden sm:inline">Rejecting...</span>
+                          <span className="hidden sm:inline">
+                            {t("admin.rejecting")}
+                          </span>
                           <span className="sm:hidden">...</span>
                         </>
                       ) : (
-                        "Reject"
+                        t("admin.reject")
                       )}
                     </button>
                   </div>
@@ -261,7 +267,8 @@ const RegistrationApproval: React.FC = () => {
           {totalPages > 1 && (
             <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-4 mt-4 sm:mt-6">
               <span className="text-xs sm:text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
+                {t("admin.paginationPage")} {currentPage}{" "}
+                {t("admin.paginationOf")} {totalPages}
               </span>
               <div className="flex space-x-2">
                 <button
@@ -272,7 +279,9 @@ const RegistrationApproval: React.FC = () => {
                   className="flex items-center px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
-                  <span className="hidden sm:inline">Previous</span>
+                  <span className="hidden sm:inline">
+                    {t("admin.paginationPrevious")}
+                  </span>
                 </button>
                 <button
                   onClick={() =>
@@ -281,7 +290,9 @@ const RegistrationApproval: React.FC = () => {
                   disabled={currentPage === totalPages}
                   className="flex items-center px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  <span className="hidden sm:inline">Next</span>
+                  <span className="hidden sm:inline">
+                    {t("admin.paginationNext")}
+                  </span>
                   <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 sm:ml-1" />
                 </button>
               </div>
