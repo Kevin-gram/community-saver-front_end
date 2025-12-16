@@ -91,7 +91,7 @@ const LoginForm: React.FC = () => {
           <div className="bg-gradient-to-br from-gold-300 to-gold-600 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 shadow-lg">
             <Crown className="w-8 h-8 text-gold-900" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-700">Welcome Back</h2>
+          <h2 className="text-3xl font-bold text-gray-700">Sign In</h2>
           <p className="mt-2 text-gray-600">Sign in to your financial portal</p>
         </div>
 
