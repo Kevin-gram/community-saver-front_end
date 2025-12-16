@@ -238,6 +238,7 @@ export const en = {
   },
   memberDetails: {
     title: "Member Details",
+    cancel: "Cancel",
     memberInformation: "Member Information",
     group: "Group",
     branch: "Branch",

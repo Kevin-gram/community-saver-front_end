@@ -234,6 +234,7 @@ export const de = {
   },
   memberDetails: {
     title: "Mitgliederdetails",
+    cancel: "Abbrechen",
     memberInformation: "Mitgliedsinformationen",
     group: "Gruppe",
     branch: "Filiale",

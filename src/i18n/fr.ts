@@ -212,6 +212,7 @@ export const fr = {
     memberInformation: "Informations du Membre",
     group: "Groupe",
     branch: "Branche",
+    cancel: "Annuler",
     financialInformation: "Informations Financières",
     edit: "Modifier",
     addMoney: "Ajouter de l'Argent",
