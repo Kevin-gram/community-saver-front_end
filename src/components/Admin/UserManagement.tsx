@@ -178,9 +178,9 @@ const UserManagement: React.FC = () => {
       case "admin":
         return "bg-purple-100 text-purple-800";
       case "branch_lead":
-        return "bg-emerald-100 text-emerald-800";
+        return "bg-gold-100 text-gold-800";
       case "member":
-        return "bg-emerald-100 text-emerald-800";
+        return "bg-gold-100 text-gold-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -212,11 +212,10 @@ const UserManagement: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-900">
             {t("userManagement.title")}
           </h2>
-        
         </div>
         <button
           onClick={() => setShowUserForm(true)}
-          className="inline-flex items-center px-4 py-2 bg-emerald-700 text-white rounded-lg hover:text-emerald-700 hover:bg-white hover:border border-emerald-600 transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-gold-700 text-white rounded-lg hover:text-gold-700 hover:bg-white hover:border border-gold-600 transition-colors"
         >
           <Plus className="w-4 h-4 mr-2" />
           {t("userManagement.addUser")}
@@ -233,14 +232,14 @@ const UserManagement: React.FC = () => {
               placeholder={t("userManagement.searchUsers")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
             />
           </div>
 
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
           >
             <option value="">{t("userManagement.allRoles")}</option>
             <option value="admin">{t("userManagement.administrator")}</option>
@@ -251,7 +250,7 @@ const UserManagement: React.FC = () => {
           <select
             value={filterGroup}
             onChange={(e) => setFilterGroup(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
           >
             <option value="">{t("userManagement.allGroups")}</option>
             <option value="blue">{t("userManagement.blueGroup")}</option>
@@ -318,7 +317,7 @@ const UserManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs text-emerald-700 font-semibold rounded-full ${getRoleBadgeColor(
+                        className={`inline-flex px-2 py-1 text-xs text-gold-700 font-semibold rounded-full ${getRoleBadgeColor(
                           user.role
                         )}`}
                       >
@@ -356,7 +355,7 @@ const UserManagement: React.FC = () => {
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           user.activeLoan?.status
                             ? "bg-blue-100 text-blue-800"
-                            : "bg-emerald-100 text-emerald-800"
+                            : "bg-gold-100 text-gold-800"
                         }`}
                       >
                         {user.activeLoan?.status ? "Has Loan" : "Active"}
@@ -366,7 +365,7 @@ const UserManagement: React.FC = () => {
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => handleEditUser(user)}
-                          className="text-emerald-600 hover:text-emerald-900 p-1"
+                          className="text-gold-600 hover:text-gold-900 p-1"
                           title={t("userManagement.editUser")}
                         >
                           <Edit className="w-4 h-4" />
@@ -395,7 +394,7 @@ const UserManagement: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleAddMoney(user)}
-                          className="text-blue-600 hover:text-blue-900 p-1"
+                          className="text-gold-600 hover:text-gold-900 p-1"
                           title={t("userManagement.addMoney")}
                         >
                           <Plus className="w-4 h-4" />
@@ -425,7 +424,7 @@ const UserManagement: React.FC = () => {
                 setCurrentPage((prev) => Math.min(totalPages, prev + 1))
               }
               disabled={currentPage === totalPages}
-              className="flex items-center px-4 py-2 text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center px-4 py-2 text-sm text-white bg-gold-700 rounded-lg hover:bg-gold-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {t("userManagement.next")}
               <ChevronRight className="w-4 h-4 ml-1" />

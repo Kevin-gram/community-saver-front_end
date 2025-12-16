@@ -21,16 +21,16 @@ const PenaltiesTableSkeleton = () => (
         {[1, 2, 3, 4].map((i) => (
           <tr key={i} className="animate-pulse">
             <td className="py-2 px-4">
-              <div className="h-4 w-24 sm:w-32 bg-emerald-100 rounded"></div>
+              <div className="h-4 w-24 sm:w-32 bg-gold-100 rounded"></div>
             </td>
             <td className="py-2 px-4">
-              <div className="h-4 w-20 sm:w-24 bg-emerald-100 rounded"></div>
+              <div className="h-4 w-20 sm:w-24 bg-gold-100 rounded"></div>
             </td>
             <td className="py-2 px-4">
-              <div className="h-4 w-12 sm:w-16 bg-emerald-100 rounded"></div>
+              <div className="h-4 w-12 sm:w-16 bg-gold-100 rounded"></div>
             </td>
             <td className="py-2 px-4">
-              <div className="h-8 w-20 sm:w-24 bg-emerald-200 rounded"></div>
+              <div className="h-8 w-20 sm:w-24 bg-gold-200 rounded"></div>
             </td>
           </tr>
         ))}
@@ -109,10 +109,10 @@ const Penalties: React.FC = () => {
 
   return (
     <div className="w-full">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+      <div className="bg-gradient-to-br from-gold-50 to-gold-100 rounded-lg shadow-sm border border-gold-200 p-4 sm:p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-          <h2 className="text-xl sm:text-2xl font-semibold text-black">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-600">
             {t("admin.penalties")}
           </h2>
           <select
@@ -121,7 +121,7 @@ const Penalties: React.FC = () => {
               setFilter(e.target.value as "all" | "unpaid" | "paid");
               setCurrentPage(1);
             }}
-            className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gold-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 bg-gold-50"
           >
             <option value="all">{t("admin.all")}</option>
             <option value="unpaid">{t("admin.unpaid")}</option>
@@ -164,7 +164,7 @@ const Penalties: React.FC = () => {
                         className={`text-sm font-bold ${
                           isPenalty && c.status !== "paid"
                             ? "text-red-600"
-                            : "text-green-600"
+                            : "text-gold-600"
                         }`}
                       >
                         {isPenalty ? "€25" : "No Penalty"}
@@ -174,7 +174,7 @@ const Penalties: React.FC = () => {
                       <div className="mt-2">
                         {c.status === "paid" ||
                         paidPenalties.includes(penaltyId) ? (
-                          <span className="text-green-600 font-semibold text-xs">
+                          <span className="text-gold-600 font-semibold text-xs">
                             Repaid
                           </span>
                         ) : (
@@ -182,7 +182,7 @@ const Penalties: React.FC = () => {
                             className={`w-full px-3 py-1.5 rounded text-xs text-white font-medium ${
                               processingPenaltyId === penaltyId
                                 ? "bg-orange-500 hover:bg-orange-600"
-                                : "bg-green-700 hover:bg-green-800"
+                                : "bg-gold-700 hover:bg-gold-800"
                             } disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                             onClick={() => handlePayPenalty(penaltyId)}
                             disabled={
@@ -246,7 +246,7 @@ const Penalties: React.FC = () => {
                           className={`py-3 px-4 text-sm font-bold ${
                             isPenalty && c.status !== "paid"
                               ? "text-red-600"
-                              : "text-green-600"
+                              : "text-gold-600"
                           }`}
                         >
                           {isPenalty ? `€25` : "No Penalty"}
@@ -255,7 +255,7 @@ const Penalties: React.FC = () => {
                           {isPenalty ? (
                             c.status === "paid" ||
                             paidPenalties.includes(penaltyId) ? (
-                              <span className="text-green-600 font-semibold text-sm">
+                              <span className="text-gold-600 font-semibold text-sm">
                                 Repaid
                               </span>
                             ) : (
@@ -263,7 +263,7 @@ const Penalties: React.FC = () => {
                                 className={`px-3 py-1.5 rounded text-sm text-white font-medium ${
                                   processingPenaltyId === penaltyId
                                     ? "bg-orange-500 hover:bg-orange-600"
-                                    : "bg-green-700 hover:bg-green-800"
+                                    : "bg-gold-700 hover:bg-gold-800"
                                 } disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                                 onClick={() => handlePayPenalty(penaltyId)}
                                 disabled={
@@ -315,7 +315,7 @@ const Penalties: React.FC = () => {
                     disabled={currentPage === 1}
                     className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronLeft className="w-4 h-4 sm:mr-1" />
+                    <ChevronLeft className="w-4 h-4 sm:mr-1 text-gold-600" />
                     <span className="hidden sm:inline">Previous</span>
                   </button>
                   <span className="text-xs sm:text-sm text-gray-600 px-2">
@@ -329,7 +329,7 @@ const Penalties: React.FC = () => {
                       currentPage === totalPages ||
                       endIndex >= filteredPenalties.length
                     }
-                    className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-white bg-gold-700 rounded-lg hover:bg-gold-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="w-4 h-4 sm:ml-1" />

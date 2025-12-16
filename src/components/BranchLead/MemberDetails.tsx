@@ -178,9 +178,9 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div
-              className={`w-10 h-10 rounded-full bg-emerald-200 flex items-center justify-center`}
+              className={`w-10 h-10 rounded-full bg-gold-200 flex items-center justify-center`}
             >
-              <UserIcon className="w-5 h-5 text-emerald-700" />
+              <UserIcon className="w-5 h-5 text-gold-700" />
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
@@ -198,7 +198,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-gradient-to-br from-gold-50 to-gold-100 rounded-lg p-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               {t("memberDetails.memberInformation")}
             </h3>
@@ -297,7 +297,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     <select
                       value={addAmount}
                       onChange={(e) => setAddAmount(parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 mb-3 border border-gold-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 bg-gold-50"
                     >
                       <option value={200}>200</option>
                       <option value={400}>400</option>
@@ -311,7 +311,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                       type="date"
                       value={addDate}
                       onChange={(e) => setAddDate(e.target.value)}
-                      className="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 mb-3 border border-gold-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 bg-gold-50"
                     />
                     {addError && (
                       <span className="text-red-600 text-xs block mb-2">
@@ -339,8 +339,8 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                         className={`inline-flex items-center justify-center px-3 py-1 text-sm rounded-lg w-1/2 
         ${
           isSubmitting
-            ? "bg-emerald-600 opacity-75 cursor-not-allowed"
-            : "bg-emerald-600 hover:bg-emerald-700"
+            ? "bg-gold-600 opacity-75 cursor-not-allowed"
+            : "bg-gold-600 hover:bg-gold-700"
         } 
         text-white transition-colors`}
                       >

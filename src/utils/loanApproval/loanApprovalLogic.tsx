@@ -13,7 +13,7 @@ export const getStatusBadgeColor = (status: string) => {
     case "pending":
       return "bg-blue-100 text-blue-800";
     case "approved":
-      return "bg-emerald-100 text-emerald-800";
+      return "bg-gold-100 text-gold-800";
     case "rejected":
       return "bg-red-100 text-red-800";
     case "active":
@@ -210,16 +210,16 @@ export const handleRepaySubmit = async (
 export const LoanSkeleton = () => (
   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 animate-pulse">
     <div className="flex items-center space-x-4 mb-4">
-      <div className="w-10 h-10 bg-emerald-200 rounded-full"></div>
+      <div className="w-10 h-10 bg-gold-200 rounded-full"></div>
       <div className="flex-1">
-        <div className="h-4 bg-emerald-200 rounded w-32 mb-2"></div>
-        <div className="h-3 bg-emerald-200 rounded w-24"></div>
+        <div className="h-4 bg-gold-200 rounded w-32 mb-2"></div>
+        <div className="h-3 bg-gold-200 rounded w-24"></div>
       </div>
     </div>
     <div className="grid grid-cols-1 gap-4 mb-4">
-      <div className="h-16 bg-emerald-200 rounded"></div>
-      <div className="h-16 bg-emerald-200 rounded"></div>
-      <div className="h-16 bg-emerald-200 rounded"></div>
+      <div className="h-16 bg-gold-200 rounded"></div>
+      <div className="h-16 bg-gold-200 rounded"></div>
+      <div className="h-16 bg-gold-200 rounded"></div>
     </div>
   </div>
 );
@@ -264,10 +264,10 @@ export const EmailChoiceModal: React.FC<EmailChoiceModalProps> = ({
           <button
             onClick={() => onEmailChoice(true)}
             disabled={isProcessing}
-            className={`flex-1 px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg ${
+            className={`flex-1 px-4 py-2 text-sm bg-gold-600 text-white rounded-lg ${
               isProcessing
                 ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-emerald-700"
+                : "hover:bg-gold-700"
             }`}
           >
             Send email
@@ -357,11 +357,11 @@ export const RepayModal: React.FC<RepayModalProps> = ({
           <button
             onClick={onSubmit}
             disabled={isRepaying}
-            className={`flex-1 flex items-center justify-center px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg
+            className={`flex-1 flex items-center justify-center px-4 py-2 text-sm bg-gold-600 text-white rounded-lg
             ${
               isRepaying
                 ? "opacity-75 cursor-not-allowed"
-                : "hover:bg-emerald-700"
+                : "hover:bg-gold-700"
             } 
             transition-colors`}
           >

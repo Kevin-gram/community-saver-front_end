@@ -61,13 +61,13 @@ const requestQueue = new RequestQueue();
 const LoanStatusSkeleton = () => (
   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full animate-pulse">
     <div className="flex items-center">
-      <div className="w-5 h-5 bg-emerald-200 rounded-full mr-3"></div>
+      <div className="w-5 h-5 bg-gold-200 rounded-full mr-3"></div>
       <div className="flex-1">
-        <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
+        <div className="h-4 bg-gold-200 rounded w-24 mb-2"></div>
         <div className="space-y-2">
-          <div className="h-3 bg-emerald-200 rounded w-32"></div>
-          <div className="h-3 bg-emerald-200 rounded w-28"></div>
-          <div className="h-3 bg-emerald-200 rounded w-36"></div>
+          <div className="h-3 bg-gold-200 rounded w-32"></div>
+          <div className="h-3 bg-gold-200 rounded w-28"></div>
+          <div className="h-3 bg-gold-200 rounded w-36"></div>
         </div>
       </div>
     </div>
@@ -76,18 +76,18 @@ const LoanStatusSkeleton = () => (
 
 const LoanInfoSkeleton = () => (
   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
-    <div className="h-6 bg-emerald-200 rounded w-32 mb-4"></div>
+    <div className="h-6 bg-gold-200 rounded w-32 mb-4"></div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <div className="h-5 bg-emerald-200 rounded w-28 mb-3"></div>
-        <div className="h-8 bg-emerald-200 rounded w-24"></div>
+        <div className="h-5 bg-gold-200 rounded w-28 mb-3"></div>
+        <div className="h-8 bg-gold-200 rounded w-24"></div>
       </div>
       <div>
-        <div className="h-5 bg-emerald-200 rounded w-28 mb-3"></div>
+        <div className="h-5 bg-gold-200 rounded w-28 mb-3"></div>
         <div className="space-y-2">
-          <div className="h-4 bg-emerald-200 rounded w-36"></div>
-          <div className="h-4 bg-emerald-200 rounded w-32"></div>
-          <div className="h-4 bg-emerald-200 rounded w-40"></div>
+          <div className="h-4 bg-gold-200 rounded w-36"></div>
+          <div className="h-4 bg-gold-200 rounded w-32"></div>
+          <div className="h-4 bg-gold-200 rounded w-40"></div>
         </div>
       </div>
     </div>
@@ -170,8 +170,8 @@ const MemberDashboard: React.FC = () => {
       title: t("member.totalSavings"),
       value: `€${currentSavings.toLocaleString()}`,
       icon: Euro,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     {
       id: "interest-received",
@@ -185,8 +185,8 @@ const MemberDashboard: React.FC = () => {
         maximumFractionDigits: 2,
       })}`,
       icon: TrendingUp,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     ...(memberPenalties > 0
       ? [
@@ -195,8 +195,8 @@ const MemberDashboard: React.FC = () => {
             title: t("member.pendingPenalties"),
             value: `€${memberPenalties.toLocaleString()}`,
             icon: AlertTriangle,
-            color: "text-emerald-600",
-            bg: "bg-emerald-100",
+            color: "text-gold-600",
+            bg: "bg-gold-100",
           },
         ]
       : []),
@@ -205,24 +205,24 @@ const MemberDashboard: React.FC = () => {
       title: t("member.maxLoanable"),
       value: `€${(maxLoanAmount ?? 0).toLocaleString()}`,
       icon: Calculator,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     {
       id: "total-group-contribution",
       title: t("member.grossContribution"),
       value: `€${(netContributions?.netAvailable ?? 0).toLocaleString()}`,
       icon: PiggyBank,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     {
       id: "future-gross-contribution",
       title: t("member.futureGrossContribution"),
       value: `€${(netContributions?.bestFutureBalance ?? 0).toLocaleString()}`,
       icon: BarChart,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
   ];
 
@@ -440,7 +440,7 @@ const MemberDashboard: React.FC = () => {
           <p
             className={`text-lg font-semibold mt-1 ${
               latestLoan.status === "repaid"
-                ? "text-emerald-600"
+                ? "text-gold-600"
                 : latestLoan.status === "pending"
                 ? "text-orange-600"
                 : latestLoan.status === "approved"
@@ -455,7 +455,7 @@ const MemberDashboard: React.FC = () => {
         <div
           className={`rounded-lg p-3 ${
             latestLoan.status === "repaid"
-              ? "bg-emerald-100"
+              ? "bg-gold-100"
               : latestLoan.status === "pending"
               ? "bg-orange-100"
               : latestLoan.status === "approved"
@@ -466,7 +466,7 @@ const MemberDashboard: React.FC = () => {
           <Clock
             className={`w-6 h-6 ${
               latestLoan.status === "repaid"
-                ? "text-emerald-600"
+                ? "text-gold-600"
                 : latestLoan.status === "pending"
                 ? "text-orange-600"
                 : latestLoan.status === "approved"
@@ -523,7 +523,7 @@ const MemberDashboard: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-sm font-medium text-gray-600">{t("member.futureInterest")}</p>
-          <p className="text-lg font-semibold mt-1 text-emerald-600">
+          <p className="text-lg font-semibold mt-1 text-gold-600">
             €
             {(displayData?.interestToBeEarned ?? 0).toLocaleString(undefined, {
               minimumFractionDigits: 2,
@@ -531,8 +531,8 @@ const MemberDashboard: React.FC = () => {
             })}
           </p>
         </div>
-        <div className="rounded-lg p-3 bg-emerald-100">
-          <Layers className="w-6 h-6 text-emerald-600" />
+        <div className="rounded-lg p-3 bg-gold-100">
+          <Layers className="w-6 h-6 text-gold-600" />
         </div>
       </div>
       <p className="text-sm text-gray-600">
@@ -576,6 +576,7 @@ const MemberDashboard: React.FC = () => {
   // Fetch this user's contributions then open history modal (show up to 10 recent)
   const openHistory = async () => {
     try {
+      setShowHistory(true); // Show modal first with loading state
       setContributionsLoading(true);
       const userId = currentUser._id || currentUser.id;
       const contributions = await fetchContributionsByMember(String(userId));
@@ -593,7 +594,6 @@ const MemberDashboard: React.FC = () => {
       setMemberContributions([]);
     } finally {
       setContributionsLoading(false);
-      setShowHistory(true);
     }
   };
 
@@ -602,17 +602,14 @@ const MemberDashboard: React.FC = () => {
       {/* Header */}
       <div className="mb-8 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {t("member.title")}
-          </h1>
         </div>
         <div className="flex items-center space-x-3">
           <button
-            className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            className="flex items-center px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700"
             onClick={() => setShowReportsPopup(true)}
             title={t("admin.reports")}
           >
-            <FileDown className="w-5 h-5 mr-2" />
+            <FileDown className="w-5 h-5 mr-2 text-white" />
             <span className="text-sm font-medium">{t("admin.reports")}</span>
           </button>
         </div>
@@ -628,11 +625,11 @@ const MemberDashboard: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
-                  <div className="h-8 bg-emerald-200 rounded w-32"></div>
+                  <div className="h-4 bg-gold-200 rounded w-24 mb-2"></div>
+                  <div className="h-8 bg-gold-200 rounded w-32"></div>
                 </div>
-                <div className="bg-emerald-100 rounded-lg p-3">
-                  <div className="w-6 h-6 bg-emerald-200 rounded"></div>
+                <div className="bg-gold-100 rounded-lg p-3">
+                  <div className="w-6 h-6 bg-gold-200 rounded"></div>
                 </div>
               </div>
             </div>
@@ -682,7 +679,7 @@ const MemberDashboard: React.FC = () => {
           disabled={!eligible || isLoading}
           className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
             eligible && !isLoading
-              ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
+              ? `bg-gold-700 text-white hover:opacity-90 shadow-sm`
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
         >
@@ -694,11 +691,10 @@ const MemberDashboard: React.FC = () => {
           onClick={openHistory}
           className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
         >
-          <History className="w-5 h-5 mr-2" />
+          <History className="w-5 h-5 mr-2 text-gold-600" />
           {t("member.viewHistory")}
         </button>
 
-        {/* Download Agreement — enabled only when latest loan is approved */}
         <button
           onClick={handleDownloadAgreement}
           disabled={
@@ -716,7 +712,7 @@ const MemberDashboard: React.FC = () => {
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
         >
-          <FileDown className="w-5 h-5 mr-2" />
+          <FileDown className="w-5 h-5 mr-2 text-gold-600" />
           {isDownloadingAgreement ? t("member.downloading") : t("member.downloadAgreement")}
         </button>
       </div>
@@ -736,7 +732,7 @@ const MemberDashboard: React.FC = () => {
               <div
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   eligible
-                    ? "bg-emerald-100 text-emerald-800"
+                    ? "bg-gold-100 text-gold-800"
                     : "bg-red-100 text-red-800"
                 }`}
               >
@@ -786,7 +782,10 @@ const MemberDashboard: React.FC = () => {
 
       {showHistory && (
         <ContributionHistory
-          onClose={() => setShowHistory(false)}
+          onClose={() => {
+            setShowHistory(false);
+            setMemberContributions(null);
+          }}
           contributions={memberContributions}
           contributionsLoading={contributionsLoading}
         />

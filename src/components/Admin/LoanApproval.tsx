@@ -112,7 +112,7 @@ const LoanApproval: React.FC = () => {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
         >
           <option value="">{t("admin.all")}</option>
           <option value="pending">{t("admin.pending")}</option>
@@ -156,7 +156,7 @@ const LoanApproval: React.FC = () => {
                     {/* Header Section - Member Info and Status */}
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-gold-700 flex items-center justify-center flex-shrink-0">
                           <UserIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -166,7 +166,7 @@ const LoanApproval: React.FC = () => {
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs sm:text-sm text-gray-500 gap-1 sm:gap-0">
                             <span className="truncate">{member.email}</span>
                             <span className="flex items-center">
-                              <div className="w-2 h-2 rounded-full mr-1 bg-emerald-700" />
+                              <div className="w-2 h-2 rounded-full mr-1 bg-gold-700" />
                               {member.branch} Group
                             </span>
                           </div>
@@ -246,7 +246,7 @@ const LoanApproval: React.FC = () => {
                       </div>
                       {loan.approvedDate && (
                         <div className="flex items-center">
-                          <Check className="w-4 h-4 mr-2 text-emerald-500 flex-shrink-0" />
+                          <Check className="w-4 h-4 mr-2 text-gold-600 flex-shrink-0" />
                           <span>
                             {t("admin.approved")}:{" "}
                             {new Date(loan.approvedDate).toLocaleDateString()}
@@ -265,13 +265,13 @@ const LoanApproval: React.FC = () => {
                     </div>
 
                     {/* Risk Assessment */}
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium text-emerald-900 mb-2 text-sm sm:text-base">
+                    <div className="p-3 bg-gold-50 rounded-lg border border-gold-200">
+                      <h4 className="font-medium text-gold-900 mb-2 text-sm sm:text-base">
                         {t("admin.riskAssessment")}
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
                         <div>
-                          <span className="text-emerald-700">
+                          <span className="text-gold-700">
                             {t("admin.loanToSavingsRatio")}:
                           </span>
                           <span className="font-medium ml-2">
@@ -279,7 +279,7 @@ const LoanApproval: React.FC = () => {
                           </span>
                         </div>
                         <div>
-                          <span className="text-emerald-700">
+                          <span className="text-gold-700">
                             {t("admin.interestAmount")}:
                           </span>
                           <span className="font-medium ml-2">
@@ -323,11 +323,11 @@ const LoanApproval: React.FC = () => {
                               isProcessing &&
                               processingLoanId === (loan.id || loan._id)
                             }
-                            className={`flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg transition-colors ${
+                            className={`flex items-center justify-center px-4 py-2 bg-gold-600 text-white rounded-lg transition-colors ${
                               isProcessing &&
                               processingLoanId === (loan.id || loan._id)
                                 ? "opacity-50 cursor-not-allowed"
-                                : "hover:bg-emerald-700"
+                                : "hover:bg-gold-700"
                             }`}
                           >
                             {isProcessing &&
@@ -344,7 +344,7 @@ const LoanApproval: React.FC = () => {
                         loan.status === "active") && (
                         <button
                           onClick={() => handleRepayClick(loan, setSelectedLoan, setRepayAmount, setShowRepayModal)}
-                          className="flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                          className="flex items-center justify-center px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700 transition-colors"
                         >
                           <DollarSign className="w-4 h-4 mr-2" />
                           {t("admin.repayLoan")}
@@ -389,7 +389,7 @@ const LoanApproval: React.FC = () => {
               setCurrentPage((prev) => Math.min(totalPages, prev + 1))
             }
             disabled={currentPage === totalPages}
-            className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-white bg-gold-700 rounded-lg hover:bg-gold-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <span className="hidden sm:inline">{t("admin.paginationNext")}</span>
             <ChevronRight className="w-4 h-4 sm:ml-1" />

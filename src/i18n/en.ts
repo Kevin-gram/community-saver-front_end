@@ -12,7 +12,6 @@ export const en = {
     changeLanguage: "Change Language",
   },
   admin: {
-    title: "Admin Dashboard",
     recentLoans: "Recent Loan Requests",
     branchDistribution: "Branch Distribution",
     loanApproval: "Loan Approval",

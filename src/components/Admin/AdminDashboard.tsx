@@ -162,9 +162,7 @@ const AdminDashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 flex justify-between items-start">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-700 mb-2">
-            {t("admin.title")}
-          </h1>
+
           {/* Errors are logged to console but not shown as a persistent banner */}
         </div>
         
@@ -193,7 +191,7 @@ const AdminDashboard: React.FC = () => {
                 </p>
                 {stat.loading ? (
                   <div className="mt-2 animate-pulse">
-                    <div className="h-8 rounded w-24 bg-emerald-100"></div>
+                    <div className="h-8 rounded w-24 bg-gold-100"></div>
                   </div>
                 ) : (
                   <p className="text-2xl font-bold text-gray-900 mt-2">
@@ -202,10 +200,10 @@ const AdminDashboard: React.FC = () => {
                 )}
               </div>
               <div className={`${stat.bg} rounded-lg p-3`}>
-                {stat.icon === "Users" && <Users className={`w-6 h-6 ${stat.color}`} />}
-                {stat.icon === "DollarSign" && <Euro className={`w-6 h-6 ${stat.color}`} />}
-                {stat.icon === "TrendingUp" && <TrendingUp className={`w-6 h-6 ${stat.color}`} />}
-                {stat.icon === "AlertCircle" && <AlertCircle className={`w-6 h-6 ${stat.color}`} />}
+                {stat.icon === "Users" && <Users className={`w-6 h-6 text-gold-600`} />}
+                {stat.icon === "DollarSign" && <Euro className={`w-6 h-6 text-gold-600`} />}
+                {stat.icon === "TrendingUp" && <TrendingUp className={`w-6 h-6 text-gold-600`} />}
+                {stat.icon === "AlertCircle" && <AlertCircle className={`w-6 h-6 text-gold-600`} />}
               </div>
             </div>
           </div>
@@ -221,17 +219,17 @@ const AdminDashboard: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "border-emerald-700 text-emerald-700"
+                  ? "border-gold-700 text-gold-700"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
               aria-current={activeTab === tab.id ? "page" : undefined}
             >
-              {tab.icon === "TrendingUp" && <TrendingUp className="w-5 h-5 mr-2" />}
-              {tab.icon === "Users" && <Users className="w-5 h-5 mr-2" />}
-              {tab.icon === "CheckCircle" && <CheckCircle className="w-5 h-5 mr-2" />}
-              {tab.icon === "DollarSign" && <Euro className="w-5 h-5 mr-2" />}
-              {tab.icon === "AlertCircle" && <AlertCircle className="w-5 h-5 mr-2" />}
-              {tab.icon === "UserCheck" && <UserCheck className="w-5 h-5 mr-2" />}
+              {tab.icon === "TrendingUp" && <TrendingUp className="w-5 h-5 mr-2 text-gold-600" />}
+              {tab.icon === "Users" && <Users className="w-5 h-5 mr-2 text-gold-600" />}
+              {tab.icon === "CheckCircle" && <CheckCircle className="w-5 h-5 mr-2 text-gold-600" />}
+              {tab.icon === "DollarSign" && <Euro className="w-5 h-5 mr-2 text-gold-600" />}
+              {tab.icon === "AlertCircle" && <AlertCircle className="w-5 h-5 mr-2 text-gold-600" />}
+              {tab.icon === "UserCheck" && <UserCheck className="w-5 h-5 mr-2 text-gold-600" />}
               {tab.label}
             </button>
           ))}
@@ -254,13 +252,13 @@ const AdminDashboard: React.FC = () => {
                     {[...Array(3)].map((_, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg animate-pulse"
+                        className="flex items-center justify-between p-3 bg-gold-50 rounded-lg animate-pulse"
                       >
                         <div className="flex-1">
-                          <div className="h-4 bg-emerald-100 rounded w-32 mb-2"></div>
-                          <div className="h-3 bg-emerald-100 rounded w-20"></div>
+                          <div className="h-4 bg-gold-100 rounded w-32 mb-2"></div>
+                          <div className="h-3 bg-gold-100 rounded w-20"></div>
                         </div>
-                        <div className="h-6 bg-emerald-100 rounded w-20"></div>
+                        <div className="h-6 bg-gold-100 rounded w-20"></div>
                       </div>
                     ))}
                   </div>
@@ -292,9 +290,9 @@ const AdminDashboard: React.FC = () => {
                             {loan.status === "pending" ? (
                               <Clock className="w-4 h-4 text-blue-500 mr-2" />
                             ) : loan.status === "approved" ? (
-                              <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
+                              <CheckCircle className="w-4 h-4 text-gold-600 mr-2" />
                             ) : loan.status === "repaid" ? (
-                              <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
+                              <CheckCircle className="w-4 h-4 text-gold-600 mr-2" />
                             ) : (
                               <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
                             )}
@@ -303,9 +301,9 @@ const AdminDashboard: React.FC = () => {
                                 loan.status === "pending"
                                   ? "bg-blue-100 text-blue-800"
                                   : loan.status === "approved"
-                                  ? "bg-emerald-100 text-emerald-800"
+                                  ? "bg-gold-50 text-gold-900"
                                   : loan.status === "repaid"
-                                  ? "bg-emerald-100 text-emerald-800"
+                                  ? "bg-gold-50 text-gold-900"
                                   : "bg-red-100 text-red-800"
                               }`}
                             >
@@ -332,15 +330,15 @@ const AdminDashboard: React.FC = () => {
                     {[...Array(4)].map((_, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg animate-pulse"
+                        className="flex items-center justify-between p-3 bg-gold-50 rounded-lg animate-pulse"
                       >
                         <div className="flex items-center flex-1">
-                          <div className="w-4 h-4 bg-emerald-100 rounded-full mr-3"></div>
-                          <div className="h-4 bg-emerald-100 rounded w-24"></div>
+                          <div className="w-4 h-4 bg-gold-100 rounded-full mr-3"></div>
+                          <div className="h-4 bg-gold-100 rounded w-24"></div>
                         </div>
                         <div className="text-right">
-                          <div className="h-4 bg-emerald-100 rounded w-20 mb-2"></div>
-                          <div className="h-3 bg-emerald-100 rounded w-16"></div>
+                          <div className="h-4 bg-gold-100 rounded w-20 mb-2"></div>
+                          <div className="h-3 bg-gold-100 rounded w-16"></div>
                         </div>
                       </div>
                     ))}

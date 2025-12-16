@@ -24,12 +24,12 @@ const SharesTableSkeleton = () => (
     {/* Stats Skeleton */}
     <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
       <div>
-        <div className="h-6 w-48 bg-emerald-100 rounded mb-2"></div>
-        <div className="h-8 w-32 bg-emerald-100 rounded"></div>
+        <div className="h-6 w-48 bg-gold-100 rounded mb-2"></div>
+        <div className="h-8 w-32 bg-gold-100 rounded"></div>
       </div>
       <div>
-        <div className="h-6 w-48 bg-emerald-100 rounded mb-2"></div>
-        <div className="h-8 w-32 bg-emerald-100 rounded"></div>
+        <div className="h-6 w-48 bg-gold-100 rounded mb-2"></div>
+        <div className="h-8 w-32 bg-gold-100 rounded"></div>
       </div>
     </div>
 
@@ -37,10 +37,10 @@ const SharesTableSkeleton = () => (
     <div className="md:hidden space-y-3">
       {[...Array(4)].map((_, i) => (
         <div key={i} className="bg-white rounded-lg p-4 border border-gray-200">
-          <div className="h-5 w-32 bg-emerald-100 rounded mb-3"></div>
+          <div className="h-5 w-32 bg-gold-100 rounded mb-3"></div>
           <div className="space-y-2">
-            <div className="h-4 w-full bg-emerald-100 rounded"></div>
-            <div className="h-4 w-3/4 bg-emerald-100 rounded"></div>
+            <div className="h-4 w-full bg-gold-100 rounded"></div>
+            <div className="h-4 w-3/4 bg-gold-100 rounded"></div>
           </div>
         </div>
       ))}
@@ -53,7 +53,7 @@ const SharesTableSkeleton = () => (
           <tr>
             {[...Array(6)].map((_, i) => (
               <th key={i} className="text-left py-3 px-4">
-                <div className="h-4 w-24 bg-emerald-100 rounded"></div>
+                <div className="h-4 w-24 bg-gold-100 rounded"></div>
               </th>
             ))}
           </tr>
@@ -63,7 +63,7 @@ const SharesTableSkeleton = () => (
             <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
               {[...Array(6)].map((_, cellIdx) => (
                 <td key={cellIdx} className="py-3 px-4">
-                  <div className="h-4 w-20 bg-emerald-200 rounded"></div>
+                  <div className="h-4 w-20 bg-gold-200 rounded"></div>
                 </td>
               ))}
             </tr>
@@ -154,10 +154,10 @@ const GroupShares: React.FC = () => {
   if (loading && isInitialLoad) {
     return (
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
-        <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-emerald-700 text-center drop-shadow">
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-black text-center drop-shadow">
           {t("admin.groupSharesInterest")}
         </h2>
-        <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
+        <div className="bg-gradient-to-br from-gold-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
           <SharesTableSkeleton />
         </div>
       </div>
@@ -167,10 +167,10 @@ const GroupShares: React.FC = () => {
   if (error) {
     return (
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
-        <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-emerald-700 text-center drop-shadow">
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-black text-center drop-shadow">
           {t("admin.groupSharesInterest")}
         </h2>
-        <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
+        <div className="bg-gradient-to-br from-gold-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
           <div className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mb-4" />
             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
@@ -181,7 +181,7 @@ const GroupShares: React.FC = () => {
             </p>
             <button
               onClick={fetchData}
-              className="px-4 sm:px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm sm:text-base"
+              className="px-4 sm:px-6 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700 transition-colors text-sm sm:text-base"
             >
               {t("admin.retry")}
             </button>
@@ -194,10 +194,10 @@ const GroupShares: React.FC = () => {
   if (!globalStats || globalStats.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
-        <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-emerald-700 text-center drop-shadow">
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-black text-center drop-shadow">
           {t("admin.groupSharesInterest")}
         </h2>
-        <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
+        <div className="bg-gradient-to-br from-gold-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
           <div className="flex flex-col items-center justify-center py-12">
             <p className="text-gray-600 text-center text-sm sm:text-base">
               {t("admin.noMembersSharesData")}
@@ -224,17 +224,17 @@ const GroupShares: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
-      <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-emerald-700 text-center drop-shadow">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-700 text-center drop-shadow">
         {t("admin.groupSharesInterest")}
       </h2>
-      <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
+      <div className="bg-gradient-to-br from-gold-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
         {/* Stats Section - Responsive */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <p className="text-sm sm:text-base font-medium text-gray-700 mb-2">
               {t("admin.totalMemberSavings")}
             </p>
-            <div className="text-xl sm:text-2xl font-bold text-emerald-700">
+            <div className="text-xl sm:text-2xl font-bold text-gold-700">
               €{totalSavings.toLocaleString()}
             </div>
           </div>
@@ -242,7 +242,7 @@ const GroupShares: React.FC = () => {
             <p className="text-sm sm:text-base font-medium text-gray-700 mb-2">
               {t("admin.totalInterestDistributed")}
             </p>
-            <div className="text-xl sm:text-2xl font-bold text-emerald-700">
+            <div className="text-xl sm:text-2xl font-bold text-gold-700">
               €
               {totalInterest.toLocaleString(undefined, {
                 maximumFractionDigits: 2,
@@ -252,7 +252,7 @@ const GroupShares: React.FC = () => {
         </div>
 
         <div className="mt-6">
-          <h4 className="text-lg sm:text-xl font-semibold mb-4 text-emerald-700">
+          <h4 className="text-lg sm:text-xl font-semibold mb-4 text-gold-700">
             {t("admin.memberShares")} ({globalStats.length}{" "}
             {t("admin.members")})
           </h4>
@@ -273,7 +273,7 @@ const GroupShares: React.FC = () => {
                       {member.branch}
                     </p>
                   </div>
-                  <span className="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-1 rounded">
+                  <span className="text-xs font-medium bg-gold-100 text-gold-700 px-2 py-1 rounded">
                     {member.sharePercentage.toFixed(2)}%
                   </span>
                 </div>
@@ -290,7 +290,7 @@ const GroupShares: React.FC = () => {
                       <TrendingUp className="w-3 h-3" />
                       {t("admin.interest")}
                     </p>
-                    <p className="font-bold text-emerald-700">
+                    <p className="font-bold text-gold-700">
                       €
                       {member.interestEarned.toLocaleString(undefined, {
                         maximumFractionDigits: 2,
@@ -302,7 +302,7 @@ const GroupShares: React.FC = () => {
                       <PiggyBank className="w-3 h-3" />
                       {t("admin.futureInterest")}
                     </p>
-                    <p className="font-bold text-emerald-700">
+                    <p className="font-bold text-gold-700">
                       €
                       {member.interestToBeEarned.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
@@ -335,13 +335,13 @@ const GroupShares: React.FC = () => {
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
                     <div className="flex items-center gap-1">
                       {t("admin.interest")}
-                      <TrendingUp className="w-4 h-4 text-emerald-600" />
+                      <TrendingUp className="w-4 h-4 text-gold-600" />
                     </div>
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
                     <div className="flex items-center gap-1">
                       {t("admin.futureInterest")}
-                      <PiggyBank className="w-4 h-4 text-emerald-600" />
+                      <PiggyBank className="w-4 h-4 text-gold-600" />
                     </div>
                   </th>
                 </tr>
@@ -364,13 +364,13 @@ const GroupShares: React.FC = () => {
                     <td className="py-3 px-4">
                       {member.sharePercentage.toFixed(2)}%
                     </td>
-                    <td className="py-3 px-4 text-emerald-700 font-bold">
+                    <td className="py-3 px-4 text-gold-700 font-bold">
                       €
                       {member.interestEarned.toLocaleString(undefined, {
                         maximumFractionDigits: 2,
                       })}
                     </td>
-                    <td className="py-3 px-4 text-emerald-700 font-bold">
+                    <td className="py-3 px-4 text-gold-700 font-bold">
                       €
                       {member.interestToBeEarned.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
@@ -401,7 +401,7 @@ const GroupShares: React.FC = () => {
                 <button
                   onClick={() => setCurrentPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="flex items-center px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white bg-gold-700 rounded-lg hover:bg-gold-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <span className="hidden sm:inline">{t("admin.paginationNext")}</span>
                   <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 sm:ml-1" />

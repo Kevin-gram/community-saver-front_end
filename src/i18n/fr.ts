@@ -12,7 +12,6 @@ export const fr = {
     changeLanguage: "Changer de Langue",
   },
   admin: {
-    title: "Tableau de Bord Admin",
     recentLoans: "Demandes de Prêt Récentes",
     branchDistribution: "Distribution par Branche",
     pendingLoans: "Prêts en Attente",

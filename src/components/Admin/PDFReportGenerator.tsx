@@ -97,7 +97,7 @@ const FinancialReport: React.FC<{
       {/* Toaster */}
       {toast && (
         <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
-          <div className="bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg text-lg font-semibold animate-fade-in pointer-events-auto">
+          <div className="bg-gold-600 text-white px-6 py-3 rounded-xl shadow-lg text-lg font-semibold animate-fade-in pointer-events-auto">
             {toast}
           </div>
         </div>
@@ -108,7 +108,7 @@ const FinancialReport: React.FC<{
         className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors shadow-sm ${
           loading
             ? "bg-gray-400 text-white cursor-not-allowed"
-            : "bg-emerald-600 text-white hover:bg-emerald-700"
+            : "bg-gold-600 text-white hover:bg-gold-700"
         }`}
       >
         <FileDown className="w-4 h-4" />
@@ -146,9 +146,9 @@ const FinancialReport: React.FC<{
                     onMouseLeave={() => setHoveredPeriod(null)}
                     className={`relative px-4 py-2.5 rounded-lg text-left transition-all duration-200 ${
                       selectedPeriod === period.value
-                        ? "bg-emerald-600 text-white shadow-md"
+                        ? "bg-gold-600 text-white shadow-md"
                         : hoveredPeriod === period.value
-                        ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-300"
+                        ? "bg-gold-50 text-gold-700 border-2 border-gold-300"
                         : "bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100"
                     }`}
                   >
@@ -182,11 +182,11 @@ const FinancialReport: React.FC<{
                     setToast
                   )
                 }
-                disabled={isGenerating}
+                disabled={isGenerating && loadingButton === "download"}
                 className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
                   isGenerating && loadingButton === "download"
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                    : "bg-gold-600 hover:bg-gold-700 hover:shadow-lg"
                 } text-white`}
               >
                 {loadingButton === "download" ? (
@@ -215,7 +215,7 @@ const FinancialReport: React.FC<{
                 className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
                   isGenerating && loadingButton === "publish"
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                    : "bg-gold-600 hover:bg-gold-700 hover:shadow-lg"
                 } text-white`}
                 title="Publish report to server"
               >
@@ -245,7 +245,7 @@ const FinancialReport: React.FC<{
                 className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
                   isGenerating && loadingButton === "send"
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg"
+                    : "bg-gold-600 hover:bg-gold-700 hover:shadow-lg"
                 } text-white`}
                 title="Send report to all users via email"
               >

@@ -476,9 +476,6 @@ const BranchLeadDashboard: React.FC = () => {
       {/* Header - Always visible */}
       <div className="mb-8 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {t("branchLead.title")}
-          </h1>
         </div>
         <div className="flex items-center space-x-3">
           <button

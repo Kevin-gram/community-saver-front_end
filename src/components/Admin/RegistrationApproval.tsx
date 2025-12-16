@@ -10,12 +10,12 @@ const RegistrationSkeleton = () => (
       <div key={i} className="p-3 bg-gray-50 rounded-lg animate-pulse">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <div className="h-4 w-48 bg-emerald-200 rounded"></div>
-            <div className="h-3 w-32 bg-emerald-200 rounded"></div>
+            <div className="h-4 w-48 bg-gold-200 rounded"></div>
+            <div className="h-3 w-32 bg-gold-200 rounded"></div>
           </div>
           <div className="flex gap-2">
-            <div className="h-8 w-20 bg-emerald-200 rounded"></div>
-            <div className="h-8 w-20 bg-emerald-200 rounded"></div>
+            <div className="h-8 w-20 bg-gold-200 rounded"></div>
+            <div className="h-8 w-20 bg-gold-200 rounded"></div>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@ const RegistrationApproval: React.FC = () => {
           <button
             className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex-1 sm:flex-none ${
               activeTab === "pending"
-                ? "bg-emerald-600 text-white"
+                ? "bg-gold-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
             onClick={() => setActiveTab("pending")}
@@ -169,7 +169,7 @@ const RegistrationApproval: React.FC = () => {
           <button
             className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex-1 sm:flex-none ${
               activeTab === "approved"
-                ? "bg-emerald-600 text-white"
+                ? "bg-gold-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
             onClick={() => setActiveTab("approved")}
@@ -179,7 +179,7 @@ const RegistrationApproval: React.FC = () => {
           <button
             className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex-1 sm:flex-none ${
               activeTab === "rejected"
-                ? "bg-emerald-600 text-white"
+                ? "bg-gold-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
             onClick={() => setActiveTab("rejected")}
@@ -222,7 +222,7 @@ const RegistrationApproval: React.FC = () => {
                 {activeTab === "pending" && (
                   <div className="flex gap-1.5 sm:gap-2 w-full sm:w-auto">
                     <button
-                      className="flex-1 sm:flex-none px-2 sm:px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 text-xs sm:text-sm"
+                      className="flex-1 sm:flex-none px-2 sm:px-3 py-1 bg-gold-600 text-white rounded hover:bg-gold-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 text-xs sm:text-sm"
                       onClick={() => handleApprove(user._id!)}
                       disabled={processing.userId === user._id}
                     >
@@ -288,7 +288,7 @@ const RegistrationApproval: React.FC = () => {
                     setCurrentPage((prev) => Math.min(totalPages, prev + 1))
                   }
                   disabled={currentPage === totalPages}
-                  className="flex items-center px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white bg-gold-700 rounded-lg hover:bg-gold-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <span className="hidden sm:inline">
                     {t("admin.paginationNext")}

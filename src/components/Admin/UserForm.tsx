@@ -104,7 +104,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-100 rounded-full p-2">
-              <UserIcon className="w-5 h-5 text-emerald-600" />
+              <UserIcon className="w-5 h-5 text-gold-600" />
             </div>
             <h2 className="text-xl font-semibold text-gray-900">
               {user ? "Edit User" : "Add New User"}
@@ -132,10 +132,10 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                     onChange={(e) =>
                       handleInputChange("firstName", e.target.value, setFormData, errors, setErrors)
                     }
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 ${
                       errors.firstName
                         ? "border-red-300 focus:border-red-500"
-                        : "border-gray-300 focus:border-emerald-500"
+                        : "border-gray-300 focus:border-gold-500"
                     }`}
                     placeholder="Enter first name"
                   />
@@ -155,10 +155,10 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                     onChange={(e) =>
                       handleInputChange("lastName", e.target.value, setFormData, errors, setErrors)
                     }
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 ${
                       errors.lastName
                         ? "border-red-300 focus:border-red-500"
-                        : "border-gray-300 focus:border-emerald-500"
+                        : "border-gray-300 focus:border-gold-500"
                     }`}
                     placeholder="Enter last name"
                   />
@@ -179,10 +179,10 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value, setFormData, errors, setErrors)}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 ${
                   errors.email
                     ? "border-red-300 focus:border-red-500"
-                    : "border-gray-300 focus:border-emerald-500"
+                    : "border-gray-300 focus:border-gold-500"
                 }`}
                 placeholder="Enter email address"
               />
@@ -204,10 +204,10 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                       onChange={(e) =>
                         handleInputChange("password", e.target.value, setFormData, errors, setErrors)
                       }
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 ${
                         errors.password
                           ? "border-red-300 focus:border-red-500"
-                          : "border-gray-300 focus:border-emerald-500"
+                          : "border-gray-300 focus:border-gold-500"
                       }`}
                       placeholder="Enter password"
                     />
@@ -244,7 +244,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 border-gray-300 focus:border-emerald-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 border-gray-300 focus:border-gold-500"
                       placeholder="Confirm password"
                     />
                     <button
@@ -277,7 +277,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                 <select
                   value={formData.role}
                   onChange={(e) => handleInputChange("role", e.target.value, setFormData, errors, setErrors)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
                 >
                   <option value="member">Member</option>
                   <option value="branch_lead">Branch Lead</option>
@@ -292,7 +292,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
                 <select
                   value={formData.group}
                   onChange={(e) => handleInputChange("group", e.target.value, setFormData, errors, setErrors)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
                 >
                   <option value="blue">Blue</option>
                   <option value="yellow">Yellow</option>
@@ -420,7 +420,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2 bg-gold-600 text-white rounded-lg font-medium hover:bg-gold-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting
                 ? "Saving..."

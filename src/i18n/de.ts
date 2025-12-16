@@ -12,7 +12,6 @@ export const de = {
     changeLanguage: "Sprache Ändern",
   },
   admin: {
-    title: "Admin-Dashboard",
     pendingLoans: "Ausstehende Darlehen",
     recentLoans: "Aktuelle Darlehensanfragen",
     branchDistribution: "Filialverteilung",

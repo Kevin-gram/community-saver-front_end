@@ -112,8 +112,8 @@ export const getStats = (
     key: "totalMembers",
     value: totalMembers.toString(),
     icon: "Users",
-    color: "text-emerald-600",
-    bg: "bg-emerald-100",
+    color: "text-gold-600",
+    bg: "bg-gold-100",
     loading: financialDataLoading,
   },
   {
@@ -122,8 +122,8 @@ export const getStats = (
       ? `€${netContributions.netAvailable.toLocaleString()}`
       : "-",
     icon: "DollarSign",
-    color: "text-emerald-600",
-    bg: "bg-emerald-100",
+    color: "text-gold-600",
+    bg: "bg-gold-100",
     loading: financialDataLoading,
   },
   {
@@ -132,16 +132,16 @@ export const getStats = (
       ? `€${netContributions.bestFutureBalance.toLocaleString()}`
       : "-",
     icon: "TrendingUp",
-    color: "text-emerald-600",
-    bg: "bg-emerald-100",
+    color: "text-gold-600",
+    bg: "bg-gold-100",
     loading: financialDataLoading,
   },
   {
     key: "pendingLoans",
     value: pendingLoans.toString(),
     icon: "AlertCircle",
-    color: "text-emerald-600",
-    bg: "bg-emerald-100",
+    color: "text-gold-600",
+    bg: "bg-gold-100",
     loading: financialDataLoading,
   },
   {
@@ -150,8 +150,8 @@ export const getStats = (
       ? `€${netContributions.totalPaidPenalties.toLocaleString()}`
       : "-",
     icon: "AlertCircle",
-    color: "text-emerald-600",
-    bg: "bg-emerald-100",
+    color: "text-gold-600",
+    bg: "bg-gold-100",
     loading: netContributionsLoading,
   },
 ];

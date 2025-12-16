@@ -1,3 +1,90 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Define custom font families */
+@layer base {
+  :root {
+    --font-display: "Playfair Display", serif;
+    --font-body: "Cormorant Garamond", serif;
+    --font-sans: "Montserrat", sans-serif;
+  }
+
+  /* Standard body font - not fancy */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+      sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  /* Standard headings - NOT using display font */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  /* Paragraphs and general text */
+  p {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+    font-weight: 400;
+  }
+
+  /* Spans and divs - standard font */
+  span, div {
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+  }
+
+  /* ONLY the GOLDEN LION title gets the fancy display font */
+  .brand-title {
+    font-family: var(--font-display);
+    font-size: 1.875rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    color: #D4AF37;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Numbers stay standard and readable */
+  .preserve-numbers {
+    font-variant-numeric: tabular-nums;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-weight: 500;
+  }
+
+  /* Fancy text with gold effect - display font only here */
+  .fancy-text {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: #D4AF37;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.5px;
+    font-size: 1rem;
+  }
+
+  /* Buttons - standard font */
+  .elegant-button {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.875rem;
+  }
+
+  /* Strong emphasis */
+  strong, b {
+    font-weight: 700;
+  }
+
+  /* Links */
+  a {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-weight: 400;
+  }
+}
