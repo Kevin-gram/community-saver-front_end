@@ -11,10 +11,10 @@ export const generatePDFWithJsPDF = async (filteredData: ReportData) => {
     const pageWidth = doc.internal.pageSize.width;
     let yPos = 20;
 
-    const darkGreen = [15, 94, 75];
+    const darkGold = [184, 134, 11]; // RGB for dark gold
 
     doc.setFontSize(22);
-    doc.setTextColor(darkGreen[0], darkGreen[1], darkGreen[2]);
+    doc.setTextColor(darkGold[0], darkGold[1], darkGold[2]);
     doc.text("Financial Report", pageWidth / 2, yPos, { align: "center" });
 
     yPos += 10;
@@ -63,7 +63,7 @@ export const generatePDFWithJsPDF = async (filteredData: ReportData) => {
 
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
-    doc.setTextColor(darkGreen[0], darkGreen[1], darkGreen[2]);
+    doc.setTextColor(darkGold[0], darkGold[1], darkGold[2]);
     doc.text(`Total Balance: €${totalBalance.toLocaleString()}`, 14, yPos);
     doc.text(
       `Future Balance: €${futureBalance.toLocaleString()}`,
@@ -99,7 +99,7 @@ export const generatePDFWithJsPDF = async (filteredData: ReportData) => {
       head: [["Metric", "Value"]],
       body: summaryData,
       theme: "grid",
-      headStyles: { fillColor: darkGreen, textColor: 255 },
+      headStyles: { fillColor: darkGold, textColor: 255 },
       styles: { fontSize: 10 },
       margin: { left: 14, right: 14 },
     });
@@ -176,7 +176,7 @@ export const generatePDFWithJsPDF = async (filteredData: ReportData) => {
         ],
         body: sharesBody,
         theme: "striped",
-        headStyles: { fillColor: darkGreen, textColor: 255 },
+        headStyles: { fillColor: darkGold, textColor: 255 },
         styles: { fontSize: 9 },
         margin: { left: 14, right: 14 },
       });
@@ -243,7 +243,7 @@ export const generatePDFWithJsPDF = async (filteredData: ReportData) => {
         ],
         body: loansBody,
         theme: "striped",
-        headStyles: { fillColor: darkGreen, textColor: 255 },
+        headStyles: { fillColor: darkGold, textColor: 255 },
         styles: { fontSize: 8 },
         margin: { left: 14, right: 14 },
       });

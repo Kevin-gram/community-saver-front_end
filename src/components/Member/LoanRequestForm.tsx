@@ -146,7 +146,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
                 max={Math.min(maxLoanable, availableBalance)}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
                 placeholder="0"
                 required
               />
@@ -184,7 +184,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               max="24"
               value={repaymentPeriod}
               onChange={(e) => setRepaymentPeriod(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
               placeholder="Enter repayment period"
               required
             />
@@ -194,10 +194,10 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
           </div>
 
           {loanAmount > 0 && (
-            <div className="bg-emerald-50 rounded-lg p-4">
+            <div className="bg-gold-50 rounded-lg p-4">
               <div className="flex items-center mb-3">
-                <Calculator className="w-5 h-5 text-emerald-600 mr-2" />
-                <h3 className="font-medium text-emerald-900">
+                <Calculator className="w-5 h-5 text-gold-600 mr-2" />
+                <h3 className="font-medium text-gold-900">
                   {t("loanRequestForm.loanCalculation")}
                 </h3>
               </div>
@@ -220,11 +220,11 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
                     €{interestAmount.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between border-t border-emerald-200 pt-2">
+                <div className="flex justify-between border-t border-gold-200 pt-2">
                   <span className="font-medium text-gray-900">
                     {t("loanRequestForm.totalRepayment")}:
                   </span>
-                  <span className="font-bold text-emerald-900">
+                  <span className="font-bold text-gold-900">
                     €{repaymentAmount.toLocaleString()}
                   </span>
                 </div>
@@ -249,7 +249,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
                 loanAmount > availableBalance ||
                 repaymentPeriod <= 0
               }
-              className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2 bg-gold-600 text-white rounded-lg font-medium hover:bg-gold-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting
                 ? t("loanRequestForm.submitting")

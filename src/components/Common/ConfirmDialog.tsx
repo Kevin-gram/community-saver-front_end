@@ -26,7 +26,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       case "danger":
         return "bg-red-600 hover:bg-red-700 focus:ring-red-500";
       default:
-        return "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500";
+        return "bg-gold-600 hover:bg-gold-700 focus:ring-emerald-500";
     }
   };
 
@@ -69,7 +69,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             className={`flex-1 px-3 py-2 text-sm text-white rounded-lg transition-colors ${
               confirmVariant === "danger"
                 ? "bg-red-600 hover:bg-red-700"
-                : "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-gold-600 hover:bg-gold-700"
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {confirmText}
