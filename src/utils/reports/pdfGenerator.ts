@@ -15,7 +15,7 @@ export const generatePDFWithJsPDF = async (filteredData: ReportData) => {
 
     doc.setFontSize(22);
     doc.setTextColor(darkGold[0], darkGold[1], darkGold[2]);
-    doc.text("Financial Report", pageWidth / 2, yPos, { align: "center" });
+    doc.text("Golden Lion Financial Report", pageWidth / 2, yPos, { align: "center" });
 
     yPos += 10;
     doc.setFontSize(10);
