@@ -252,11 +252,6 @@ export const de = {
     regular: "Regelmäßig",
     penalty: "Strafe",
     adjustment: "Anpassung",
-    addMoneyModal: "Geld Hinzufügen",
-    selectAmount: "Bitte wählen Sie einen Betrag",
-    penaltyWarning: "Beitrag nach dem 10.: Eine Strafe von 25€ wird verhängt",
-    invalidAmount: "Der Betrag muss größer als 0 sein",
-    failedToProcess: "Beitrag konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.",
   },
   userManagement: {
     title: "Benutzerverwaltung",

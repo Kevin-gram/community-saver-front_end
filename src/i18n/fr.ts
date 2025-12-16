@@ -227,11 +227,6 @@ export const fr = {
     regular: "Régulier",
     penalty: "Pénalité",
     adjustment: "Ajustement",
-    addMoneyModal: "Ajouter de l'Argent",
-    selectAmount: "Veuillez sélectionner un montant",
-    penaltyWarning: "Contribution après le 10ème: Une pénalité de 25€ sera appliquée",
-    invalidAmount: "Le montant doit être supérieur à 0",
-    failedToProcess: "Impossible de traiter la contribution. Veuillez réessayer.",
   },
   userManagement: {
     title: "Gestion des Utilisateurs",

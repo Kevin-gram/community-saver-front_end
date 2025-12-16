@@ -421,7 +421,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                           : "bg-blue-100 text-blue-800"
                       }`}
                     >
-                      {t(`memberDetails.${contribution.type}`)}
+                      {t(`memberDetails.${contribution.type || "regular"}`)}
                     </span>
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
