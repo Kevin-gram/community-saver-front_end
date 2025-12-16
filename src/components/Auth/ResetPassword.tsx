@@ -79,7 +79,7 @@ const ResetPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gold-900 via-gold-800 to-white flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-700 mb-2">
@@ -101,7 +101,7 @@ const ResetPassword: React.FC = () => {
                 placeholder="New password (min 6 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 pr-10"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-gold-500 focus:border-gold-500 pr-10"
                 disabled={isLoading || !token || !email}
                 minLength={6}
               />
@@ -132,7 +132,7 @@ const ResetPassword: React.FC = () => {
                 placeholder="Confirm new password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 pr-10"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-gold-500 focus:border-gold-500 pr-10"
                 disabled={isLoading || !token || !email}
                 minLength={6}
               />
@@ -159,7 +159,7 @@ const ResetPassword: React.FC = () => {
           )}
 
           {success && (
-            <div className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-3">
+            <div className="text-sm text-gold-700 bg-gold-50 border border-gold-200 rounded p-3">
               {success}
             </div>
           )}
@@ -167,7 +167,7 @@ const ResetPassword: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading || !token || !email}
-            className="w-full py-2 px-4 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 transition-all font-medium flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2 px-4 bg-gold-700 text-white rounded-lg hover:bg-gold-800 transition-all font-medium flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
@@ -183,7 +183,7 @@ const ResetPassword: React.FC = () => {
         <div className="text-center">
           <button
             onClick={() => navigate("/login")}
-            className="text-sm text-emerald-700 hover:underline"
+            className="text-sm text-gold-700 hover:underline"
           >
             Back to Login
           </button>

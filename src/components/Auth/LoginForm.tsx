@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LogIn, Eye, EyeOff, MailCheck, X } from "lucide-react";
+import { Eye, EyeOff, MailCheck, X, Crown } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import RegisterForm from "./RegisterForm";
 import { loginUser, forgotPassword } from "../../utils/api";
@@ -85,11 +85,11 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-400 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gold-900 via-gold-800 to-gold-400 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
         <div className="text-center">
-          <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
-            <LogIn className="w-8 h-8 text-white" />
+          <div className="bg-gradient-to-br from-gold-300 to-gold-600 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 shadow-lg">
+            <Crown className="w-8 h-8 text-gold-900" />
           </div>
           <h2 className="text-3xl font-bold text-gray-700">Welcome Back</h2>
           <p className="mt-2 text-gray-600">Sign in to your financial portal</p>
@@ -112,7 +112,7 @@ const LoginForm: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm transition-colors"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-gold-500 focus:border-gold-500 focus:z-10 sm:text-sm transition-colors"
                 placeholder="Enter your email"
               />
             </div>
@@ -133,7 +133,7 @@ const LoginForm: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   placeholder="Enter your password"
                 />
                 <button
@@ -152,7 +152,7 @@ const LoginForm: React.FC = () => {
               <div className="flex justify-end mt-1">
                 <button
                   type="button"
-                  className="text-xs text-emerald-700 hover:underline focus:outline-none"
+                  className="text-xs text-gold-700 hover:underline focus:outline-none"
                   onClick={() => setShowForgot(true)}
                 >
                   Forgot password?
@@ -171,7 +171,7 @@ const LoginForm: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-700 hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gold-700 hover:bg-gold-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
@@ -191,7 +191,7 @@ const LoginForm: React.FC = () => {
               type="button"
               onClick={handleGoogleLogin}
               disabled={isLoading}
-              className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -206,7 +206,7 @@ const LoginForm: React.FC = () => {
         <div className="mt-6 text-center">
           <button
             type="button"
-            className="text-emerald-700 underline"
+            className="text-gold-700 underline"
             onClick={() => setShowRegister(true)}
           >
             Don't have an account? Register
@@ -231,7 +231,7 @@ const LoginForm: React.FC = () => {
               <X className="w-5 h-5" />
             </button>
             <div className="flex flex-col items-center mb-4">
-              <MailCheck className="w-10 h-10 text-emerald-700 mb-2" />
+              <MailCheck className="w-10 h-10 text-gold-700 mb-2" />
               <h3 className="text-lg font-semibold text-gray-800 mb-1">
                 Reset your password
               </h3>
@@ -247,21 +247,21 @@ const LoginForm: React.FC = () => {
                 placeholder="Enter your email"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-gold-500 focus:border-gold-500"
                 disabled={forgotStatus === "sending" || forgotStatus === "sent"}
               />
               {forgotError && (
                 <div className="text-sm text-red-600">{forgotError}</div>
               )}
               {forgotStatus === "sent" ? (
-                <div className="text-sm text-emerald-700 text-center">
+                <div className="text-sm text-gold-700 text-center">
                   Password reset link sent! Please check your email.
                 </div>
               ) : (
                 <button
                   type="submit"
                   disabled={forgotStatus === "sending"}
-                  className="w-full py-2 px-4 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 transition-all font-medium flex justify-center items-center disabled:opacity-50"
+                  className="w-full py-2 px-4 bg-gold-700 text-white rounded-lg hover:bg-gold-800 transition-all font-medium flex justify-center items-center disabled:opacity-50"
                 >
                   {forgotStatus === "sending" ? (
                     <span className="flex items-center gap-2">

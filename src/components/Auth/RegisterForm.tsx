@@ -151,16 +151,16 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gold-900 via-gold-800 to-white flex items-center justify-center px-4">
       {/* Toaster */}
       {showToaster && (
-        <div className="fixed top-8 right-8 z-50 px-6 py-3 rounded-lg bg-emerald-600 text-white shadow-lg font-semibold text-sm transition-all animate-fade-in">
+        <div className="fixed top-8 right-8 z-50 px-6 py-3 rounded-lg bg-gold-600 text-white shadow-lg font-semibold text-sm transition-all animate-fade-in">
           Registration successful! Redirecting to login...
         </div>
       )}
       <div className="max-w-4xl w-full space-y-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
         <div className="text-center">
-          <div className="bg-emerald-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
+          <div className="bg-gold-700 w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
             <LogIn className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-700">Welcome</h2>
@@ -183,7 +183,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
                   placeholder="First Name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                 />
               </div>
 
@@ -197,7 +197,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                 />
               </div>
 
@@ -212,7 +212,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   />
                   <button
                     type="button"
@@ -253,7 +253,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
                   <button
                     type="submit"
                     disabled={isRegistering}
-                    className={`w-full px-3 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 shadow-sm flex items-center justify-center ${
+                    className={`w-full px-3 py-2 bg-gold-700 text-white rounded-lg hover:bg-gold-800 shadow-sm flex items-center justify-center ${
                       isRegistering ? "opacity-70 cursor-not-allowed" : ""
                     }`}
                   >
@@ -282,7 +282,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
                   placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                 />
               </div>
 
@@ -294,7 +294,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
                   <button
                     type="button"
                     onClick={() => setGroupDropdownOpen(!groupDropdownOpen)}
-                    className="w-full px-3 py-2 border rounded-lg flex justify-between items-center focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full px-3 py-2 border rounded-lg flex justify-between items-center focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
                     {group}
                     <ChevronDown className="w-4 h-4 ml-2 text-gray-500" />
@@ -308,7 +308,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
                             setGroup(option);
                             setGroupDropdownOpen(false);
                           }}
-                          className="px-4 py-2 cursor-pointer hover:bg-emerald-700 hover:text-white"
+                          className="px-4 py-2 cursor-pointer hover:bg-gold-700 hover:text-white"
                         >
                           {option}
                         </li>
@@ -329,7 +329,7 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
                     placeholder="Confirm Password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   />
                   <button
                     type="button"
@@ -357,14 +357,14 @@ const RegisterForm: React.FC<{ onSwitchToLogin: () => void }> = ({
           <div className="space-y-2">
             {error && <div className="text-sm text-red-600">{error}</div>}
             {success && (
-              <div className="text-sm text-emerald-700">{success}</div>
+              <div className="text-sm text-gold-700">{success}</div>
             )}
           </div>
         </form>
 
         <button
           onClick={onSwitchToLogin}
-          className="w-full mt-2 text-emerald-700 underline"
+          className="w-full mt-2 text-gold-700 underline"
         >
           Already have an account? Login
         </button>
