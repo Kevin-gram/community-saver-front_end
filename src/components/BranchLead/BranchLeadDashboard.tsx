@@ -42,15 +42,15 @@ const POLLING_INTERVAL = 5000; // 5 seconds
 const MemberCardSkeleton = () => (
   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg animate-pulse">
     <div className="flex items-center space-x-3">
-      <div className="w-8 h-8 rounded-full bg-emerald-200"></div>
+      <div className="w-8 h-8 rounded-full bg-gold-200"></div>
       <div>
-        <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
-        <div className="h-3 bg-emerald-200 rounded w-32"></div>
+        <div className="h-4 bg-gold-200 rounded w-24 mb-2"></div>
+        <div className="h-3 bg-gold-200 rounded w-32"></div>
       </div>
     </div>
     <div className="flex items-center space-x-2">
-      <div className="h-6 bg-emerald-200 rounded w-32"></div>
-      <div className="w-8 h-8 bg-emerald-200 rounded"></div>
+      <div className="h-6 bg-gold-200 rounded w-32"></div>
+      <div className="w-8 h-8 bg-gold-200 rounded"></div>
     </div>
   </div>
 );
@@ -59,21 +59,21 @@ const LoanCardSkeleton = () => (
   <div className="p-4 bg-gray-50 rounded-lg animate-pulse">
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center space-x-3">
-        <div className="w-8 h-8 rounded-full bg-emerald-200"></div>
+        <div className="w-8 h-8 rounded-full bg-gold-200"></div>
         <div>
-          <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
-          <div className="h-3 bg-emerald-200 rounded w-32"></div>
+          <div className="h-4 bg-gold-200 rounded w-24 mb-2"></div>
+          <div className="h-3 bg-gold-200 rounded w-32"></div>
         </div>
       </div>
-      <div className="h-6 bg-emerald-200 rounded w-16"></div>
+      <div className="h-6 bg-gold-200 rounded w-16"></div>
     </div>
     <div className="grid grid-cols-2 gap-4 mb-3">
-      <div className="h-4 bg-emerald-200 rounded"></div>
-      <div className="h-4 bg-emerald-200 rounded"></div>
+      <div className="h-4 bg-gold-200 rounded"></div>
+      <div className="h-4 bg-gold-200 rounded"></div>
     </div>
     <div className="flex space-x-2">
-      <div className="flex-1 h-8 bg-emerald-200 rounded"></div>
-      <div className="flex-1 h-8 bg-emerald-200 rounded"></div>
+      <div className="flex-1 h-8 bg-gold-200 rounded"></div>
+      <div className="flex-1 h-8 bg-gold-200 rounded"></div>
     </div>
   </div>
 );
@@ -194,44 +194,44 @@ const BranchLeadDashboard: React.FC = () => {
       title: t("branchLead.branchMembers"),
       value: branchMembers.length.toString(),
       icon: Users,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     {
       title: t("branchLead.totalSavings"),
       value: `€${totalBranchSavings.toLocaleString()}`,
       icon: Euro,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     {
       title: t("branchLead.activeLoans"),
       value: activeLoans.toString(),
       icon: TrendingUp,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     {
       title: t("branchLead.pendingApprovals"),
       value: pendingLoans.toString(),
       icon: AlertCircle,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     // Add group-level cards (distinct, relevant icons)
     {
       title: t("branchLead.grossContribution"),
       value: `€${(netContributions?.netAvailable ?? 0).toLocaleString()}`,
       icon: PiggyBank,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     {
       title: t("branchLead.futureGrossContribution"),
       value: `€${(netContributions?.bestFutureBalance ?? 0).toLocaleString()}`,
       icon: BarChart,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
   ];
 
@@ -245,8 +245,8 @@ const BranchLeadDashboard: React.FC = () => {
         displayData?.totalContribution || userSavings
       ).toLocaleString()}`,
       icon: Euro,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     {
       id: "interest-received",
@@ -260,8 +260,8 @@ const BranchLeadDashboard: React.FC = () => {
         maximumFractionDigits: 2,
       })}`,
       icon: TrendingUp,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
     ...(typeof currentUser.penalties === "object" &&
     !currentUser.penalties.isPaid &&
@@ -272,8 +272,8 @@ const BranchLeadDashboard: React.FC = () => {
             title: t("branchLead.penalties"),
             value: `€${(currentUser.penalties.pending ?? 0).toLocaleString()}`,
             icon: AlertTriangle,
-            color: "text-emerald-600",
-            bg: "bg-emerald-100",
+            color: "text-gold-600",
+            bg: "bg-gold-100",
           },
         ]
       : []),
@@ -282,8 +282,8 @@ const BranchLeadDashboard: React.FC = () => {
       title: t("branchLead.maxLoanable"),
       value: `€${maxLoanAmount.toLocaleString()}`,
       icon: Calculator,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-gold-600",
+      bg: "bg-gold-100",
     },
   ];
 
@@ -475,11 +475,10 @@ const BranchLeadDashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header - Always visible */}
       <div className="mb-8 flex justify-between items-center">
-        <div>
-        </div>
+        <div></div>
         <div className="flex items-center space-x-3">
           <button
-            className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            className="flex items-center px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700"
             onClick={() => setShowReportsPopup(true)}
             title={t("admin.reports")}
           >
@@ -499,11 +498,11 @@ const BranchLeadDashboard: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
-                  <div className="h-8 bg-emerald-200 rounded w-32"></div>
+                  <div className="h-4 bg-gold-200 rounded w-24 mb-2"></div>
+                  <div className="h-8 bg-gold-200 rounded w-32"></div>
                 </div>
-                <div className="bg-emerald-100 rounded-lg p-3">
-                  <div className="w-6 h-6 bg-emerald-200 rounded"></div>
+                <div className="bg-gold-100 rounded-lg p-3">
+                  <div className="w-6 h-6 bg-gold-200 rounded"></div>
                 </div>
               </div>
             </div>
@@ -548,11 +547,11 @@ const BranchLeadDashboard: React.FC = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="h-4 bg-emerald-200 rounded w-24 mb-2"></div>
-                    <div className="h-8 bg-emerald-200 rounded w-32"></div>
+                    <div className="h-4 bg-gold-200 rounded w-24 mb-2"></div>
+                    <div className="h-8 bg-gold-200 rounded w-32"></div>
                   </div>
-                  <div className="bg-emerald-100 rounded-lg p-3">
-                    <div className="w-6 h-6 bg-emerald-200 rounded"></div>
+                  <div className="bg-gold-100 rounded-lg p-3">
+                    <div className="w-6 h-6 bg-gold-200 rounded"></div>
                   </div>
                 </div>
               </div>
@@ -591,7 +590,7 @@ const BranchLeadDashboard: React.FC = () => {
         latestLoan && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md w-full">
             <div className="flex items-center">
-              <Clock className="w-5 h-5 text-emerald-600 mr-3" />
+              <Clock className="w-5 h-5 text-gold-600 mr-3" />
               <div>
                 <h3 className="font-semibold text-gray-900">
                   {t("branchLead.yourLoanStatus")}
@@ -617,7 +616,7 @@ const BranchLeadDashboard: React.FC = () => {
           disabled={!eligible || allCardsLoading}
           className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
             eligible && !allCardsLoading
-              ? `bg-emerald-700 text-white hover:opacity-90 shadow-sm`
+              ? `bg-gold-700 text-white hover:opacity-90 shadow-sm`
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
         >
@@ -629,7 +628,7 @@ const BranchLeadDashboard: React.FC = () => {
           onClick={() => openHistory()}
           className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
         >
-          <History className="w-5 h-5 mr-2" />
+          <History className="w-5 h-5 mr-2 text-gold-600" />
           {t("branchLead.viewHistory")}
         </button>
 
@@ -650,7 +649,7 @@ const BranchLeadDashboard: React.FC = () => {
               : "bg-gray-100 text-gray-400 cursor-not-allowed"
           }`}
         >
-          <FileDown className="w-5 h-5 mr-2" />
+          <FileDown className="w-5 h-5 mr-2 text-gold-600" />
           {isDownloadingAgreement ? t("branchLead.downloading") : t("branchLead.downloadAgreement")}
         </button>
       </div>
@@ -685,71 +684,71 @@ const BranchLeadDashboard: React.FC = () => {
                   0;
 
                 return (
-  <div
-    key={member.id || member._id || `member-${member.email}`}
-    className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg gap-2"
-  >
-    <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-      <div
-        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-200 flex-shrink-0`}
-      >
-        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-medium text-gray-900 text-sm sm:text-base truncate">
-          {member.firstName}{" "}
-          {member.role === "admin" && (
-            <span className="text-xs">(Admin)</span>
-          )}
-        </p>
-        <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-500">
-          <span className="whitespace-nowrap">
-            €{memberContribution.toLocaleString()}
-          </span>
-          <span className="flex items-center whitespace-nowrap">
-            <div
-              className={`w-2 h-2 rounded-full mr-1 ${memberTheme.primary}`}
-            />
-            {member.branch}
-          </span>
-        </div>
-      </div>
-    </div>
+                  <div
+                    key={member.id || member._id || `member-${member.email}`}
+                    className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg gap-2"
+                  >
+                    <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                      <div
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-gold-200 flex-shrink-0`}
+                      >
+                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-700" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                          {member.firstName}{" "}
+                          {member.role === "admin" && (
+                            <span className="text-xs">(Admin)</span>
+                          )}
+                        </p>
+                        <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-500">
+                          <span className="whitespace-nowrap">
+                            €{memberContribution.toLocaleString()}
+                          </span>
+                          <span className="flex items-center whitespace-nowrap">
+                            <div
+                              className={`w-2 h-2 rounded-full mr-1 ${memberTheme.primary}`}
+                            />
+                            {member.branch}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-    <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-      {canEdit && (
-        <>
-          <span className="hidden md:inline-block px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-800 whitespace-nowrap">
-            {t("branchLead.add")}
-          </span>
-          <button
-            onClick={() => {
-              const memberId = member.id || member._id;
-              if (memberId) {
-                setSelectedMember(memberId);
-              } else {
-                console.error(
-                  "No valid member ID found:",
-                  member
-                );
-              }
-            }}
-            className="p-1.5 sm:p-1 rounded text-emerald-600 hover:bg-blue-100 cursor-pointer"
-            disabled={!member.id && !member._id}
-          >
-            <Edit className="w-5 h-5 sm:w-4 sm:h-4" />
-          </button>
-        </>
-      )}
-      <button
-        onClick={() => openHistory(member.id || member._id)}
-        className="p-1.5 sm:p-1 rounded text-gray-700 hover:bg-gray-100"
-        title={t("branchLead.viewMemberHistory")}
-      >
-        <History className="w-5 h-5 sm:w-4 sm:h-4" />
-      </button>
-    </div>
-  </div>
+                    <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+                      {canEdit && (
+                        <>
+                          <span className="hidden md:inline-block px-2 py-1 text-xs rounded-full bg-gold-100 text-gold-800 whitespace-nowrap">
+                            {t("branchLead.add")}
+                          </span>
+                          <button
+                            onClick={() => {
+                              const memberId = member.id || member._id;
+                              if (memberId) {
+                                setSelectedMember(memberId);
+                              } else {
+                                console.error(
+                                  "No valid member ID found:",
+                                  member
+                                );
+                              }
+                            }}
+                            className="p-1.5 sm:p-1 rounded text-gold-600 hover:bg-blue-100 cursor-pointer"
+                            disabled={!member.id && !member._id}
+                          >
+                            <Edit className="w-5 h-5 sm:w-4 sm:h-4" />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={() => openHistory(member.id || member._id)}
+                        className="p-1.5 sm:p-1 rounded text-gray-700 hover:bg-gray-100"
+                        title={t("branchLead.viewMemberHistory")}
+                      >
+                        <History className="w-5 h-5 sm:w-4 sm:h-4" />
+                      </button>
+                    </div>
+                  </div>
                 );
               })
             ) : (
@@ -798,9 +797,9 @@ const BranchLeadDashboard: React.FC = () => {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center space-x-3">
                             <div
-                              className={`w-8 h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-emerald-100`}
+                              className={`w-8 h-8 rounded-full ${memberTheme.primary} flex items-center justify-center bg-gold-100`}
                             >
-                              <Euro className="w-4 h-4 text-emerald-700 " />
+                              <Euro className="w-4 h-4 text-gold-700" />
                             </div>
                             <div>
                               <p className="font-medium text-gray-900">
@@ -840,8 +839,8 @@ const BranchLeadDashboard: React.FC = () => {
                             disabled={isProcessing}
                             className={`flex-1 px-3 py-1 rounded text-sm transition-colors flex items-center justify-center ${
                               isProcessing
-                                ? "bg-emerald-400 text-white cursor-not-allowed"
-                                : "bg-emerald-600 text-white hover:bg-emerald-700"
+                                ? "bg-gold-400 text-white cursor-not-allowed"
+                                : "bg-gold-600 text-white hover:bg-gold-700"
                             }`}
                           >
                             {isProcessing ? (
@@ -918,7 +917,7 @@ const BranchLeadDashboard: React.FC = () => {
         />
       )}
 
-      {/* Financial Reports popup (same as Member dashboard usage) */}
+      {/* Financial Reports popup */}
       {showReportsPopup && (
         <FinancialReports
           open={showReportsPopup}
@@ -926,7 +925,7 @@ const BranchLeadDashboard: React.FC = () => {
         />
       )}
 
-      {/* Email choice modal (after approving a loan) */}
+      {/* Email choice modal */}
       {showEmailChoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">
@@ -967,8 +966,8 @@ const BranchLeadDashboard: React.FC = () => {
                   }
                 }}
                 disabled={isSendingEmail}
-                className={`flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg ${
-                  isSendingEmail ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700"
+                className={`flex-1 px-3 py-2 text-sm bg-gold-600 text-white rounded-lg ${
+                  isSendingEmail ? "opacity-50 cursor-not-allowed" : "hover:bg-gold-700"
                 }`}
               >
                 {isSendingEmail ? t("branchLead.sending") : t("branchLead.sendEmail")}

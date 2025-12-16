@@ -241,7 +241,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     });
                     setIsEditing(true);
                   }}
-                  className="inline-flex items-center px-3 py-1 text-sm bg-emerald-700 text-white rounded-lg hover:bg-emerald-200 hover:text-emerald-700 transition-colors"
+                  className="inline-flex items-center px-3 py-1 text-sm bg-gold-700 text-white rounded-lg hover:bg-gold-800 transition-colors"
                 >
                   <Edit className="w-4 h-4 mr-1" />
                   {t("memberDetails.edit")}
@@ -250,7 +250,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
               {canEdit && !isEditing && (
                 <button
                   onClick={() => setAddMoneyModalOpen(true)}
-                  className="inline-flex items-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg ml-2 hover:bg-emerald-200 hover:text-emerald-700 transition-colors"
+                  className="inline-flex items-center px-3 py-1 text-sm bg-gold-600 text-white rounded-lg ml-2 hover:bg-gold-700 transition-colors"
                 >
                   <DollarSign className="w-4 h-4 mr-1" />
                   {t("memberDetails.addMoney")}
@@ -268,7 +268,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                   <button
                     onClick={handleSave}
                     disabled={isSavingEdit}
-                    className="inline-flex items-center justify-center px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center px-3 py-1 text-sm bg-gold-600 text-white rounded-lg hover:bg-gold-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSavingEdit ? (
                       <>
@@ -405,7 +405,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                   className="flex items-center justify-between p-2 bg-gray-50 rounded"
                 >
                   <div className="flex items-center">
-                    <DollarSign className="w-4 h-4 text-emerald-600 mr-2" />
+                    <DollarSign className="w-4 h-4 text-gold-600 mr-2" />
                     <span className="font-medium">
                       €
                       {typeof contribution.amount === "number"
@@ -415,7 +415,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     <span
                       className={`ml-2 px-2 py-1 text-xs rounded-full ${
                         contribution.type === "regular"
-                          ? "bg-emerald-100 text-emerald-800"
+                          ? "bg-gold-100 text-gold-800"
                           : contribution.type === "penalty"
                           ? "bg-red-100 text-red-800"
                           : "bg-blue-100 text-blue-800"
