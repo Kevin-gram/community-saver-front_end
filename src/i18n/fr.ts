@@ -12,10 +12,12 @@ export const fr = {
     changeLanguage: "Changer de Langue",
   },
   admin: {
+
     recentLoans: "Demandes de Prêt Récentes",
     branchDistribution: "Distribution par Branche",
     pendingLoans: "Prêts en Attente",
     report: "Rapport",
+    repaid: "Remboursé",
     loanApproval: "Approbation de Prêt",
     reviewLoans: "Examinez et approuvez les demandes de prêt des membres",
     userManagement: "Gestion des Utilisateurs",

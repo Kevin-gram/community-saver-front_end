@@ -13,6 +13,7 @@ export const de = {
   },
   admin: {
     pendingLoans: "Ausstehende Darlehen",
+    repaid: "Zurückgezahlt",
     recentLoans: "Aktuelle Darlehensanfragen",
     branchDistribution: "Filialverteilung",
     loanApproval: "Darlehensgenehmigung",
