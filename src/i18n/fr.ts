@@ -12,7 +12,6 @@ export const fr = {
     changeLanguage: "Changer de Langue",
   },
   admin: {
-
     recentLoans: "Demandes de Prêt Récentes",
     branchDistribution: "Distribution par Branche",
     pendingLoans: "Prêts en Attente",
@@ -82,14 +81,6 @@ export const fr = {
     noMembersSharesData: "Aucune donnée de parts de membres disponible pour le moment.",
     retry: "Réessayer",
     all: "Tous",
-    pendingUserRegistrations: "Inscriptions d'Utilisateurs en Attente",
-    approvedUsers: "Utilisateurs Approuvés",
-    rejectedUsers: "Utilisateurs Rejetés",
-    noPendingApprovals: "Aucun utilisateur en attente d'approbation.",
-    noApprovedUsers: "Aucun utilisateur approuvé.",
-    noRejectedUsers: "Aucun utilisateur rejeté.",
-    approving: "Approbation en cours...",
-    rejecting: "Rejet en cours...",
     reports: "Rapports",
   },
   branchLead: {
