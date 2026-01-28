@@ -130,18 +130,21 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
             <label
-              htmlFor="amount"
+              htmlFor="loanAmountInput"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               {t("loanRequestForm.loanAmount")}
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              <span
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
+                aria-hidden="true"
+              >
                 €
               </span>
               <input
-                id="amount"
-                name="loanAmount" 
+                id="loanAmountInput"
+                name="loanAmount"
                 type="number"
                 min="1"
                 max={Math.min(maxLoanable, availableBalance)}
@@ -151,7 +154,8 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
                 placeholder="0"
                 required
                 data-testid="loan-amount-input"
-                autoComplete="off" 
+                autoComplete="off"
+                aria-label="Loan amount in euros"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -182,15 +186,17 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
             </label>
             <input
               id="repaymentPeriod"
+              name="repaymentPeriod"
               type="number"
               min="1"
               max="24"
               value={repaymentPeriod}
-              data-testid="loan-amount-input"
+              data-testid="repayment-period-input"
               onChange={(e) => setRepaymentPeriod(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
               placeholder="Enter repayment period"
               required
+              autoComplete="off"
             />
             <p className="text-xs text-gray-500 mt-1">
               {t("loanRequestForm.defaultSixMonths")}
