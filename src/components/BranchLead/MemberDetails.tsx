@@ -70,7 +70,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   const memberContributions = contributions.filter(
     (c) =>
       (typeof c.memberId === "object" ? c.memberId._id : c.memberId) ===
-      actualMemberId
+      actualMemberId,
   );
 
   const getMonthName = (dateStr: string) => {
@@ -97,7 +97,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
 
       try {
         const backendContribution = await addContribution(
-          adjustmentContribution
+          adjustmentContribution,
         );
         if (
           backendContribution &&
@@ -192,6 +192,11 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
+            id="closeMemberDetailsButton"
+            name="closeMemberDetails"
+            data-testid="close-member-details-button"
+            aria-label="Close member details"
+            type="button"
           >
             <X className="w-6 h-6" />
           </button>
@@ -417,8 +422,8 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                         contribution.type === "regular"
                           ? "bg-gold-100 text-gold-800"
                           : contribution.type === "penalty"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-blue-100 text-blue-800"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {t(`memberDetails.${contribution.type || "regular"}`)}
@@ -429,7 +434,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     {contribution.contributionDate &&
                     !isNaN(new Date(contribution.contributionDate).getTime())
                       ? new Date(
-                          contribution.contributionDate
+                          contribution.contributionDate,
                         ).toLocaleDateString()
                       : "Invalid Date"}
                   </div>
