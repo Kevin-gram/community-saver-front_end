@@ -183,6 +183,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               min="1"
               max="24"
               value={repaymentPeriod}
+              data-testid="loan-amount-input"
               onChange={(e) => setRepaymentPeriod(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
               placeholder="Enter repayment period"
