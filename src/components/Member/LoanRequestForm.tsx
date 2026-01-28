@@ -27,17 +27,17 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
     .filter((u) => u.role === "member")
     .reduce((sum, u) => sum + u.totalContributions, 0);
   const approvedLoans = loans.filter(
-    (loan) => loan.status === "approved" || loan.status === "active"
+    (loan) => loan.status === "approved" || loan.status === "active",
   );
   const repaidLoans = loans.filter((loan) => loan.status === "repaid");
 
   const totalApprovedLoanAmount = approvedLoans.reduce(
     (sum, loan) => sum + loan.amount,
-    0
+    0,
   );
   const totalRepaidLoanAmount = repaidLoans.reduce(
     (sum, loan) => sum + loan.amount,
-    0
+    0,
   );
 
   const availableBalance =
@@ -46,7 +46,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
   const [repaymentPeriod, setRepaymentPeriod] = useState(6);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [grossContribution, setGrossContribution] = useState<number | null>(
-    null
+    null,
   );
 
   // Load gross contribution (netAvailable) from backend on mount
@@ -98,7 +98,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
       interestRate: 1.25,
       repaymentAmount,
       dueDate: new Date(
-        Date.now() + repaymentPeriod * 30 * 24 * 60 * 60 * 1000
+        Date.now() + repaymentPeriod * 30 * 24 * 60 * 60 * 1000,
       ),
       duration: repaymentPeriod,
     };
@@ -139,20 +139,20 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                 €
               </span>
-<input
-  id="amount"
-  type="number"
-  min="1"
-  max={Math.min(maxLoanable, availableBalance)}
-  value={amount}
-  onChange={(e) => setAmount(e.target.value)}
-  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
-  placeholder="0"
-  required
-  data-testid="loan-amount-input"
-  name="loanAmount"
-  role="spinbutton"  // <-- Helps UiPath recognize it as an input
-/>
+              <input
+                id="amount"
+                name="loanAmount" 
+                type="number"
+                min="1"
+                max={Math.min(maxLoanable, availableBalance)}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                placeholder="0"
+                required
+                data-testid="loan-amount-input"
+                autoComplete="off" 
+              />
             </div>
             <p className="text-xs text-gray-500 mt-1">
               {t("loanRequestForm.maximumLoanable")}: €
