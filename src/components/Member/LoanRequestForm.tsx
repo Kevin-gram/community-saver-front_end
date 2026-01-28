@@ -139,17 +139,20 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                 €
               </span>
-              <input
-                id="amount"
-                type="number"
-                min="1"
-                max={Math.min(maxLoanable, availableBalance)}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
-                placeholder="0"
-                required
-              />
+<input
+  id="amount"
+  type="number"
+  min="1"
+  max={Math.min(maxLoanable, availableBalance)}
+  value={amount}
+  onChange={(e) => setAmount(e.target.value)}
+  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+  placeholder="0"
+  required
+  data-testid="loan-amount-input"
+  name="loanAmount"
+  role="spinbutton"  // <-- Helps UiPath recognize it as an input
+/>
             </div>
             <p className="text-xs text-gray-500 mt-1">
               {t("loanRequestForm.maximumLoanable")}: €

@@ -231,7 +231,7 @@ export const en = {
     principalAmount: "Principal Amount:",
     interest: "Interest",
     perMonth: "per month",
-    totalRepayment: "Total Repayment:",
+    totalRepayment: "Total Repayment",
     cancel: "Cancel",
     submitRequest: "Submit Request",
     submitting: "Submitting...",
