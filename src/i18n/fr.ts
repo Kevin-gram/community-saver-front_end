@@ -82,6 +82,13 @@ export const fr = {
     retry: "Réessayer",
     all: "Tous",
     reports: "Rapports",
+    loanAmount: "Montant du Prêt",
+    repaymentAmount: "Montant du Remboursement",
+    riskAssessment: "Évaluation des Risques",
+    loanToSavingsRatio: "Ratio Prêt sur Épargne",
+    interestAmount: "Montant des Intérêts",
+    requested: "demandé",
+    due: "Échéance",
   },
   branchLead: {
     title: "Tableau de Bord Chef de Branche",
@@ -260,5 +267,12 @@ export const fr = {
     active: "Actif",
     previous: "Précédent",
     next: "Suivant",
+  },
+  toast: {
+    loanRequestSuccess: "Demande de Prêt Réussie",
+    loanRequestMessage: "Votre demande de prêt a été soumise avec succès. Veuillez attendre l'approbation de l'administrateur.",
+    contributionSuccess: "Contribution Ajoutée avec Succès",
+    contributionMessage: "L'argent a été ajouté à votre compte avec succès.",
+    error: "Erreur",
   },
 };

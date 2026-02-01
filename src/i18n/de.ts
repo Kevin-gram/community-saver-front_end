@@ -106,6 +106,13 @@ export const de = {
     all: "Alle",
     approvedBy: "Genehmigt von",
     reports: "Berichte",
+    loanAmount: "Darlehensbetrag",
+    repaymentAmount: "Rückzahlungsbetrag",
+    riskAssessment: "Risikobewertung",
+    loanToSavingsRatio: "Darlehensbetrag zu Sparquote",
+    interestAmount: "Zinsbetrag",
+    requested: "angefordert",
+    due: "Fällig"
   },
   branchLead: {
     title: "Filialleiter-Dashboard",
@@ -284,5 +291,12 @@ export const de = {
     active: "Aktiv",
     previous: "Zurück",
     next: "Weiter",
+  },
+  toast: {
+    loanRequestSuccess: "Darlehensantrag Erfolgreich",
+    loanRequestMessage: "Ihr Darlehensantrag wurde erfolgreich eingereicht. Bitte warten Sie auf die Genehmigung durch den Administrator.",
+    contributionSuccess: "Beitrag Erfolgreich Hinzugefügt",
+    contributionMessage: "Geld wurde erfolgreich zu Ihrem Konto hinzugefügt.",
+    error: "Fehler",
   },
 };

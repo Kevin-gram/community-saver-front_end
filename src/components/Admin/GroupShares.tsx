@@ -223,14 +223,13 @@ const GroupShares: React.FC = () => {
   const currentMembers = globalStats.slice(startIndex, endIndex);
 
   return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-700 text-center drop-shadow">
-        {t("admin.groupSharesInterest")}
-      </h2>
-      <div className="bg-gradient-to-br from-gold-50 via-blue-50 to-purple-50 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-8">
-        {/* Stats Section - Responsive */}
+    <div className="w-full">
+      <div className="bg-gradient-to-br from-gold-50 via-blue-50 to-purple-50 rounded-xl border border-gray-200 p-4 sm:p-8" style={{boxShadow: '0 10px 15px -3px rgba(217, 119, 6, 0.3)'}}>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-700 text-center drop-shadow">
+          {t("admin.groupSharesInterest")}
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="bg-white rounded-lg p-4" style={{boxShadow: '0 1px 2px 0 rgba(217, 119, 6, 0.25)'}}>
             <p className="text-sm sm:text-base font-medium text-gray-700 mb-2">
               {t("admin.totalMemberSavings")}
             </p>
@@ -238,7 +237,7 @@ const GroupShares: React.FC = () => {
               €{totalSavings.toLocaleString()}
             </div>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="bg-white rounded-lg p-4" style={{boxShadow: '0 1px 2px 0 rgba(217, 119, 6, 0.25)'}}>
             <p className="text-sm sm:text-base font-medium text-gray-700 mb-2">
               {t("admin.totalInterestDistributed")}
             </p>
@@ -262,7 +261,7 @@ const GroupShares: React.FC = () => {
             {currentMembers.map((member: MemberShare) => (
               <div
                 key={member.id}
-                className="bg-white rounded-lg p-4 shadow border border-gray-200"
+                className="bg-gray-50 rounded-lg p-3 border border-gray-200"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
@@ -316,9 +315,9 @@ const GroupShares: React.FC = () => {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-100 bg-white shadow">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100">
                 <tr>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
                     {t("admin.member")}
@@ -346,31 +345,31 @@ const GroupShares: React.FC = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-200">
                 {currentMembers.map((member: MemberShare, idx: number) => (
                   <tr
                     key={member.id}
-                    className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    className="hover:bg-gray-50"
                   >
-                    <td className="py-3 px-4 font-medium text-gray-900">
+                    <td className="py-3 px-4 text-sm text-gray-900">
                       {member.name}
                     </td>
-                    <td className="py-3 px-4 text-gray-700 font-semibold capitalize">
+                    <td className="py-3 px-4 text-sm text-gray-600">
                       {member.branch}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 text-sm">
                       €{member.totalContribution.toLocaleString()}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 text-sm">
                       {member.sharePercentage.toFixed(2)}%
                     </td>
-                    <td className="py-3 px-4 text-gold-700 font-bold">
+                    <td className="py-3 px-4 text-sm text-gold-700 font-bold">
                       €
                       {member.interestEarned.toLocaleString(undefined, {
                         maximumFractionDigits: 2,
                       })}
                     </td>
-                    <td className="py-3 px-4 text-gold-700 font-bold">
+                    <td className="py-3 px-4 text-sm text-gold-700 font-bold">
                       €
                       {member.interestToBeEarned.toLocaleString(undefined, {
                         minimumFractionDigits: 2,

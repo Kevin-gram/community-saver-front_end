@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Users,
   TrendingUp,
@@ -36,9 +36,8 @@ import {
 } from "../../utils/api";
 import { Loan, User, MemberShare } from "../../types";
 
-const POLLING_INTERVAL = 5000; // 5 seconds
+const POLLING_INTERVAL = 5000;
 
-// Skeleton components
 const MemberCardSkeleton = () => (
   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg animate-pulse">
     <div className="flex items-center space-x-3">
@@ -108,20 +107,17 @@ const BranchLeadDashboard: React.FC = () => {
   const { state, dispatch } = useApp();
   const { currentUser: rawCurrentUser, users, loans, groupRules } = state;
 
-  // Get current user from users array
   const currentUser =
     users.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
 
   if (!currentUser || currentUser.role !== "branch_lead") return null;
 
-  // Filter members AND admins in the same branch
   const branchMembers = users.filter(
     (user) =>
       (user.role === "member" || user.role === "admin") &&
       user.branch === currentUser.branch
   );
 
-  // Get loans for branch members (excluding branch lead's own loans)
   const branchLoans = loans.filter((loan) => {
     let loanMemberId: string | null = null;
 
@@ -151,12 +147,10 @@ const BranchLeadDashboard: React.FC = () => {
     (loan) => loan.status === "active"
   ).length;
 
-  // Total branch savings from shares data
   const totalBranchSavings = allShares
     .filter((share) => share.branch === currentUser.branch)
     .reduce((sum, share) => sum + (share.totalContribution || 0), 0);
 
-  // Loan eligibility for branch lead
   const groupKey = currentUser.branch?.toLowerCase();
   const rules = groupRules[groupKey];
   const maxLoanAmount = rules
@@ -167,13 +161,10 @@ const BranchLeadDashboard: React.FC = () => {
       )
     : 0;
 
-  const availableBalance = state.users.reduce(
-    (sum, user) => sum + user.totalContributions,
-    0
-  );
-  const userSavings = currentUser.totalContributions || 0;
+  const availableBalance = netContributions?.netAvailable ?? 0;
+  const displayData = memberShares || currentUser;
+  const userSavings = displayData?.totalContribution ?? currentUser.totalContributions ?? 0;
 
-  // Get branch lead's own loans
   const userLoans = state.loans.filter((loan) => {
     if (typeof loan.member === "object" && loan.member !== null) {
       return (
@@ -218,7 +209,6 @@ const BranchLeadDashboard: React.FC = () => {
       color: "text-gold-600",
       bg: "bg-gold-100",
     },
-    // Add group-level cards (distinct, relevant icons)
     {
       title: t("branchLead.grossContribution"),
       value: `€${(netContributions?.netAvailable ?? 0).toLocaleString()}`,
@@ -235,15 +225,11 @@ const BranchLeadDashboard: React.FC = () => {
     },
   ];
 
-  // Personal stats for branch lead
-  const displayData = memberShares || currentUser;
   const personalStats = [
     {
       id: "total-savings",
       title: t("branchLead.totalSavings"),
-      value: `€${(
-        displayData?.totalContribution || userSavings
-      ).toLocaleString()}`,
+      value: `€${userSavings.toLocaleString()}`,
       icon: Euro,
       color: "text-gold-600",
       bg: "bg-gold-100",
@@ -287,7 +273,6 @@ const BranchLeadDashboard: React.FC = () => {
     },
   ];
 
-  // Branch lead can always edit
   const getMemberUpdateAccess = () => true;
 
   const handleLoanAction = async (loan: Loan, action: "approve" | "reject") => {
@@ -312,7 +297,6 @@ const BranchLeadDashboard: React.FC = () => {
           dispatch({ type: "UPDATE_USER", payload: backendUser });
         }
 
-        // Show popup asking whether to send approval email (approval already performed)
         const loanId = backendLoan.id || backendLoan._id;
         setApprovedLoanId(loanId || null);
         setShowEmailChoice(true);
@@ -326,14 +310,11 @@ const BranchLeadDashboard: React.FC = () => {
     }
   };
 
-  // Handler for loan request submission
   const handleLoanRequestSubmit = async () => {
     setShowLoanForm(false);
-    // Trigger a background refresh without showing loading
     fetchSharesData(false);
   };
 
-  // Fetch shares data function
   const fetchSharesData = async (showLoading = true) => {
     if (showLoading) {
       setSharesLoading(true);
@@ -365,13 +346,11 @@ const BranchLeadDashboard: React.FC = () => {
     }
   };
 
-  // Fetch branch lead's contributions then open history modal (show up to 10 recent)
   const openHistory = async (memberId?: string) => {
     try {
       setContributionsLoading(true);
       const resolvedId = memberId || currentUser?._id || currentUser?.id;
       const contributionsRaw = await fetchContributionsByMember(String(resolvedId));
-      // eslint-disable-next-line no-console
       const arr = Array.isArray(contributionsRaw) ? contributionsRaw : [];
       arr.sort((a: any, b: any) => {
         const da = new Date(a.contributionDate || a.createdAt || 0).getTime();
@@ -380,7 +359,6 @@ const BranchLeadDashboard: React.FC = () => {
       });
       setMemberContributions(arr.slice(0, 10));
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("Failed to fetch branch lead contributions:", err);
       setMemberContributions([]);
     } finally {
@@ -389,20 +367,16 @@ const BranchLeadDashboard: React.FC = () => {
     }
   };
 
-  // Setup polling effect - ONLY RUNS ONCE
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Prevent double loading on mount
     if (hasInitiallyLoadedRef.current) {
       return;
     }
     hasInitiallyLoadedRef.current = true;
 
-    // Initial fetch with loading state
     fetchSharesData(true);
 
-    // Setup polling interval for background updates - only if tab is visible
     const handleVisibilityChange = () => {
       if (document.hidden && pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
@@ -422,7 +396,6 @@ const BranchLeadDashboard: React.FC = () => {
       }, POLLING_INTERVAL);
     }
 
-    // Cleanup
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       isMountedRef.current = false;
@@ -431,9 +404,8 @@ const BranchLeadDashboard: React.FC = () => {
         pollingIntervalRef.current = null;
       }
     };
-  }, []); // Empty dependency array - only run once
+  }, []);
 
-  // Add a single loading state for all cards
   const allCardsLoading = sharesLoading;
 
   const handleDownloadAgreement = async () => {
@@ -473,7 +445,6 @@ const BranchLeadDashboard: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header - Always visible */}
       <div className="mb-8 flex justify-between items-center">
         <div></div>
         <div className="flex items-center space-x-3">
@@ -488,7 +459,6 @@ const BranchLeadDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Branch Stats Grid - Skeleton */}
       {allCardsLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(stats.length)].map((_, i) => (
@@ -533,7 +503,6 @@ const BranchLeadDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Personal Finance Section - Skeleton */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           {t("branchLead.personalFinance")}
@@ -583,7 +552,6 @@ const BranchLeadDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Loan Status Section - Skeleton */}
       {allCardsLoading ? (
         <LoanCardSkeleton />
       ) : (
@@ -609,7 +577,6 @@ const BranchLeadDashboard: React.FC = () => {
         )
       )}
 
-      {/* Action Buttons - Always visible */}
       <div className="flex flex-wrap gap-4 mb-8">
         <button
           onClick={() => setShowLoanForm(true)}
@@ -654,9 +621,7 @@ const BranchLeadDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Grid sections with loading states */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Branch Members */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             {t("branchLead.branchMembers")}
@@ -760,7 +725,6 @@ const BranchLeadDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Pending Loan Requests */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             {t("branchLead.pendingLoanRequests")}
@@ -889,7 +853,6 @@ const BranchLeadDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Modals */}
       {selectedMember && (
         <MemberDetails
           memberId={selectedMember}
@@ -917,7 +880,6 @@ const BranchLeadDashboard: React.FC = () => {
         />
       )}
 
-      {/* Financial Reports popup */}
       {showReportsPopup && (
         <FinancialReports
           open={showReportsPopup}
@@ -925,7 +887,6 @@ const BranchLeadDashboard: React.FC = () => {
         />
       )}
 
-      {/* Email choice modal */}
       {showEmailChoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto">

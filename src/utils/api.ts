@@ -1,12 +1,7 @@
-export const fetchBranches = async () => {
-  const res = await api.get("/branches");
-  return res.data.data;
-};
-
 import { User, Loan, Contribution } from "../types";
 import axios from "axios";
 
-export const API_BASE = "https://golden-lion.onrender.com/api";
+export const API_BASE = import.meta.env.VITE_API_BASE;
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -20,6 +15,11 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+export const fetchBranches = async () => {
+  const res = await api.get("/branches");
+  return res.data.data;
+};
 
 export const fetchUsers = async () => {
   const res = await api.get("/users");
@@ -80,7 +80,6 @@ export const approveOrReject = async (
   status: "approved" | "rejected"
 ) => {
   const body: any = { status };
-
   const res = await api.post(`/loans/${loanId}/approve`, body);
   return res.data.data.loan;
 };
@@ -95,86 +94,80 @@ export const deleteLoan = async (loanId: string) => {
   return res.data;
 };
 
-// CONTRIBUTIONS
+export const repayLoan = async (loanId: string, amount: number) => {
+  const res = await api.post(`/loans/${loanId}/disburse`, { amount });
+  return res.data.data.loan;
+};
+
+export const sendLoanApprovalEmail = async (loanId: string) => {
+  const res = await api.post(`/loans/${loanId}/send-approval-email`);
+  return res.data;
+};
+
+export const downloadLoanAgreement = async (loanId: string) => {
+  const res = await api.get(`/loans/loan-agreement`, {
+    responseType: "blob",
+    params: { loanId },
+  });
+  return res;
+};
+
 export const fetchContributions = async () => {
   const res = await api.get("/contributions");
   return res.data.data.contributions;
 };
 
-// New: fetch contributions for a single member via query param ?memberId=...
 export const fetchContributionsByMember = async (memberId: string) => {
-	// Log entry for easier tracing
-	// eslint-disable-next-line no-console
-	// Helper to normalise contributions from axios response
-	const extractContributions = (res: any) => {
-		if (!res) return undefined;
-		// Backend may return { data: { contributions: [...] } } or { contributions: [...] } or array directly
-		return res.data?.data?.contributions ?? res.data?.contributions ?? res.data;
-	};
+  const extractContributions = (res: any) => {
+    if (!res) return undefined;
+    return res.data?.data?.contributions ?? res.data?.contributions ?? res.data;
+  };
 
-	// First, try the canonical single query (server should support this)
-	try {
-		const res = await api.get("/contributions", { params: { memberId } });
-		const contributions = extractContributions(res);
+  try {
+    const res = await api.get("/contributions", { params: { memberId } });
+    const contributions = extractContributions(res);
 
-		// eslint-disable-next-line no-console
-		console.debug("fetchContributionsByMember primary attempt:", {
-			memberId,
-			contribPreview: Array.isArray(contributions) ? contributions.length : typeof contributions,
-			raw: res?.data,
-		});
+    if (contributions !== undefined) {
+      if (Array.isArray(contributions)) return contributions;
+      if (typeof contributions === "object" && contributions !== null) {
+        if (Array.isArray((contributions as any).contributions)) {
+          return (contributions as any).contributions;
+        }
+        return [contributions];
+      }
+      return [];
+    }
+  } catch (err) {
+    console.warn("fetchContributionsByMember primary attempt failed for memberId:", memberId, err?.message || err);
+  }
 
-		if (contributions !== undefined) {
-			// Normalize to array
-			if (Array.isArray(contributions)) return contributions;
-			if (typeof contributions === "object" && contributions !== null) {
-				if (Array.isArray((contributions as any).contributions)) {
-					return (contributions as any).contributions;
-				}
-				return [contributions];
-			}
-			return [];
-		}
-	} catch (err) {
-		// eslint-disable-next-line no-console
-		console.warn("fetchContributionsByMember primary attempt failed for memberId:", memberId, err?.message || err);
-	}
+  try {
+    const allRes = await api.get("/contributions");
+    const all = allRes.data?.data?.contributions ?? allRes.data;
 
-	// Fallback: fetch all contributions and filter client-side.
-	// This is defensive and should be rare.
-	try {
-		const allRes = await api.get("/contributions");
-		const all = allRes.data?.data?.contributions ?? allRes.data;
-		// eslint-disable-next-line no-console
-		console.debug("fetchContributionsByMember fallback: total contributions fetched:", Array.isArray(all) ? all.length : typeof all);
+    if (!Array.isArray(all)) return [];
 
-		if (!Array.isArray(all)) return [];
+    const filtered = all.filter((c: any) => {
+      const ids: string[] = [];
+      const push = (v: any) => {
+        if (v === undefined || v === null) return;
+        if (Array.isArray(v)) return v.forEach(push);
+        ids.push(String(v));
+      };
+      push(c.memberId?._id);
+      push(c.memberId?.id);
+      push(c.member?._id);
+      push(c.member?.id);
+      push(c.memberId);
+      push(c.member);
+      return ids.includes(String(memberId));
+    });
 
-		const filtered = all.filter((c: any) => {
-			// match any common nested id fields
-			const ids: string[] = [];
-			const push = (v: any) => {
-				if (v === undefined || v === null) return;
-				if (Array.isArray(v)) return v.forEach(push);
-				ids.push(String(v));
-			};
-			push(c.memberId?._id);
-			push(c.memberId?.id);
-			push(c.member?._id);
-			push(c.member?.id);
-			push(c.memberId);
-			push(c.member);
-			return ids.includes(String(memberId));
-		});
-
-		// eslint-disable-next-line no-console
-		console.debug(`fetchContributionsByMember: client-side filtered ${filtered.length} of ${all.length} for id=${memberId}`);
-		return filtered;
-	} catch (err) {
-		// eslint-disable-next-line no-console
-		console.error("fetchContributionsByMember final fallback failed:", err?.message || err);
-		return [];
-	}
+    return filtered;
+  } catch (err) {
+    console.error("fetchContributionsByMember final fallback failed:", err?.message || err);
+    return [];
+  }
 };
 
 export const addContribution = async (contribution: Contribution) => {
@@ -192,50 +185,45 @@ export const deleteContribution = async (contributionId: string) => {
   return res.data;
 };
 
-// GET all penalties
-export const fetchPenalties = async () => {
-  const res = await api.get("/penalties");
-  return res.data.data.penalties;
-};
-
-// PUT (update) a penalty
-export const updatePenalty = async (penaltyId: string, updates: any) => {
-  const res = await api.post(`/penalties/${penaltyId}/pay`, updates);
-  return res.data.data.penalty;
-};
-
-export const repayLoan = async (loanId: string, amount: number) => {
-  const res = await api.post(`/loans/${loanId}/disburse`, { amount });
-  return res.data.data.loan;
-};
-
-// DELETE a penalty
-export const deletePenalty = async (penaltyId: string) => {
-  const res = await api.delete(`/penalties/${penaltyId}`);
-  return res.data;
-};
-
 export const fetchNetContributions = async () => {
   const res = await api.get("/contributions/net");
   return res.data.data;
 };
 
-// New: trigger approval email for a loan
-export const sendLoanApprovalEmail = async (loanId: string) => {
-  const res = await api.post(`/loans/${loanId}/send-approval-email`);
+export const fetchPenalties = async () => {
+  const res = await api.get("/penalties");
+  return res.data.data.penalties;
+};
+
+export const updatePenalty = async (penaltyId: string, updates: any) => {
+  const res = await api.post(`/penalties/${penaltyId}/pay`, updates);
+  return res.data.data.penalty;
+};
+
+export const deletePenalty = async (penaltyId: string) => {
+  const res = await api.delete(`/penalties/${penaltyId}`);
   return res.data;
 };
 
-export const downloadLoanAgreement = async (loanId: string) => {
-  // Call backend endpoint to get the agreement as a blob.
-  // Endpoint: GET /loans/loan-agreement?loanId=...
-  const res = await api.get(`/loans/loan-agreement`, {
-    responseType: "blob",
-    params: { loanId },
-  });
-  return res; // axios response with res.data (Blob) and res.headers
+export const createPenalty = async (penaltyData: {
+  member: string;
+  amount: number;
+  reason: string;
+  description: string;
+  assignedBy: string;
+  status: string;
+  assignedDate: string;
+  branch: string;
+}) => {
+  try {
+    const res = await api.post("/penalties", penaltyData);
+    return res.data.data.penalty;
+  } catch (error) {
+    console.error("Penalty creation error:", error);
+    throw error;
+  }
 };
-// AUTH
+
 export const registerUser = async (userData: {
   firstName: string;
   lastName: string;
@@ -253,30 +241,10 @@ export const loginUser = async (credentials: {
   password: string;
 }) => {
   const res = await api.post("/auth/login", credentials);
-  // Store token in localStorage if present
   if (res.data && res.data.token) {
     localStorage.setItem("token", res.data.token);
   }
   return res.data;
-};
-
-export const createPenalty = async (penaltyData: {
-  member: string; // Just the member ID
-  amount: number;
-  reason: string;
-  description: string;
-  assignedBy: string; // Just the assigner ID
-  status: string;
-  assignedDate: string;
-  branch: string;
-}) => {
-  try {
-    const res = await api.post("/penalties", penaltyData);
-    return res.data.data.penalty;
-  } catch (error) {
-    console.error("Penalty creation error:", error);
-    throw error;
-  }
 };
 
 export const forgotPassword = async (email: string) => {

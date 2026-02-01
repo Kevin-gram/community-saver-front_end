@@ -4,6 +4,7 @@ import { useApp } from "../../context/AppContext";
 import { Loan } from "../../types";
 import { addLoan, fetchNetContributions } from "../../utils/api";
 import { useLanguage } from "../../context/LanguageContext";
+import Toast from "../Common/Toast";
 
 interface LoanRequestFormProps {
   onClose: () => void;
@@ -11,43 +12,30 @@ interface LoanRequestFormProps {
   interestRate: number;
   availableBalance: number;
   userSavings: number;
-  onSubmit: () => Promise<void>; // Added onSubmit property
+  onSubmit: () => Promise<void>;
 }
 
 const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
   onClose,
   maxAmount,
+  availableBalance, // Used directly — no local recalculation
   userSavings,
 }) => {
   const { t } = useLanguage();
   const { state, dispatch } = useApp();
-  const { users, loans, currentUser } = state;
+  const { currentUser } = state;
 
-  const totalSavings = users
-    .filter((u) => u.role === "member")
-    .reduce((sum, u) => sum + u.totalContributions, 0);
-  const approvedLoans = loans.filter(
-    (loan) => loan.status === "approved" || loan.status === "active",
-  );
-  const repaidLoans = loans.filter((loan) => loan.status === "repaid");
-
-  const totalApprovedLoanAmount = approvedLoans.reduce(
-    (sum, loan) => sum + loan.amount,
-    0,
-  );
-  const totalRepaidLoanAmount = repaidLoans.reduce(
-    (sum, loan) => sum + loan.amount,
-    0,
-  );
-
-  const availableBalance =
-    totalSavings - totalApprovedLoanAmount + totalRepaidLoanAmount;
   const [amount, setAmount] = useState("");
   const [repaymentPeriod, setRepaymentPeriod] = useState(6);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [grossContribution, setGrossContribution] = useState<number | null>(
     null,
   );
+  const [toast, setToast] = useState<{
+    type: "success" | "error" | "info";
+    title: string;
+    message: string;
+  } | null>(null);
 
   // Load gross contribution (netAvailable) from backend on mount
   useEffect(() => {
@@ -55,12 +43,16 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
     const loadGross = async () => {
       try {
         const net = await fetchNetContributions();
-        // Support different shapes: net.netAvailable or net.net_available
         const value = net?.netAvailable ?? net?.net_available ?? null;
         if (mounted)
           setGrossContribution(typeof value === "number" ? value : null);
-      } catch (err) {
-        console.error("Failed to load gross contribution:", err);
+      } catch (err: any) {
+        if (err?.response?.status === 401) {
+          console.warn("Not authorized to fetch net contributions");
+        } else {
+          console.error("Failed to load gross contribution:", err?.message || err);
+        }
+        if (mounted) setGrossContribution(null);
       }
     };
     loadGross();
@@ -72,20 +64,18 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
   if (!currentUser) return null;
 
   const loanAmount = parseFloat(amount) || 0;
-  // Monthly interest rate is 1.25%
   const monthlyInterestRate = 0.0125;
   const interestAmount = loanAmount * monthlyInterestRate * repaymentPeriod;
   const repaymentAmount = loanAmount + interestAmount;
 
-  // Calculate the maximum loanable amount for the user
   const maxLoanable = Math.min(userSavings * 3, maxAmount);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       loanAmount <= 0 ||
-      loanAmount > maxLoanable || // Ensure the loan does not exceed the user's limit
-      loanAmount > availableBalance || // Ensure the bank has enough funds
+      loanAmount > maxLoanable ||
+      loanAmount > availableBalance ||
       repaymentPeriod <= 0
     )
       return;
@@ -102,19 +92,47 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
       ),
       duration: repaymentPeriod,
     };
+
     try {
-      const backendLoan = await addLoan(newLoan); // <-- This sends data to backend
+      const backendLoan = await addLoan(newLoan);
       dispatch({ type: "ADD_LOAN", payload: backendLoan });
+      
+      // Show success toast
+      setToast({
+        type: "success",
+        title: t("toast.loanRequestSuccess"),
+        message: t("toast.loanRequestMessage"),
+      });
+      
+      // Close form after toast displays
+      setTimeout(() => {
+        onClose();
+      }, 3000);
+      setIsSubmitting(false);
     } catch (error) {
       console.error("Failed to submit loan request to backend", error);
+      setToast({
+        type: "error",
+        title: t("toast.error"),
+        message: t("loanRequestForm.submissionFailed"),
+      });
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
-    onClose();
   };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+    <>
+      {toast && (
+        <Toast
+          type={toast.type}
+          title={toast.title}
+          message={toast.message}
+          onClose={() => setToast(null)}
+          duration={5000}
+        />
+      )}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
             {t("loanRequestForm.title")}
@@ -164,14 +182,14 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
             </p>
             <p className="text-xs text-gray-500 mt-1">
               {t("loanRequestForm.grossContributions")}: €
-              {(grossContribution ?? totalSavings).toLocaleString()}
+              {(grossContribution ?? availableBalance).toLocaleString()}
             </p>
             {loanAmount > maxLoanable && (
               <p className="text-xs text-red-500 mt-1">
                 {t("loanRequestForm.exceedsLimit")}
               </p>
             )}
-            {loanAmount > maxLoanable && (
+            {loanAmount > availableBalance && (
               <p className="text-xs text-red-500 mt-1">
                 {t("loanRequestForm.exceedsSavings")}
               </p>
@@ -269,6 +287,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({
         </form>
       </div>
     </div>
+  </>
   );
 };
 

@@ -12,6 +12,7 @@ import { useApp } from "../../context/AppContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getGroupTheme } from "../../utils/calculations";
 import { addContribution } from "../../utils/api";
+import Toast from "../Common/Toast";
 
 interface MemberDetailsProps {
   memberId: string;
@@ -59,6 +60,11 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   const [addError, setAddError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [toast, setToast] = useState<{
+    type: "success" | "error" | "info";
+    title: string;
+    message: string;
+  } | null>(null);
 
   if (!member) return null;
 
@@ -145,7 +151,13 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
 
       const backendContribution = await addContribution(contributionData);
 
-      // Handle success
+      // Handle success - show toast notification
+      setToast({
+        type: "success",
+        title: t("toast.contributionSuccess"),
+        message: t("toast.contributionMessage"),
+      });
+
       if (backendContribution?.contribution) {
         dispatch({
           type: "ADD_CONTRIBUTION",
@@ -173,7 +185,17 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <>
+      {toast && (
+        <Toast
+          type={toast.type}
+          title={toast.title}
+          message={toast.message}
+          onClose={() => setToast(null)}
+          duration={5000}
+        />
+      )}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -434,7 +456,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
                     {contribution.contributionDate &&
                     !isNaN(new Date(contribution.contributionDate).getTime())
                       ? new Date(
-                          contribution.contributionDate,
+                       contribution.contributionDate,
                         ).toLocaleDateString()
                       : "Invalid Date"}
                   </div>
@@ -450,6 +472,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         </div>
       </div>
     </div>
+    </>
   );
 };
 

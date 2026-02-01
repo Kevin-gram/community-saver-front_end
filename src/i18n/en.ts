@@ -302,4 +302,11 @@ export const en = {
     previous: "Previous",
     next: "Next",
   },
+  toast: {
+    loanRequestSuccess: "Loan Request Successful",
+    loanRequestMessage: "Your loan request has been submitted successfully. Please wait for approval from the admin.",
+    contributionSuccess: "Contribution Added Successfully",
+    contributionMessage: "Money has been added to your account successfully.",
+    error: "Error",
+  },
 };

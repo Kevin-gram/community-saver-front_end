@@ -157,11 +157,13 @@ const MemberDashboard: React.FC = () => {
       )
     : 0;
 
-  const availableBalance = state.users.reduce(
-    (sum, user) => sum + user.totalContributions,
-    0
-  );
-  const userSavings = currentUser.totalContributions;
+  // FIX: availableBalance is simply currentSavings — the same value shown
+  // on the "Total Savings" card and used to compute maxLoanAmount.
+  // Previously this was computed from state.users.reduce(...) which returned 0
+  // because state.users hadn't been hydrated yet.
+  const availableBalance = currentSavings;
+
+  const userSavings = currentSavings;
 
   // Compose stats - include group-level cards and ensure same size via fixed height class
   const stats = [
@@ -775,8 +777,8 @@ const MemberDashboard: React.FC = () => {
           onClose={() => setShowLoanForm(false)}
           maxAmount={maxLoanAmount}
           interestRate={rules.interestRate}
-          availableBalance={availableBalance}
-          userSavings={userSavings}
+          availableBalance={availableBalance} // Now passes currentSavings
+          userSavings={userSavings}           // Also currentSavings — consistent
         />
       )}
 
