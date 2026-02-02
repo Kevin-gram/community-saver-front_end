@@ -21,8 +21,24 @@ export const fetchBranches = async () => {
 };
 
 export const fetchUsers = async () => {
-  const res = await api.get("/users");
-  return res.data.data.users;
+  let allUsers: any[] = [];
+  let currentPage = 1;
+  let totalPages = 1;
+
+  // Fetch all pages
+  do {
+    const res = await api.get("/users", {
+      params: { page: currentPage, limit: 10 }
+    });
+    
+    const { users, pagination } = res.data.data;
+    allUsers = [...allUsers, ...users];
+    
+    totalPages = pagination.pages;
+    currentPage++;
+  } while (currentPage <= totalPages);
+
+  return allUsers;
 };
 
 export const fetchUserByEmail = async (email: string) => {

@@ -410,7 +410,7 @@ const UserManagement: React.FC = () => {
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-end space-x-4 p-4 border-t border-gray-200">
+          <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-4 p-4 border-t border-gray-200">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
@@ -419,6 +419,9 @@ const UserManagement: React.FC = () => {
               <ChevronLeft className="w-4 h-4 mr-1" />
               {t("userManagement.previous")}
             </button>
+            <span className="text-xs sm:text-sm text-gray-600">
+              {t("admin.paginationPage")} {currentPage} {t("admin.paginationOf")} {totalPages}
+            </span>
             <button
               onClick={() =>
                 setCurrentPage((prev) => Math.min(totalPages, prev + 1))
