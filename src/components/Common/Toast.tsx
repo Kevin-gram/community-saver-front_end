@@ -82,7 +82,7 @@ const Toast: React.FC<ToastProps> = ({
           <X className="w-5 h-5" />
         </button>
       </div>
-      <style jsx>{`
+      <style>{`
         @keyframes slide-in {
           from {
             transform: translateX(100%);

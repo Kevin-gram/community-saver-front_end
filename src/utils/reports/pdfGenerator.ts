@@ -11,7 +11,7 @@ export const generatePDFWithJsPDF = async (filteredData: ReportData) => {
     const pageWidth = doc.internal.pageSize.width;
     let yPos = 20;
 
-    const darkGold = [184, 134, 11]; // RGB for dark gold
+    const darkGold: [number, number, number] = [184, 134, 11];
 
     doc.setFontSize(22);
     doc.setTextColor(darkGold[0], darkGold[1], darkGold[2]);
@@ -251,7 +251,7 @@ export const generatePDFWithJsPDF = async (filteredData: ReportData) => {
       yPos = (doc as any).lastAutoTable.finalY + 15;
     }
 
-    const pageCount = doc.internal.getNumberOfPages();
+    const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);

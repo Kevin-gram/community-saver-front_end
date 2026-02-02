@@ -10,8 +10,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
-    config.headers = config.headers || {};
-    config.headers["Authorization"] = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -105,11 +104,16 @@ export const sendLoanApprovalEmail = async (loanId: string) => {
 };
 
 export const downloadLoanAgreement = async (loanId: string) => {
-  const res = await api.get(`/loans/loan-agreement`, {
-    responseType: "blob",
-    params: { loanId },
-  });
-  return res;
+  // Fetch the PDF template from public folder
+  const response = await fetch('/loan-agreement-template.pdf');
+  if (!response.ok) {
+    throw new Error(`Failed to fetch PDF template: ${response.statusText}`);
+  }
+  const blob = await response.blob();
+  return {
+    data: blob,
+    headers: {},
+  };
 };
 
 export const fetchContributions = async () => {

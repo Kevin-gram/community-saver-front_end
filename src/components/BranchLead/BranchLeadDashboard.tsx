@@ -101,7 +101,7 @@ const BranchLeadDashboard: React.FC = () => {
   const [approvedLoanId, setApprovedLoanId] = useState<string | null>(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const isMountedRef = useRef(true);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasInitiallyLoadedRef = useRef(false);
 
   const { state, dispatch } = useApp();
@@ -109,8 +109,6 @@ const BranchLeadDashboard: React.FC = () => {
 
   const currentUser =
     users.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
-
-  if (!currentUser || currentUser.role !== "branch_lead") return null;
 
   const branchMembers = users.filter(
     (user) =>
@@ -408,40 +406,41 @@ const BranchLeadDashboard: React.FC = () => {
 
   const allCardsLoading = sharesLoading;
 
-  const handleDownloadAgreement = async () => {
-    const loanId = latestLoan?.id || latestLoan?._id;
-    if (!loanId) return;
-    setIsDownloadingAgreement(true);
-    try {
-      const res = await downloadLoanAgreement(loanId);
-      const blob = new Blob([res.data], {
-        type: res.data.type || "application/pdf",
-      });
-      const cd =
-        res.headers &&
-        (res.headers["content-disposition"] ||
-          res.headers["Content-Disposition"]);
-      let filename = `loan-agreement-${loanId}.pdf`;
-      if (cd) {
-        const match = /filename\*?=(?:UTF-8'')?["']?([^;"']+)/i.exec(cd);
-        if (match && match[1]) {
-          filename = decodeURIComponent(match[1]);
-        }
-      }
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Failed to download agreement:", err);
-    } finally {
-      setIsDownloadingAgreement(false);
+const handleDownloadAgreement = async () => {
+  const loanId = latestLoan?.id || latestLoan?._id;
+  if (!loanId) return;
+  setIsDownloadingAgreement(true);
+  try {
+    // Fetch from public folder
+    const response = await fetch(`/loan-agreement.pdf`);
+    
+    if (!response.ok) {
+      throw new Error('PDF file not found');
     }
-  };
+    
+    const blob = await response.blob();
+    const filename = `loan-agreement-${loanId}.pdf`;
+    
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    
+    // Clean up
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+  } catch (err) {
+    console.error("Failed to download agreement:", err);
+    alert("Failed to download loan agreement. Please try again.");
+  } finally {
+    setIsDownloadingAgreement(false);
+  }
+};
+
+  // Early return if not a branch lead - must be after all hooks
+  if (!currentUser || currentUser.role !== "branch_lead") return null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -98,7 +98,7 @@ const MemberDetails: React.FC<MemberDetailsProps> = ({
         amount: adjustmentAmount,
         contributionDate: new Date().toISOString(),
         month: getMonthName(new Date().toISOString()),
-        type: "adjustment",
+        type: "adjustment" as const,
       };
 
       try {

@@ -114,31 +114,13 @@ const MemberDashboard: React.FC = () => {
   const [contributionsLoading, setContributionsLoading] = useState(false);
 
   const isMountedRef = useRef(true);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastSuccessfulFetch = useRef<number>(Date.now());
   const lastFetchTime = useRef<number>(0);
-
-  // Early return if no user data
-  if (!rawCurrentUser) {
-    return (
-      <div className="p-8 text-center">
-        <p>{t("member.loadingUserData")}</p>
-      </div>
-    );
-  }
 
   // Find current user with null check
   const currentUser =
     users?.find((u) => u._id === rawCurrentUser?.id) || rawCurrentUser;
-
-  // Early return if not a member
-  if (!currentUser || currentUser.role !== "member") {
-    return (
-      <div className="p-8 text-center">
-        <p>{t("member.accessDenied")}</p>
-      </div>
-    );
-  }
 
   const groupKey = currentUser.branch?.toLowerCase() || "";
   const rules = groupRules[groupKey] || {};
@@ -543,37 +525,38 @@ const MemberDashboard: React.FC = () => {
     </div>
   );
 
-  const handleDownloadAgreement = async () => {
-    const loanId = latestLoan?.id || latestLoan?._id;
-    if (!loanId) return;
-    setIsDownloadingAgreement(true);
-    try {
-      const res = await downloadLoanAgreement(loanId);
-      const blob = new Blob([res.data], { type: res.data.type || "application/pdf" });
-      // try to infer filename from content-disposition header
-      const cd = res.headers && (res.headers["content-disposition"] || res.headers["Content-Disposition"]);
-      let filename = `loan-agreement-${loanId}.pdf`;
-      if (cd) {
-        const match = /filename\*?=(?:UTF-8'')?["']?([^;"']+)/i.exec(cd);
-        if (match && match[1]) {
-          filename = decodeURIComponent(match[1]);
-        }
-      }
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Failed to download agreement:", err);
-      // Optionally show a toast/alert here
-    } finally {
-      setIsDownloadingAgreement(false);
+const handleDownloadAgreement = async () => {
+  const loanId = latestLoan?.id || latestLoan?._id;
+  if (!loanId) return;
+  setIsDownloadingAgreement(true);
+  try {
+  
+    const response = await fetch(`/loan-agreement.pdf`);
+    
+    if (!response.ok) {
+      throw new Error('PDF file not found');
     }
-  };
+    
+    const blob = await response.blob();
+    const filename = `loan-agreement-${loanId}.pdf`;
+    
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    
+    // Clean up
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+  } catch (err) {
+    console.error("Failed to download agreement:", err);
+    alert("Failed to download loan agreement. Please try again.");
+  } finally {
+    setIsDownloadingAgreement(false);
+  }
+};
 
   // Fetch this user's contributions then open history modal (show up to 10 recent)
   const openHistory = async () => {
@@ -598,6 +581,32 @@ const MemberDashboard: React.FC = () => {
       setContributionsLoading(false);
     }
   };
+
+  // Handle loan form submission - close form after successful submission
+  const handleLoanFormSubmit = async () => {
+    setShowLoanForm(false);
+    // Refresh member data to get updated loan status
+    const userId = currentUser._id || currentUser.id;
+    await fetchMemberData(userId, true);
+  };
+
+  // Early return if no user data - must be after all hooks
+  if (!rawCurrentUser) {
+    return (
+      <div className="p-8 text-center">
+        <p>{t("member.loadingUserData")}</p>
+      </div>
+    );
+  }
+
+  // Early return if not a member - must be after all hooks
+  if (!currentUser || currentUser.role !== "member") {
+    return (
+      <div className="p-8 text-center">
+        <p>{t("member.accessDenied")}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -779,6 +788,7 @@ const MemberDashboard: React.FC = () => {
           interestRate={rules.interestRate}
           availableBalance={availableBalance} // Now passes currentSavings
           userSavings={userSavings}           // Also currentSavings — consistent
+          onSubmit={handleLoanFormSubmit}
         />
       )}
 

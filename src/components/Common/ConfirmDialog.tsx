@@ -5,6 +5,7 @@ interface ConfirmDialogProps {
   title: string;
   message: string;
   confirmText: string | React.ReactNode;
+  cancelText?: string | React.ReactNode;
   confirmVariant?: "primary" | "danger";
   onConfirm: () => void;
   onCancel: () => void;

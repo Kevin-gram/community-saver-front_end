@@ -46,6 +46,14 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
 
   useEffect(() => {
     if (user) {
+      // Extract penalties value - handle both number and MemberPenalties object
+      let penaltiesValue = 0;
+      if (typeof user.penalties === "number") {
+        penaltiesValue = user.penalties;
+      } else if (typeof user.penalties === "object" && user.penalties !== null) {
+        penaltiesValue = (user.penalties as any).pending || 0;
+      }
+
       setFormData({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
@@ -55,7 +63,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
         branch: user.branch,
         group: user.branch, // sync group with branch
         totalSavings: user.totalContributions,
-        penalties: user.penalties || 0,
+        penalties: penaltiesValue,
         contributionDate: user.contributionDate || "",
         loan: user.activeLoan
           ? {

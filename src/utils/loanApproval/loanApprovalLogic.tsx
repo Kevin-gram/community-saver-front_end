@@ -43,11 +43,13 @@ export const handleLoanAction = (
   action: "approve" | "reject",
   setSelectedLoan: (loan: Loan | null) => void,
   setActionType: (type: "approve" | "reject" | null) => void,
-  setProcessingLoanId: (id: string | null) => void
+  setProcessingLoanId: (id: string | null) => void,
+  setProcessingAction?: (action: "approve" | "reject" | null) => void
 ) => {
   setSelectedLoan(loan);
   setActionType(action);
   setProcessingLoanId(loan.id || loan._id || null);
+  setProcessingAction?.(action);
 };
 
 export const confirmAction = async (

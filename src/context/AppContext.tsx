@@ -211,7 +211,7 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       };
     }
 
-    case "ADD_CONTRIBUTION":
+    case "ADD_CONTRIBUTION": {
       if (
         !action.payload ||
         (typeof action.payload.memberId === "undefined" &&
@@ -225,16 +225,12 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       }
 
       // Type guard for memberId to avoid TS error
-      let normalizedMemberId: string;
-      if (
-        action.payload.memberId &&
+      const normalizedMemberId: string =
         typeof action.payload.memberId === "object" &&
+        action.payload.memberId &&
         "_id" in action.payload.memberId
-      ) {
-        normalizedMemberId = (action.payload.memberId as { _id: string })._id;
-      } else {
-        normalizedMemberId = action.payload.memberId;
-      }
+          ? (action.payload.memberId as { _id: string })._id
+          : (action.payload.memberId as string);
 
       return {
         ...state,
@@ -244,12 +240,9 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
         ],
         users: state.users.map((user) => {
           if (user.id !== normalizedMemberId) return user;
-          let newSavings =
+          const newSavings =
             (user.totalContributions || 0) + (action.payload.amount || 0);
-          let newPenalties = user.penalties || 0;
-          if (action.payload.type === "penalty") {
-            // newPenalties += 25;
-          }
+          const newPenalties = user.penalties || 0;
           return {
             ...user,
             totalContributions: newSavings,
@@ -261,6 +254,7 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
           };
         }),
       };
+    }
 
     case "UPDATE_GROUP_RULES":
       return {
@@ -297,8 +291,7 @@ export const useApp = () => {
     // Provide a minimal safe fallback to avoid uncaught exceptions when a consumer
     // is used outside the provider (useful during mounting, tests, or mis-wiring).
     // Log a warning so this can be found and fixed.
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
+    if (import.meta.env.DEV) {
       console.warn(
         "useApp called outside of AppProvider. Returning fallback state; please wrap your app with <AppProvider>."
       );
@@ -355,7 +348,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
             const storedUser = JSON.parse(userStr);
             matchedUser =
               users.find((u: User) => u.id === storedUser.id) || null;
-          } catch {}
+          } catch {
+            // Silently ignore JSON parse errors; matchedUser stays null
+          }
         }
 
         dispatch({ type: "LOAD_USERS", payload: users });

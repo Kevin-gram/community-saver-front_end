@@ -5,7 +5,7 @@ import { de } from "../i18n/de";
 
 type Language = "en" | "fr" | "de";
 
-const translations: Record<Language, typeof en> = {
+const translations: Record<Language, Record<string, any>> = {
   en,
   fr,
   de,

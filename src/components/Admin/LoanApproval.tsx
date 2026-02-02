@@ -48,12 +48,13 @@ const LoanApproval: React.FC = () => {
   const [repayAmount, setRepayAmount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingLoanId, setProcessingLoanId] = useState<string | null>(null);
+  const [processingAction, setProcessingAction] = useState<"approve" | "reject" | null>(null);
   const [isRepaying, setIsRepaying] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [showEmailChoice, setShowEmailChoice] = useState(false);
   const [approvedLoanId, setApprovedLoanId] = useState<string | null>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const filteredLoans = loans.filter((loan) => {
     return !filterStatus || loan.status === filterStatus;
@@ -297,20 +298,23 @@ const LoanApproval: React.FC = () => {
                       {loan.status === "pending" && (
                         <>
                           <button
-                            onClick={() => handleLoanAction(loan, "reject", setSelectedLoan, setActionType, setProcessingLoanId)}
+                            onClick={() => handleLoanAction(loan, "reject", setSelectedLoan, setActionType, setProcessingLoanId, setProcessingAction)}
                             disabled={
                               isProcessing &&
-                              processingLoanId === (loan.id || loan._id)
+                              processingLoanId === (loan.id || loan._id) &&
+                              processingAction === "reject"
                             }
                             className={`flex items-center justify-center px-4 py-2 border border-red-300 text-red-700 rounded-lg transition-colors ${
                               isProcessing &&
-                              processingLoanId === (loan.id || loan._id)
+                              processingLoanId === (loan.id || loan._id) &&
+                              processingAction === "reject"
                                 ? "opacity-50 cursor-not-allowed"
                                 : "hover:bg-red-50"
                             }`}
                           >
                             {isProcessing &&
-                            processingLoanId === (loan.id || loan._id) ? (
+                            processingLoanId === (loan.id || loan._id) &&
+                            processingAction === "reject" ? (
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                             ) : (
                               <X className="w-4 h-4 mr-2" />
@@ -318,20 +322,23 @@ const LoanApproval: React.FC = () => {
                             {t("admin.reject")}
                           </button>
                           <button
-                            onClick={() => handleLoanAction(loan, "approve", setSelectedLoan, setActionType, setProcessingLoanId)}
+                            onClick={() => handleLoanAction(loan, "approve", setSelectedLoan, setActionType, setProcessingLoanId, setProcessingAction)}
                             disabled={
                               isProcessing &&
-                              processingLoanId === (loan.id || loan._id)
+                              processingLoanId === (loan.id || loan._id) &&
+                              processingAction === "approve"
                             }
                             className={`flex items-center justify-center px-4 py-2 bg-gold-600 text-white rounded-lg transition-colors ${
                               isProcessing &&
-                              processingLoanId === (loan.id || loan._id)
+                              processingLoanId === (loan.id || loan._id) &&
+                              processingAction === "approve"
                                 ? "opacity-50 cursor-not-allowed"
                                 : "hover:bg-gold-700"
                             }`}
                           >
                             {isProcessing &&
-                            processingLoanId === (loan.id || loan._id) ? (
+                            processingLoanId === (loan.id || loan._id) &&
+                            processingAction === "approve" ? (
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                             ) : (
                               <Check className="w-4 h-4 mr-2" />

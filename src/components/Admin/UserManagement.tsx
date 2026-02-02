@@ -199,7 +199,7 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  // Add this helper function to ensure unique IDs
+  // Adding this helper function to ensure unique IDs
   const getUserUniqueId = (user: User): string => {
     return user.id || user._id || `user-${user.email}`;
   };
@@ -476,7 +476,7 @@ const UserManagement: React.FC = () => {
               : confirmDelete
           }
           onCancel={() => !isConfirming && setDeletingUser(null)}
-          disabled={isConfirming}
+          isDisabled={isConfirming}
         />
       )}
 
@@ -525,7 +525,7 @@ const UserManagement: React.FC = () => {
               : confirmDelete
           }
           onCancel={() => !isConfirming && setDeletingUser(null)}
-          disabled={isConfirming}
+          isDisabled={isConfirming}
         />
       )}
 

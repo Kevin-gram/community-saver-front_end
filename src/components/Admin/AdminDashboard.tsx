@@ -139,10 +139,10 @@ const AdminDashboard: React.FC = () => {
   // Stats configuration - EACH STAT NOW HAS ITS OWN LOADING STATE
   const stats = getStats(totalMembers, netContributions, pendingLoans, financialDataLoading, netContributionsLoading);
 
-  // Translate stats
+  // Translate stats - use the key to get translated title
   const translatedStats = stats.map(stat => ({
     ...stat,
-    title: stat.key ? t(`admin.${stat.key}`) : stat.title
+    title: t(`admin.${stat.key}`)
   }));
 
   // Filter out loans with invalid members or null values - NOW USING DIRECT FETCH

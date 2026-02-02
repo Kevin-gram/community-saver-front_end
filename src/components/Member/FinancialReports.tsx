@@ -23,7 +23,7 @@ const STORAGE_KEY = "lastViewedReportDate";
 // Hook to check for new reports
 export const useNewReportsCount = (): number => {
   const [newCount, setNewCount] = useState(0);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMountedRef = useRef(true);
 
   const checkNewReports = useCallback(async () => {
@@ -113,7 +113,7 @@ const FinancialReports: React.FC<FinancialReportsProps> = ({
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMountedRef = useRef(true);
 
   const getAuthToken = useCallback((): string | null => {
