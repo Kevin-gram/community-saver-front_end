@@ -625,7 +625,7 @@ const handleDownloadAgreement = async () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             {t("branchLead.branchMembers")}
           </h3>
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div className="space-y-4 max-h-[280px] overflow-y-auto">
             {allCardsLoading ? (
               <>
                 <MemberCardSkeleton />
