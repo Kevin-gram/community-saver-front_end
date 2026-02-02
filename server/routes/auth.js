@@ -50,10 +50,10 @@ const LoginForm: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Redirect to backend Google OAuth route
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    // Use VITE_API_BASE to be consistent with other API calls
+    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
     const returnUrl = encodeURIComponent(window.location.origin);
-    window.location.href = `${API_URL}/auth/google?returnUrl=${returnUrl}`;
+    window.location.href = `${API_BASE}/auth/google?returnUrl=${returnUrl}`;
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
