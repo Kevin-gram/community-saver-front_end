@@ -53,7 +53,7 @@ const LoginForm: React.FC = () => {
 
   const handleGoogleLogin = () => {
     // Use dynamic API URL from environment variable
-    const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL = import.meta.env.VITE_API_BASE;
     if (!API_URL) {
       console.error("VITE_API_URL environment variable is not set");
       setError("Configuration error. Please contact support.");
